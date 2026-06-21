@@ -92,6 +92,16 @@ export class MatchController {
       next(error);
     }
   }
+
+  async devReopenMatch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { actor } = getMatchContext(req);
+      const match = await matchService.devReopenMatch(actor, Number(req.params.matchId));
+      res.status(200).json({ success: true, data: match });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const matchController = new MatchController();

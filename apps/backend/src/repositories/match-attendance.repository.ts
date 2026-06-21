@@ -38,6 +38,24 @@ export class MatchAttendanceRepository extends TenantScopedRepository {
     return rows;
   }
 
+  async findByMatchAndPlayer(
+    tenantId: number,
+    matchId: number,
+    playerId: number,
+  ): Promise<MatchAttendanceRow | null> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<MatchAttendanceRow[]>(
+      `SELECT id, tenant_id, match_id, player_id, attended, lineup, match_jersey_number,
+              created_at, updated_at
+       FROM match_attendance
+       WHERE tenant_id = ? AND match_id = ? AND player_id = ?
+       LIMIT 1`,
+      [tenantId, matchId, playerId],
+    );
+    return rows[0] ?? null;
+  }
+
   async upsertBatch(
     tenantId: number,
     matchId: number,

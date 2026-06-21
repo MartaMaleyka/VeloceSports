@@ -22,6 +22,10 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
   return handleProxy(request, cookies, params.path, 'PUT');
 };
 
+export const DELETE: APIRoute = async ({ params, request, cookies }) => {
+  return handleProxy(request, cookies, params.path, 'DELETE');
+};
+
 async function handleProxy(
   request: Request,
   cookies: Parameters<typeof getSession>[0],

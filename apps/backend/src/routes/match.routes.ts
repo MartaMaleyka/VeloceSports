@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserRole } from '@velocesport/shared';
 import { matchController } from '../controllers/match.controller.js';
 import { matchAttendanceController } from '../controllers/match-attendance.controller.js';
+import { gameActionController } from '../controllers/game-action.controller.js';
 import { actionCatalogController } from '../controllers/action-catalog.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/rbac.js';
@@ -15,6 +16,12 @@ import {
   updateMatchStatusBodySchema,
 } from '../validators/match.validator.js';
 import { saveMatchAttendanceBodySchema } from '../validators/match-attendance.validator.js';
+import {
+  createGameActionBodySchema,
+  matchGameActionParamsSchema,
+  voidGameActionBodySchema,
+} from '../validators/game-action.validator.js';
+import { requireDevelopment } from '../middlewares/require-development.js';
 
 const router = Router();
 
@@ -48,6 +55,32 @@ router.put(
 );
 
 router.get(
+  '/:matchId/actions',
+  validate(matchIdParamSchema, 'params'),
+  (req, res, next) => gameActionController.listActions(req, res, next),
+);
+
+router.post(
+  '/:matchId/actions',
+  validate(matchIdParamSchema, 'params'),
+  validate(createGameActionBodySchema),
+  (req, res, next) => gameActionController.registerAction(req, res, next),
+);
+
+router.delete(
+  '/:matchId/actions/:actionId/immediate',
+  validate(matchGameActionParamsSchema, 'params'),
+  (req, res, next) => gameActionController.immediateUndo(req, res, next),
+);
+
+router.post(
+  '/:matchId/actions/:actionId/void',
+  validate(matchGameActionParamsSchema, 'params'),
+  validate(voidGameActionBodySchema),
+  (req, res, next) => gameActionController.voidAction(req, res, next),
+);
+
+router.get(
   '/:matchId',
   validate(matchIdParamSchema, 'params'),
   (req, res, next) => matchController.getMatch(req, res, next),
@@ -77,6 +110,13 @@ router.post(
   '/:matchId/cancel',
   validate(matchIdParamSchema, 'params'),
   (req, res, next) => matchController.cancelMatch(req, res, next),
+);
+
+router.post(
+  '/:matchId/dev/reopen',
+  requireDevelopment,
+  validate(matchIdParamSchema, 'params'),
+  (req, res, next) => matchController.devReopenMatch(req, res, next),
 );
 
 export default router;

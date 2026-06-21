@@ -23,6 +23,12 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+
+  /** Ventana para deshacer inmediato (borrado físico sin traza) */
+  GAME_ACTION_IMMEDIATE_UNDO_WINDOW_SECONDS: z.coerce.number().int().positive().default(10),
+
+  /** Días tras finalizar en que se permiten correcciones post-partido */
+  MATCH_CORRECTION_WINDOW_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -52,4 +58,12 @@ export function isDevelopment(): boolean {
 
 export function isTest(): boolean {
   return env.NODE_ENV === 'test';
+}
+
+export function getGameActionImmediateUndoWindowMs(): number {
+  return env.GAME_ACTION_IMMEDIATE_UNDO_WINDOW_SECONDS * 1000;
+}
+
+export function getMatchCorrectionWindowDays(): number {
+  return env.MATCH_CORRECTION_WINDOW_DAYS;
 }

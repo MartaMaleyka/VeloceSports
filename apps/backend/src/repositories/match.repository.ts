@@ -13,6 +13,7 @@ export interface MatchRow extends RowDataPacket {
   location: string | null;
   match_type: MatchType;
   status: MatchStatus;
+  finished_at: Date | null;
   notes: string | null;
   periods_count: number | null;
   period_duration_minutes: number | null;
@@ -101,7 +102,7 @@ export class MatchRepository extends TenantScopedRepository {
 
     const [rows] = await pool.execute<MatchWithCategoryRow[]>(
       `SELECT m.id, m.tenant_id, m.category_id, m.opponent, m.match_datetime, m.location,
-              m.match_type, m.status, m.notes, m.periods_count, m.period_duration_minutes,
+              m.match_type, m.status, m.finished_at, m.notes, m.periods_count, m.period_duration_minutes,
               m.created_by, m.created_at, m.updated_at,
               c.name AS category_name, u.email AS created_by_email
        FROM matches m
@@ -119,7 +120,7 @@ export class MatchRepository extends TenantScopedRepository {
     const pool = getPool();
     const [rows] = await pool.execute<MatchWithCategoryRow[]>(
       `SELECT m.id, m.tenant_id, m.category_id, m.opponent, m.match_datetime, m.location,
-              m.match_type, m.status, m.notes, m.periods_count, m.period_duration_minutes,
+              m.match_type, m.status, m.finished_at, m.notes, m.periods_count, m.period_duration_minutes,
               m.created_by, m.created_at, m.updated_at,
               c.name AS category_name, u.email AS created_by_email
        FROM matches m
@@ -271,11 +272,48 @@ export class MatchRepository extends TenantScopedRepository {
   async updateStatus(tenantId: number, matchId: number, status: MatchStatus): Promise<void> {
     this.assertTenantId(tenantId);
     const pool = getPool();
+    if (status === 'finished') {
+      await pool.execute(
+        'UPDATE matches SET status = ?, finished_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+        [status, matchId, tenantId],
+      );
+      return;
+    }
+    if (status === 'in_progress') {
+      await pool.execute(
+        'UPDATE matches SET status = ?, finished_at = NULL WHERE id = ? AND tenant_id = ?',
+        [status, matchId, tenantId],
+      );
+      return;
+    }
     await pool.execute('UPDATE matches SET status = ? WHERE id = ? AND tenant_id = ?', [
       status,
       matchId,
       tenantId,
     ]);
+  }
+
+  /** Solo desarrollo: reabrir partido finished sin tocar acciones. */
+  async devReopen(tenantId: number, matchId: number): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      "UPDATE matches SET status = 'in_progress', finished_at = NULL WHERE id = ? AND tenant_id = ? AND status = 'finished'",
+      [matchId, tenantId],
+    );
+  }
+
+  async setFinishedAtForTest(
+    tenantId: number,
+    matchId: number,
+    finishedAt: Date,
+  ): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      'UPDATE matches SET finished_at = ? WHERE id = ? AND tenant_id = ?',
+      [finishedAt, matchId, tenantId],
+    );
   }
 }
 

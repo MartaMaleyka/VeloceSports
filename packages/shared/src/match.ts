@@ -1,4 +1,5 @@
 import type { MatchStatus } from './statuses.js';
+import type { MatchCorrectionWindowDto } from './match-correction.js';
 
 export const MatchType = {
   LEAGUE: 'league',
@@ -38,6 +39,10 @@ export interface MatchDto {
   matchType: MatchType;
   status: MatchStatus;
   notes: string | null;
+  /** UTC ISO cuando pasó a finished; null si nunca finalizó */
+  finishedAt: string | null;
+  /** Solo partidos finished: estado de la ventana de corrección post-partido */
+  correctionWindow: MatchCorrectionWindowDto | null;
   periodsCount: number | null;
   periodDurationMinutes: number | null;
   effectivePeriods: MatchPeriodsConfigDto;

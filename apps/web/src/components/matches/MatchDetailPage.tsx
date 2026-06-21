@@ -12,6 +12,7 @@ import {
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 import MatchAttendancePanel from './MatchAttendancePanel';
+import MatchCapturePanel from './MatchCapturePanel';
 
 type DetailTab = 'overview' | 'attendance' | 'capture';
 
@@ -28,6 +29,10 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DetailTab>('overview');
   const [actionLoading, setActionLoading] = useState(false);
+  const [captureAllowed, setCaptureAllowed] = useState<boolean | null>(null);
+  const [devReopenLoading, setDevReopenLoading] = useState(false);
+
+  const isDev = import.meta.env.DEV;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,6 +50,30 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (
+      !match ||
+      match.status === MatchStatus.CANCELLED ||
+      match.status === MatchStatus.SCHEDULED
+    ) {
+      setCaptureAllowed(false);
+      return;
+    }
+    let cancelled = false;
+    void matchesFetch(`${match.id}/actions`)
+      .then(() => {
+        if (!cancelled) setCaptureAllowed(true);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setCaptureAllowed(e instanceof MatchesApiError && e.status === 403 ? false : true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [match?.id, match?.status]);
 
   const formatDatetime = (iso: string) =>
     new Date(iso).toLocaleString(locale === 'es' ? 'es-PA' : 'en-US', {
@@ -89,6 +118,23 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     }
   };
 
+  const devReopenMatch = async () => {
+    if (!match || !isDev) return;
+    setDevReopenLoading(true);
+    try {
+      await matchesFetch(`${match.id}/dev/reopen`, { method: 'POST' });
+      showToast({ variant: 'success', message: t('matches.capture.devReopenSuccess') });
+      await load();
+    } catch (e) {
+      showToast({
+        variant: 'error',
+        message: e instanceof MatchesApiError ? e.message : t('matches.errors.generic'),
+      });
+    } finally {
+      setDevReopenLoading(false);
+    }
+  };
+
   if (loading) {
     return <p className="text-text-secondary">{t('common.loading')}</p>;
   }
@@ -104,7 +150,11 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   const tabs: Array<{ id: DetailTab; label: string; disabled?: boolean }> = [
     { id: 'overview', label: t('matches.tabs.overview') },
     { id: 'attendance', label: t('matches.tabs.attendance') },
-    { id: 'capture', label: t('matches.tabs.capture'), disabled: true },
+    {
+      id: 'capture',
+      label: t('matches.tabs.capture'),
+      disabled: captureAllowed === false,
+    },
   ];
 
   const matchLocked =
@@ -136,6 +186,17 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
                 {t('matches.actions.cancel')}
               </Button>
             </>
+          )}
+          {isDev && match.status === MatchStatus.FINISHED && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={devReopenLoading}
+              title={t('matches.capture.devReopenHint')}
+              onClick={() => void devReopenMatch()}
+            >
+              {t('matches.capture.devReopen')}
+            </Button>
           )}
         </div>
       </div>
@@ -171,8 +232,8 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
               } ${tab.disabled ? 'cursor-not-allowed opacity-50' : ''}`}
             >
               {tab.label}
-              {tab.disabled && (
-                <span className="ml-1 text-xs">({t('matches.tabs.comingSoon')})</span>
+              {tab.disabled && captureAllowed === false && (
+                <span className="ml-1 text-xs">({t('matches.capture.coachOnly')})</span>
               )}
             </button>
           ))}
@@ -206,8 +267,13 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
           <MatchAttendancePanel key={match.id} matchId={match.id} matchLocked={matchLocked} />
         )}
 
-        {activeTab === 'capture' && (
-          <p className="text-text-secondary">{t('matches.tabs.captureHint')}</p>
+        {activeTab === 'capture' && captureAllowed && (
+          <MatchCapturePanel
+            key={`${match.id}-${match.status}`}
+            matchId={match.id}
+            match={match}
+            onMatchUpdated={() => void load()}
+          />
         )}
       </div>
     </div>

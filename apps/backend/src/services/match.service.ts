@@ -15,6 +15,8 @@ import { categoryRepository } from '../repositories/category.repository.js';
 import { coachCategoryRepository } from '../repositories/coach-category.repository.js';
 import { matchRepository, type MatchWithCategoryRow } from '../repositories/match.repository.js';
 import { auditService } from './audit.service.js';
+import { gameActionService } from './game-action.service.js';
+import { isDevelopment } from '../config/env.js';
 import {
   ForbiddenError,
   NotFoundError,
@@ -136,6 +138,7 @@ export class MatchService {
   }
 
   private async toDto(tenantId: number, row: MatchWithCategoryRow): Promise<MatchDto> {
+    const correctionWindow = await gameActionService.buildCorrectionWindowForMatch(tenantId, row);
     return {
       id: row.id,
       categoryId: row.category_id,
@@ -146,6 +149,8 @@ export class MatchService {
       matchType: row.match_type,
       status: row.status,
       notes: row.notes,
+      finishedAt: row.finished_at?.toISOString() ?? null,
+      correctionWindow,
       periodsCount: row.periods_count,
       periodDurationMinutes: row.period_duration_minutes,
       effectivePeriods: await this.resolveEffectivePeriods(tenantId, row),
@@ -307,6 +312,31 @@ export class MatchService {
 
   async cancelMatch(actor: MatchActorContext, matchId: number): Promise<MatchDto> {
     return this.updateMatchStatus(actor, matchId, MatchStatus.CANCELLED);
+  }
+
+  /** Solo NODE_ENV=development — reabre partido finished para pruebas locales. */
+  async devReopenMatch(actor: MatchActorContext, matchId: number): Promise<MatchDto> {
+    if (!isDevelopment()) {
+      throw new ForbiddenError('No disponible fuera del entorno de desarrollo');
+    }
+
+    const before = await this.assertMatchAccess(actor, matchId);
+    if (before.status !== MatchStatus.FINISHED) {
+      throw new ValidationError('Solo se pueden reabrir partidos finalizados', 'MATCH_NOT_FINISHED');
+    }
+
+    await matchRepository.devReopen(actor.tenantId, matchId);
+
+    await auditService.log(
+      this.auditCtx(actor),
+      'match',
+      matchId,
+      'dev_reopen',
+      { status: MatchStatus.FINISHED, finishedAt: before.finished_at?.toISOString() ?? null },
+      { status: MatchStatus.IN_PROGRESS, finishedAt: null },
+    );
+
+    return this.getMatch(actor, matchId);
   }
 }
 
