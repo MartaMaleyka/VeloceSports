@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LoginPage from '../components/auth/LoginPage';
+import { resolveLocale, t } from '@velocesport/i18n';
+import { PUBLIC_API_URL } from 'astro:env/client';
+
+const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
+const apiUrl = PUBLIC_API_URL;
+const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('meta.loginTitle', locale)}
+  description={t('meta.appDescription', locale)}
+>
+  <LoginPage client:load initialLocale={locale} apiUrl={apiUrl} redirectPath={redirectPath} />
+</BaseLayout>

@@ -1,0 +1,34 @@
+---
+import '../styles/global.css';
+import preferencesInit from '@velocesport/i18n/preferences-init?raw';
+import { t, type Locale } from '@velocesport/i18n';
+
+interface Props {
+  title?: string;
+  description?: string;
+  locale?: Locale;
+}
+
+const {
+  title,
+  description,
+  locale = 'es',
+} = Astro.props;
+
+const pageTitle = title ?? t('common.appName', locale);
+---
+
+<!doctype html>
+<html lang={locale} data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {description && <meta name="description" content={description} />}
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline set:html={preferencesInit} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

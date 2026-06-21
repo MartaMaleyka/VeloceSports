@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../lib/session';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+if (!session || session.role !== 'coach') {
+  return Astro.redirect('/login');
+}
+
+const matchId = Number(Astro.params.matchId);
+if (!Number.isInteger(matchId) || matchId <= 0) {
+  return Astro.redirect('/dashboard/coach/matches');
+}
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('matches.viewDetail', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    activeNavId="matches"
+    contentKey="coach"
+    pageTitle={t('dashboard.coach.matches.title', locale)}
+    hideWelcome
+    pageId="matchDetail"
+    pageProps={{ matchId, listPath: '/dashboard/coach/matches' }}
+    headerSectionAccent="matches"
+  />
+</BaseLayout>

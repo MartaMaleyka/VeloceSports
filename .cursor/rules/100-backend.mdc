@@ -1,0 +1,70 @@
+---
+description: Reglas de backend (Express + MySQL + JWT + seguridad + Swagger + testing)
+globs: apps/backend/**/*.{ts,js}
+alwaysApply: false
+---
+
+# Backend — Express + MySQL
+
+## Arquitectura por capas
+```
+routes/        define endpoints + middlewares (auth, rbac, validate)
+controllers/   parsea request, llama service, formatea response. SIN lógica de negocio.
+services/      lógica de negocio y reglas (RN-xx). Orquesta repositorios.
+repositories/  acceso a datos. Toda query parametrizada y filtrada por tenant_id.
+middlewares/   auth, tenant, rbac, validate, errorHandler, rateLimit
+validators/    esquemas zod por endpoint
+config/        db pool, env, swagger
+```
+
+## Seguridad (no negociable)
+- `helmet()` activado globalmente.
+- `cors` con allowlist explícita de orígenes (nunca `*` en producción).
+- `express-rate-limit`: límite global + límite estricto en `/auth/login` (anti
+  fuerza bruta).
+- Passwords: `bcryptjs` con coste ≥ 10. Nunca guardar ni loguear contraseñas en claro.
+- JWT: firma con secreto desde env, expiración corta + refresh token. Payload mínimo
+  (`userId`, `tenantId`, `role`). Nunca metas datos sensibles en el token.
+- `express-session`: cookie `httpOnly`, `secure` en prod, `sameSite`.
+- Toda entrada validada con zod ANTES de tocar la DB. Rechaza con 400 y mensaje claro.
+- SQL: SIEMPRE `mysql2` con placeholders `?`. Concatenar SQL = bug crítico. Nunca.
+- Nunca devuelvas stack traces ni detalles internos al cliente. `errorHandler`
+  centralizado mapea errores a respuestas limpias.
+- Headers de seguridad, no exponer `X-Powered-By`.
+
+## Multi-tenant en backend
+- Middleware `tenant`: lee `tenantId` del JWT y lo fija en `req.tenantId`.
+- Repositorios reciben `tenantId` como parámetro obligatorio y lo incluyen en WHERE.
+- Endpoints de `super_admin` van en un router aparte con RBAC propio.
+- RBAC: middleware `requireRole('coach', 'academy_admin')` por endpoint.
+
+## Reglas de negocio a respetar (del documento)
+- RN-07: solo jugadores marcados asistentes reciben acciones en un partido.
+- RN-08: solo partidos `in_progress` aceptan captura de acciones.
+- RN-09/RN-18: notificar al padre solo si acción es notificable Y el padre tiene
+  canal activo Y las preferencias (academia/acción/padre) lo permiten.
+- RN-13/RN-17: corregir una acción NO borra la trazabilidad original; las
+  estadísticas se recalculan tras corrección/eliminación.
+- RN-16: partido `finished` no acepta acciones nuevas salvo corrección autorizada.
+- Planes (RF-PLAN): validar límites del plan antes de crear registros; al exceder,
+  bloquear y registrar el intento en auditoría.
+
+## Auditoría
+Registrar autor + timestamp en: creación/edición/eliminación de acciones, cambios de
+estado de partido, generación de reportes, envío de notificaciones. Tabla `audit_log`
+con `tenant_id`, `user_id`, `entity`, `entity_id`, `action`, `before`, `after`, `created_at`.
+
+## Documentación Swagger
+- Anotar cada endpoint con JSDoc `@openapi` (swagger-jsdoc).
+- Servir UI en `/api/docs` (swagger-ui-express), protegida fuera de desarrollo.
+- Documentar: parámetros, body schema, respuestas (200/400/401/403/404/409/422/500),
+  y el esquema de auth (bearer JWT).
+
+## Testing y code review
+- Jest + Supertest. Cobertura mínima en services (lógica de negocio) y en
+  middlewares de seguridad/tenant.
+- Tests obligatorios para aislamiento multi-tenant: un usuario del tenant A NO debe
+  poder leer/modificar datos del tenant B (debe responder 403/404, nunca datos).
+- Tests para RBAC: cada rol solo accede a lo permitido.
+- Al proponer un endpoint nuevo, incluye su test. Al cerrar una feature, lista los
+  casos límite cubiertos y los pendientes.

@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardShell from '../../components/layout/DashboardShell';
+import { getSession } from '../../lib/session';
+import { getRoleLabel } from '../../lib/navigation';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+if (!session) {
+  return Astro.redirect('/login');
+}
+
+const locale = Astro.locals.locale;
+const roleLabel = getRoleLabel(session.role, locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${roleLabel} — ${t('common.appName', locale)}`}
+  description={t('meta.appDescription', locale)}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    activeNavId="home"
+    contentKey="parent"
+  />
+</BaseLayout>

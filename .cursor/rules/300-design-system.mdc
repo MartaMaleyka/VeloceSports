@@ -1,0 +1,72 @@
+---
+description: Design System — 5 capas (tokens, foundations, components, patterns, governance). W3C Design Tokens.
+globs: packages/design-system/**/*.{ts,tsx,json,css}
+alwaysApply: false
+---
+
+# Design System (producto interno, no "una carpeta de botones")
+
+Un design system une decisiones de diseño, implementación y gobernanza para que el
+equipo construya interfaces consistentes, accesibles y mantenibles. Referencias de
+industria: Polaris (Shopify), Atlassian, Material 3, USWDS, y el estándar
+**Design Tokens W3C 2025.10**.
+
+## Las 5 capas (de abajo hacia arriba)
+1. **Tokens** — valores atómicos (color, espacio, radio, sombra).
+2. **Foundations** — tipografía, grid, motion, iconografía, accesibilidad base.
+3. **Components** — piezas reutilizables con estados y variantes.
+4. **Patterns** — composiciones recurrentes (header de módulo, lista+filtros,
+   formulario de detalle, tablero de captura).
+5. **Governance + Docs** — quién cambia qué, versionado, contribución.
+
+## Tokens: arquitectura de 3 niveles (obligatoria)
+Formato fuente: JSON vendor-neutral (estándar W3C), transformable con
+Style Dictionary / Tokens Studio a CSS variables + config de Tailwind.
+
+| Nivel       | Ejemplo                                            | Uso                         |
+|-------------|----------------------------------------------------|-----------------------------|
+| Primitivo   | `color.blue.600 = #1E5FA1`                          | valor crudo de marca        |
+| Semántico   | `color.action.primary = {color.blue.600}`          | significado en la UI        |
+| Componente  | `button.primary.background = {color.action.primary}`| scoped al componente        |
+
+Por qué importa: cambiar el azul de marca → tocas el primitivo; cambiar "botón
+primario" sin afectar links → tocas el token de componente.
+
+### Reglas de tokens
+- NUNCA hardcodear `#1E5FA1` en componentes de producto. Usar
+  `var(--color-action-primary)` o la clase Tailwind mapeada al token.
+- Espaciado en escala base 4/8px: 4, 8, 12, 16, 24, 32, 48, 64.
+- Tipografía en escala con ratio consistente (1.2 o 1.25), no tamaños arbitrarios.
+- Nombres por **propósito**, no por apariencia: `color.text.muted`, no `color.gray.500`.
+- Temas (light/dark, institucional por academia) = capas de tokens semánticos,
+  NO duplicar componentes. El logo y color por tenant se resuelven vía tokens/CSS vars.
+
+## Foundations
+- Tipografía: escala título → subtítulo → cuerpo → meta/caption. Cuerpo 45–75 chars/línea.
+- Grid y espaciado sistemático (4/8). El espacio en blanco organiza, no es relleno.
+- Color con propósito: primario (1 acción principal por vista), neutros, semánticos
+  (éxito/error/advertencia/info), acento (marca/badges).
+- Motion sobrio y consistente. Iconografía única (un set).
+- Accesibilidad base incorporada en foundations (focus, contraste, targets).
+
+## Components (cada uno con estados y variantes)
+Mínimo para el MVP: Button, Input, Select, Checkbox/Toggle, Badge (estados),
+Card, Table, Modal/Dialog, Toast, Tabs, Avatar, EmptyState, Skeleton, Sidebar/Nav.
+- Cada componente documenta: variantes, estados (default/hover/focus/disabled/loading/
+  error), props, y notas de accesibilidad.
+- Construidos en React 19 + TS, estilados solo con tokens.
+
+## Patterns (composiciones del producto)
+- Header de módulo (título + meta + estado + acciones).
+- Lista + filtros (búsqueda visible, filtros colapsables, chips activos, contador).
+- Formulario de detalle (secciones agrupadas, labels visibles, errores junto al campo).
+- Vista de detalle: Header → Resumen (lo crítico arriba) → Contenido → Sidebar (meta).
+- **Tablero de captura de acciones** (patrón estrella): grilla de jugadores asistentes
+  + grilla de acciones, registro optimista, historial en vivo, deshacer.
+
+## Governance + Docs
+- Versionado semántico del paquete `design-system`.
+- Cambios a tokens primitivos/semánticos requieren revisión (afectan todo el producto).
+- Documentar cada token, componente y patrón. Una fuente de verdad.
+- Regla de oro: si un valor visual se repite, es candidato a token. Si una composición
+  se repite, es candidata a patrón.

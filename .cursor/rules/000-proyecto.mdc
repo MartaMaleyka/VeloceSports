@@ -1,0 +1,116 @@
+---
+description: Contexto global del proyecto. Reglas de negocio, arquitectura y stack. SIEMPRE aplicar.
+alwaysApply: true
+---
+
+# Plataforma SaaS Multi-Tenant — Academias de Fútbol
+
+Producto SaaS multi-tenant para academias de fútbol formativo. Gestiona jugadores,
+categorías, entrenadores, padres/acudientes, partidos, captura de acciones de juego
+en **tiempo real** y reportes deportivos individuales/colectivos.
+
+## Concepto operativo central
+Durante un partido en curso, el entrenador registra acciones con combinaciones
+tipo `7-13` donde `7` = número de camiseta del jugador y `13` = código de acción
+(p.ej. "Recuperación del balón"). Cada acción guarda trazabilidad completa:
+jugador, partido, minuto, periodo, entrenador, fecha/hora. Si la acción es
+"notificable", se notifica al padre/acudiente.
+
+## Stack (NO desviarse sin instrucción explícita)
+
+### Backend
+- Runtime: Node.js · Framework: Express
+- DB: MySQL (driver `mysql2`, queries parametrizadas SIEMPRE)
+- Auth: JWT (`jsonwebtoken`) + `bcryptjs` (hash passwords) + `express-session`
+- Seguridad: `helmet`, `cors` (allowlist), `express-rate-limit`
+- Validación: `zod` (o `express-validator`) en TODA entrada
+- Docs: `swagger-jsdoc` + `swagger-ui-express`
+- Testing: Jest + Supertest
+
+### Frontend
+- Astro 5.18 con `output: 'server'` (SSR)
+- Islas interactivas: React 19 + TypeScript
+- Estilos: Tailwind CSS 3 + `@tailwindcss/typography`
+- Adapter SSR: `@astrojs/node`
+- Build: Vite (incluido en Astro)
+- **Mobile-first y responsive obligatorio.** El entrenador captura acciones
+  desde el móvil en la cancha: el tablero de captura debe ser usable a una mano.
+
+## Estructura del monorepo
+```
+/apps
+  /backend        Express API
+  /web            Astro + React (SSR)
+/packages
+  /design-system  Tokens, foundations, componentes (ver regla 300)
+  /shared         Tipos TS compartidos, constantes (roles, estados, códigos)
+/docs             Requerimientos, decisiones de arquitectura
+```
+
+## Multi-tenant: REGLA INVIOLABLE (shared schema + tenant_id)
+- TODA tabla operativa lleva columna `tenant_id` (academia).
+- TODA query operativa filtra por `tenant_id`. Sin excepción.
+- El `tenant_id` se deriva del JWT del usuario autenticado en el backend,
+  **NUNCA** se acepta desde el body/query del cliente para operaciones de tenant.
+- Patrón obligatorio: middleware que inyecta `req.tenantId` desde el token, y
+  un helper/repositorio que exige `tenantId` en cada acceso a datos. Un query
+  operativo sin `tenant_id` en el WHERE es un BUG de seguridad, trátalo como tal.
+- Excepción única: el rol `super_admin` opera a nivel plataforma (gestión de
+  academias, planes, métricas globales), nunca sobre datos operativos de un tenant.
+
+## Roles del sistema
+- `super_admin`   — plataforma global (academias, planes, métricas SaaS)
+- `academy_admin` — operación interna de SU academia
+- `coach`         — opera partidos, captura acciones, observaciones técnicas
+- `parent`        — consulta reportes/notificaciones SOLO de sus hijos vinculados
+- `player`        — entidad de datos; sin acceso directo en MVP
+
+## Autenticación: UN SOLO login para todos los roles
+Existe UNA única pantalla de login y UN único endpoint `/auth/login` para los
+cuatro roles con acceso (super_admin, academy_admin, coach, parent). NO hay logins
+separados por rol ni por tenant. Tras autenticar, el sistema redirige según el rol
+y el `tenant_id` del usuario.
+
+### Modelo de datos de usuarios (asimetría por rol — RESPETAR)
+- Tabla `users` única para todos. Campos clave: `id`, `email` (único global),
+  `password_hash`, `role`, `tenant_id` (NULLABLE), `status`.
+- `super_admin`: `tenant_id = NULL`. NO está ligado a ninguna academia. Opera a
+  nivel plataforma. Su JWT no lleva `tenantId` (o lo lleva null); las rutas de
+  plataforma usan un guard propio, nunca el middleware `tenant`.
+- `academy_admin`, `coach`, `parent`: `tenant_id` OBLIGATORIO (NOT NULL a nivel
+  lógico). Su JWT siempre incluye `tenantId`.
+- Email único a nivel global (no por tenant) para que el login funcione sin pedir
+  academia. Si en el futuro se requiere el mismo email en dos academias, se evalúa
+  entonces; por ahora: único global.
+
+### Relaciones (dos N:M explícitas)
+- **Entrenador ↔ Categorías**: un coach pertenece a UN tenant y puede estar ligado
+  a VARIAS categorías. Tabla puente `coach_categories (coach_user_id, category_id,
+  tenant_id)`. Un coach solo opera las categorías que tiene asignadas (salvo permiso).
+- **Padre ↔ Jugadores**: un parent puede tener UNO o VARIOS jugadores. Tabla puente
+  `parent_players (parent_user_id, player_id, tenant_id)`. Un parent solo ve datos
+  de los jugadores vinculados a su perfil (en interfaz Y en backend).
+
+### Flujo de autenticación
+1. Login con email + password → valida credenciales (`bcryptjs`).
+2. Verifica que el usuario esté `active` y, si tiene tenant, que la academia esté
+   `active` (academia suspendida/inactiva bloquea el acceso de sus usuarios — RF-ACA-05).
+3. Emite JWT con payload mínimo: `userId`, `role`, y `tenantId` (null para super_admin).
+4. El frontend redirige al panel según rol.
+
+## Estados (usar enums/constantes de packages/shared, no strings sueltos)
+- Academia: `active` | `suspended` | `inactive`
+- Partido: `scheduled` | `in_progress` | `finished` | `cancelled`
+- Jugador: `active` | `inactive` | `injured` | `retired`
+- Acción (impacto): `positive` | `negative` | `neutral`
+
+## Convenciones de código
+- Backend: nomenclatura de capas Controller → Service → Repository. La lógica de
+  negocio vive en Services; los Controllers solo orquestan request/response.
+- TypeScript estricto en frontend y packages. `any` prohibido salvo justificación.
+- Idioma: identificadores de código en inglés; textos de UI y mensajes de usuario
+  en **español** (la audiencia es Panamá / Latam).
+- Nunca hardcodear colores/espacios en componentes: usar tokens del design system.
+
+## Prioridad: seguridad sobre conveniencia
+Ante duda entre una solución rápida y una segura, elige la segura y coméntalo.

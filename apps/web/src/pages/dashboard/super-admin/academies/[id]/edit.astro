@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../../lib/session';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+if (!session || session.role !== 'super_admin') {
+  return Astro.redirect('/login');
+}
+
+const locale = Astro.locals.locale;
+const academyId = Number(Astro.params.id);
+if (!Number.isFinite(academyId)) {
+  return Astro.redirect('/dashboard/super-admin/academies');
+}
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('platform.academies.edit', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    activeNavId="academies"
+    contentKey="superAdmin"
+    pageTitle={t('platform.academies.edit', locale)}
+    hideWelcome
+    pageId="academy-form"
+    pageProps={{ academyId }}
+  />
+</BaseLayout>

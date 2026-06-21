@@ -1,0 +1,21 @@
+{
+  "name": "velocesport-regitec",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plataforma SaaS multi-tenant para academias de fútbol formativo",
+  "scripts": {
+    "dev:backend": "pnpm --filter @velocesport/backend dev",
+    "build:backend": "pnpm --filter @velocesport/backend build",
+    "test:backend": "pnpm --filter @velocesport/backend test",
+    "dev:web": "pnpm --filter @velocesport/web dev",
+    "db:seed": "pnpm --filter @velocesport/backend db:seed",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "postinstall": "pnpm --filter @velocesport/shared build && pnpm --filter @velocesport/i18n build && pnpm --filter @velocesport/design-system build"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

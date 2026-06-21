@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../lib/session';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+if (!session || session.role !== 'academy_admin') {
+  return Astro.redirect('/login');
+}
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('dashboard.academyAdmin.reports.title', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    activeNavId="reports"
+    contentKey="academyAdmin"
+    pageTitle={t('dashboard.academyAdmin.reports.title', locale)}
+    pageDescription={t('dashboard.academyAdmin.reports.description', locale)}
+    hideWelcome
+    pageId="reports"
+    headerSectionAccent="audit"
+  />
+</BaseLayout>

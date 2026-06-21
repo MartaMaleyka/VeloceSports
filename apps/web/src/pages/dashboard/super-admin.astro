@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardShell from '../../components/layout/DashboardShell';
+import { getSession } from '../../lib/session';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+if (!session || session.role !== 'super_admin') {
+  return Astro.redirect('/login');
+}
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('dashboard.superAdmin.home.title', locale)} — ${t('common.appName', locale)}`}
+  description={t('dashboard.superAdmin.home.description', locale)}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    activeNavId="home"
+    contentKey="superAdmin"
+    pageTitle={t('dashboard.superAdmin.home.title', locale)}
+    pageDescription={t('dashboard.superAdmin.home.description', locale)}
+    hideWelcome
+    pageId="home"
+  />
+</BaseLayout>

@@ -1,0 +1,70 @@
+---
+description: Reglas de frontend (Astro SSR + React 19 + TS + Tailwind, mobile-first, accesibilidad)
+globs: apps/web/**/*.{astro,tsx,ts,css}
+alwaysApply: false
+---
+
+# Frontend — Astro SSR + React 19
+
+## Principio de arquitectura
+- Astro renderiza el HTML (SSR con `@astrojs/node`). React SOLO para islas
+  interactivas (`client:*`). No conviertas todo en React: páginas estáticas y
+  layouts en `.astro`, interactividad puntual en componentes React.
+- El **tablero de captura de acciones** es la isla React crítica: rápida, optimista,
+  usable a una mano en móvil. Prioriza latencia percibida <100ms (feedback inmediato
+  en el botón) y reconciliación con el servidor después.
+- TypeScript estricto en todo `.tsx`/`.ts`.
+
+## Mobile-first / responsive (obligatorio)
+- Diseña primero el layout móvil, luego escala con breakpoints `sm: md: lg:`.
+- Targets táctiles ≥ 44×44px (Ley de Fitts). Acciones destructivas separadas de
+  las primarias.
+- El tablero de captura debe funcionar en pantalla de teléfono sostenido en cancha.
+
+## Estilos
+- Tailwind 3 + `@tailwindcss/typography` para contenido de reportes.
+- NUNCA colores/espacios arbitrarios (`text-[#1E5FA1]`, `mt-[13px]`). Usar
+  utilidades mapeadas a los tokens del design system (ver regla 300).
+- Escala de espaciado 4/8px. Escala tipográfica con ratio consistente.
+
+## UX (principios a aplicar en cada pantalla)
+- Jerarquía de necesidades: funciona → claro → rápido → agradable.
+- Ley de Hick: pocos botones primarios visibles; lo secundario en "Más acciones".
+- Feedback en TODA acción: loading en botón, skeleton en listas, toast en éxito/error.
+- Prevención de errores: validación en tiempo real no agresiva; confirmación solo
+  para acciones irreversibles; deshabilitar acciones imposibles; defaults sensatos.
+- Recuperación: mensajes humanos en español ("No pudimos guardar la acción. Revisa
+  tu conexión."), con Reintentar/Volver. Empty states con CTA.
+- Formularios: labels siempre visibles (no solo placeholder); errores junto al campo;
+  NO resetear el formulario si el envío falla (conservar lo escrito).
+
+## Accesibilidad (parte de UX, no opcional)
+- Navegación completa por teclado. Focus visible (no quitar outline sin reemplazo).
+- `aria-label` en iconos sin texto. Headings en orden (h1→h2 sin saltos).
+- `label` asociado a cada `input`. Modales: foco atrapado + cierre con Esc.
+- Contraste WCAG AA: texto normal ≥ 4.5:1, grande ≥ 3:1.
+- No usar color como ÚNICO indicador: combinar icono + texto + forma/borde.
+- No bloquear zoom en móvil (nunca `user-scalable=no`).
+
+## Listados y tablas
+- Columnas esenciales primero; detalle en fila expandible o vista aparte.
+- Máx 2–3 acciones por fila visibles; resto en menú "⋯".
+- Estados con badges (label arriba, valor abajo — nunca "ESTADONuevo" pegado).
+- Skeleton en carga; evitar layout shift.
+
+## UX writing
+- Voz activa: "Guardaste la acción" (no "La acción ha sido guardada").
+- Botones con verbo: "Crear partido", no "Aceptar".
+- Un término consistente en toda la app (decidir "Partido", "Acción", etc. una vez).
+
+## Consumo de API
+- Tipos de request/response importados de `packages/shared`.
+- El `tenant_id` NUNCA se envía desde el cliente para operaciones de tenant; el
+  backend lo deriva del token. No lo expongas en formularios.
+- Manejo de errores de API consistente: 401 → re-login, 403 → mensaje de permiso,
+  red → reintento.
+
+## Checklist por pantalla (antes de darla por buena)
+¿Sabe el usuario dónde está? ¿La acción principal es obvia? ¿Hay feedback en carga,
+éxito y error? ¿El formulario conserva datos si falla? ¿Funciona con teclado y buen
+contraste? ¿Se ve bien en móvil? ¿Es consistente con el resto del producto?

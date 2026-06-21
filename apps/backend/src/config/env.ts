@@ -1,0 +1,55 @@
+import { z } from 'zod';
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().int().positive().default(3000),
+
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number().int().positive().default(3306),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string(),
+  DB_NAME: z.string().min(1),
+
+  JWT_ACCESS_SECRET: z.string().min(32),
+  JWT_REFRESH_SECRET: z.string().min(32),
+  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+
+  CORS_ORIGINS: z.string().min(1),
+
+  SESSION_SECRET: z.string().min(16),
+
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+function parseEnv(): Env {
+  const result = envSchema.safeParse(process.env);
+  if (!result.success) {
+    const formatted = result.error.flatten().fieldErrors;
+    throw new Error(`Variables de entorno inválidas: ${JSON.stringify(formatted)}`);
+  }
+  return result.data;
+}
+
+export const env = parseEnv();
+
+export function getCorsOrigins(): string[] {
+  return env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+}
+
+export function isProduction(): boolean {
+  return env.NODE_ENV === 'production';
+}
+
+export function isDevelopment(): boolean {
+  return env.NODE_ENV === 'development';
+}
+
+export function isTest(): boolean {
+  return env.NODE_ENV === 'test';
+}
