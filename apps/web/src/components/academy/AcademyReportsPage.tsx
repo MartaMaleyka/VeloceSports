@@ -16,7 +16,16 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation, type Locale } from '@velocesport/i18n';
+import {
+  useTranslation,
+  type Locale,
+  tenantPlayerStatusKey,
+  roleKey,
+  matchStatusKey,
+  matchTypeKey,
+  reportTypeTitleKey,
+  reportTypeDescriptionKey,
+} from '@velocesport/i18n';
 import { tenantFetchList } from '../../lib/tenant-api';
 import { downloadTenantReport, ReportApiError } from '../../lib/reports-api';
 
@@ -148,7 +157,7 @@ function AcademyReportsContent() {
       { value: '', label: t('reports.filters.allStatuses') },
       ...playerStatuses.map((s) => ({
         value: s,
-        label: t(`tenant.players.status.${s}` as never),
+        label: t(tenantPlayerStatusKey(s)),
       })),
     ],
     [playerStatuses, t],
@@ -159,7 +168,7 @@ function AcademyReportsContent() {
       { value: '', label: t('reports.filters.allRoles') },
       ...TENANT_MANAGEABLE_ROLES.map((role) => ({
         value: role,
-        label: t(`roles.${role}` as never),
+        label: t(roleKey(role)),
       })),
     ],
     [t],
@@ -192,7 +201,7 @@ function AcademyReportsContent() {
       { value: '', label: t('reports.filters.allStatuses') },
       ...matchStatuses.map((s) => ({
         value: s,
-        label: t(`matches.status.${s}` as never),
+        label: t(matchStatusKey(s)),
       })),
     ],
     [matchStatuses, t],
@@ -203,7 +212,7 @@ function AcademyReportsContent() {
       { value: '', label: t('reports.filters.allTypes') },
       ...[MatchType.LEAGUE, MatchType.FRIENDLY, MatchType.TOURNAMENT].map((mt) => ({
         value: mt,
-        label: t(`matches.type.${mt}` as never),
+        label: t(matchTypeKey(mt)),
       })),
     ],
     [t],
@@ -225,10 +234,10 @@ function AcademyReportsContent() {
             <DataCard key={reportType} className="flex h-full flex-col gap-4 p-4 sm:p-5">
               <div>
                 <h2 className="text-lg font-semibold text-text-primary">
-                  {t(`reports.types.${reportType}.title` as never)}
+                  {t(reportTypeTitleKey(reportType))}
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
-                  {t(`reports.types.${reportType}.description` as never)}
+                  {t(reportTypeDescriptionKey(reportType))}
                 </p>
               </div>
 

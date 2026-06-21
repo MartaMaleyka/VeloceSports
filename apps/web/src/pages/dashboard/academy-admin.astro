@@ -2,13 +2,13 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DashboardShell from '../../components/layout/DashboardShell';
 import { getSession } from '../../lib/session';
+import { redirectUnlessRole } from '../../lib/page-access';
 import { getRoleLabel } from '../../lib/navigation';
 import { t } from '@velocesport/i18n';
 
 const session = getSession(Astro.cookies);
-if (!session || session.role !== 'academy_admin') {
-  return Astro.redirect('/login');
-}
+const accessDenied = redirectUnlessRole(session, 'academy_admin');
+if (accessDenied) return Astro.redirect(accessDenied);
 
 const locale = Astro.locals.locale;
 const roleLabel = getRoleLabel(session.role, locale);
@@ -23,6 +23,7 @@ const roleLabel = getRoleLabel(session.role, locale);
     client:load
     initialLocale={locale}
     role={session.role}
+    roles={session.roles}
     activeNavId="home"
     contentKey="academyAdmin"
     pageId="home"

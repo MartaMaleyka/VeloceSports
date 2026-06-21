@@ -1,10 +1,11 @@
 import { defineMiddleware } from 'astro:middleware';
 import { resolveLocale } from '@velocesport/i18n';
 import {
-  getDashboardPathForRole,
+  getDashboardPathForSession,
   getRequiredRoleForPath,
   isProtectedPath,
   PUBLIC_PATHS,
+  sessionHasRole,
 } from './lib/auth-config.js';
 import { getSession } from './lib/session.js';
 
@@ -20,12 +21,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.session = session;
 
   if (pathname === '/') {
-    return context.redirect(session ? getDashboardPathForRole(session.role) : '/login');
+    return context.redirect(session ? getDashboardPathForSession(session) : '/login');
   }
 
   if (PUBLIC_PATHS.has(pathname)) {
     if (session && pathname === '/login') {
-      return context.redirect(getDashboardPathForRole(session.role));
+      return context.redirect(getDashboardPathForSession(session));
     }
     return next();
   }
@@ -41,8 +42,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     const requiredRole = getRequiredRoleForPath(pathname);
-    if (requiredRole && session.role !== requiredRole) {
-      return context.redirect(getDashboardPathForRole(session.role));
+    if (requiredRole && !sessionHasRole(session, requiredRole)) {
+      return context.redirect(getDashboardPathForSession(session));
     }
   }
 

@@ -5,6 +5,8 @@ export interface AuthUserDto {
   email: string;
   role: LoginRole;
   tenantId: number | null;
+  /** Todos los roles del usuario (multi-rol). */
+  roles?: LoginRole[];
 }
 
 export interface LoginResponseDto {

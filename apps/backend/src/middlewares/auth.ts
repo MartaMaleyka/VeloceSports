@@ -17,6 +17,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     req.user = {
       userId: payload.userId,
       role: payload.role,
+      roles: payload.roles,
       tenantId: payload.tenantId ?? null,
     };
     next();
@@ -38,6 +39,7 @@ export function optionalAuthenticate(req: Request, _res: Response, next: NextFun
     req.user = {
       userId: payload.userId,
       role: payload.role,
+      roles: payload.roles,
       tenantId: payload.tenantId ?? null,
     };
   } catch {

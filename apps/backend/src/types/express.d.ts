@@ -6,6 +6,7 @@ declare global {
       user?: {
         userId: number;
         role: UserRole;
+        roles: UserRole[];
         tenantId: number | null;
       };
       tenantId?: number;

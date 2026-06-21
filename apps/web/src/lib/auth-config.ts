@@ -6,7 +6,10 @@ export const REFRESH_TOKEN_COOKIE = 'vs_refresh_token';
 
 export interface SessionUser {
   userId: number;
+  /** Rol principal (legacy JWT). */
   role: LoginRole;
+  /** Todos los roles del usuario. */
+  roles: LoginRole[];
   tenantId: number | null;
 }
 
@@ -18,8 +21,27 @@ export const ROUTE_ROLE_MAP: Record<string, LoginRole> = {
   '/dashboard/parent': 'parent',
 };
 
+export function normalizeSessionRoles(user: SessionUser): LoginRole[] {
+  if (user.roles.length > 0) return [...user.roles];
+  return [user.role];
+}
+
+export function sessionHasRole(user: SessionUser, role: LoginRole): boolean {
+  return normalizeSessionRoles(user).includes(role);
+}
+
+export function sessionHasAnyRole(user: SessionUser, allowed: readonly LoginRole[]): boolean {
+  const roles = normalizeSessionRoles(user);
+  return allowed.some((role) => roles.includes(role));
+}
+
 export function getDashboardPathForRole(role: LoginRole): string {
   return DASHBOARD_ROUTES[role];
+}
+
+/** Home post-login: dashboard del rol principal (mayor prioridad en users.role). */
+export function getDashboardPathForSession(user: SessionUser): string {
+  return getDashboardPathForRole(user.role);
 }
 
 export function isProtectedPath(pathname: string): boolean {

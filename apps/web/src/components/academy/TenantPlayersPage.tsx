@@ -29,7 +29,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
@@ -68,7 +68,7 @@ const emptyForm: PlayerFormState = {
   linkedParents: [],
 };
 
-function PlayerStatusBadge({ status }: { status: string }) {
+function PlayerStatusBadge({ status }: { status: PlayerStatus }) {
   const { t } = useTranslation();
   const variant =
     status === PlayerStatus.ACTIVE
@@ -76,7 +76,7 @@ function PlayerStatusBadge({ status }: { status: string }) {
       : status === PlayerStatus.PENDING
         ? 'warning'
         : 'default';
-  return <Badge variant={variant}>{t(`tenant.players.status.${status}` as never)}</Badge>;
+  return <Badge variant={variant}>{t(tenantPlayerStatusKey(status))}</Badge>;
 }
 
 function TenantPlayersContent() {
@@ -262,7 +262,7 @@ function TenantPlayersContent() {
 
   const statusOptions = PLAYER_STATUSES.map((s) => ({
     value: s,
-    label: t(`tenant.players.status.${s}` as never),
+    label: t(tenantPlayerStatusKey(s)),
   }));
 
   const playerActions = (player: PlayerDto) => {
@@ -340,7 +340,7 @@ function TenantPlayersContent() {
           { value: '', label: t('tenant.filters.all') },
           ...PLAYER_STATUSES.map((s) => ({
             value: s,
-            label: t(`tenant.players.status.${s}` as never),
+            label: t(tenantPlayerStatusKey(s)),
           })),
         ]}
         secondaryFilter={categoryFilter}

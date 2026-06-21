@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import LoginPage from '../components/auth/LoginPage';
+import LoginFormIsland from '../components/auth/LoginFormIsland';
 import { resolveLocale, t } from '@velocesport/i18n';
 import { PUBLIC_API_URL } from 'astro:env/client';
 
@@ -14,5 +14,26 @@ const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
   title={t('meta.loginTitle', locale)}
   description={t('meta.appDescription', locale)}
 >
-  <LoginPage client:load initialLocale={locale} apiUrl={apiUrl} redirectPath={redirectPath} />
+  <div class="ds-brand-page relative flex min-h-screen flex-col items-center justify-center px-4 py-8">
+    <header class="mb-8 w-full max-w-md text-center">
+      <div class="mb-4 flex justify-center">
+        <div class="ds-brand-logo" aria-hidden="true">V</div>
+      </div>
+      <div class="ds-brand-accent-bar mb-4" aria-hidden="true"></div>
+      <h1 class="ds-brand-title">{t('common.appName', locale)}</h1>
+      <p class="mt-3 text-lg text-text-secondary">{t('auth.login.tagline', locale)}</p>
+      <p class="mt-1 text-sm text-text-muted">{t('auth.login.prompt', locale)}</p>
+    </header>
+
+    <LoginFormIsland
+      client:idle
+      initialLocale={locale}
+      apiUrl={apiUrl}
+      redirectPath={redirectPath}
+    />
+
+    <p class="mt-6 w-full max-w-md text-center text-sm text-text-muted">
+      {t('auth.login.footerNote', locale)}
+    </p>
+  </div>
 </BaseLayout>

@@ -48,6 +48,15 @@ describe('Academy settings API (academy_admin)', () => {
   });
 
   it('admin lee y actualiza solo campos permitidos', async () => {
+    const getRes = await request(app)
+      .get('/api/tenant/academy-settings')
+      .set('Authorization', `Bearer ${adminAToken}`)
+      .expect(200);
+
+    expect(getRes.body.data.readOnly.slug).toBeTruthy();
+    expect(getRes.body.data.readOnly.billingAnchorDay).toBeGreaterThanOrEqual(1);
+    expect(getRes.body.data.readOnly.nextPeriodEnd).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
     const res = await request(app)
       .patch('/api/tenant/academy-settings')
       .set('Authorization', `Bearer ${adminAToken}`)

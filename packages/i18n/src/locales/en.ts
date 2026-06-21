@@ -50,6 +50,7 @@ export const en = {
     academy_admin: 'Academy administrator',
     coach: 'Coach',
     parent: 'Parent / guardian',
+    player: 'Player',
   },
   nav: {
     home: 'Home',
@@ -410,6 +411,7 @@ export const en = {
   dashboard: {
     superAdmin: {
       greeting: 'Hello, {role}',
+      greetingMulti: 'Unified dashboard ({roles})',
       description: 'Platform super administrator dashboard.',
       welcome:
         'Welcome to the platform dashboard. Here you will manage academies, plans, and global metrics.',
@@ -460,6 +462,7 @@ export const en = {
     },
     academyAdmin: {
       greeting: 'Hello, {role}',
+      greetingMulti: 'Unified dashboard ({roles})',
       description: 'Your academy administration dashboard.',
       welcome:
         'Welcome to the academy dashboard. From here you will manage players, categories, coaches, and matches.',
@@ -541,6 +544,7 @@ export const en = {
     },
     coach: {
       greeting: 'Hello, {role}',
+      greetingMulti: 'Unified dashboard ({roles})',
       description: 'On-field operations and assigned categories dashboard.',
       welcome:
         'Welcome, coach. Here you will capture live actions and manage your assigned categories.',
@@ -551,6 +555,7 @@ export const en = {
     },
     parent: {
       greeting: 'Hello, {role}',
+      greetingMulti: 'Unified dashboard ({roles})',
       description: 'Reports and notifications for your linked players.',
       welcome:
         'Welcome. Here you will see reports and notifications for players linked to your profile.',
@@ -617,6 +622,10 @@ export const en = {
       firstName: 'First name',
       lastName: 'Last name',
       role: 'Role',
+      rolesLabel: 'Roles',
+      rolesHint: 'Select one or more roles. The user will access sections for all of them.',
+      primaryRole: 'primary',
+      lastRoleWarning: 'At least one role is required. To revoke access, deactivate the user.',
       status: 'Status',
       lastLogin: 'Last login',
       lastLoginNever: 'Never',
@@ -853,7 +862,9 @@ export const en = {
     currentPlan: 'Current plan',
     academyStatus: 'Academy status',
     billingAnchorDay: 'Billing anchor day',
+    billingAnchorDayValue: 'Day {day} of each month',
     nextPeriodEnd: 'Next period end',
+    notAvailable: 'Not available',
     billingStatus: 'Billing status',
     slug: 'Slug identifier',
     playersLimit: 'Active players',

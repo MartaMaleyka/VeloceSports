@@ -23,7 +23,10 @@ export interface TenantUserDto {
   email: string;
   firstName: string | null;
   lastName: string | null;
+  /** Rol principal (legacy / users.role). */
   role: TenantManageableRole;
+  /** Todos los roles asignados en user_roles. */
+  roles: TenantManageableRole[];
   status: UserStatus;
   lastLoginAt: string | null;
   createdAt: string;

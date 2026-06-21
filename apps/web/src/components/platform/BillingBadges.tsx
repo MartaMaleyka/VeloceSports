@@ -1,6 +1,10 @@
 import type { AcademyBillingStatus, InvoiceStatus } from '@velocesport/shared';
 import { Badge, type BadgeVariant } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import {
+  useTranslation,
+  platformBillingInvoiceStatusKey,
+  platformBillingAcademyStatusKey,
+} from '@velocesport/i18n';
 
 const variantMap: Record<InvoiceStatus, BadgeVariant> = {
   pending: 'warning',
@@ -40,7 +44,7 @@ export function InvoiceStatusBadge({ status }: { status: InvoiceStatus | string 
   return (
     <Badge variant={variantMap[key] ?? 'default'} className="inline-flex items-center">
       <StatusIcon status={key} />
-      {t(`platform.billing.status.${key}` as never)}
+      {t(platformBillingInvoiceStatusKey(key))}
     </Badge>
   );
 }
@@ -79,7 +83,7 @@ export function BillingStatusBadge({ status }: { status: AcademyBillingStatus | 
   const variant = academyVariantMap[key] ?? 'default';
   return (
     <Badge variant={variant} icon={<AcademyBillingStatusIcon status={key} />}>
-      {t(`platform.billing.academyStatus.${key}` as never)}
+      {t(platformBillingAcademyStatusKey(key))}
     </Badge>
   );
 }

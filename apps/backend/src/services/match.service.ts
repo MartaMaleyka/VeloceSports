@@ -19,8 +19,9 @@ import {
   ForbiddenError,
   NotFoundError,
   ValidationError,
+  type AuthUser,
 } from '../types/index.js';
-import type { AuthUser } from '../types/index.js';
+import { userHasRole } from '../utils/role-check.js';
 
 interface MatchActorContext {
   user: AuthUser;
@@ -48,8 +49,8 @@ export class MatchService {
 
   /** null = todas las categorías (admin); array = solo esas (coach) */
   private async resolveCategoryScope(actor: MatchActorContext): Promise<number[] | null> {
-    if (actor.user.role === UserRole.ACADEMY_ADMIN) return null;
-    if (actor.user.role === UserRole.COACH) {
+    if (userHasRole(actor.user, UserRole.ACADEMY_ADMIN)) return null;
+    if (userHasRole(actor.user, UserRole.COACH)) {
       const ids = await coachCategoryRepository.findCategoryIdsForCoach(
         actor.tenantId,
         actor.user.userId,
@@ -68,7 +69,10 @@ export class MatchService {
       throw new ValidationError('La categoría seleccionada no pertenece a esta academia');
     }
 
-    if (actor.user.role === UserRole.COACH) {
+    if (
+      !userHasRole(actor.user, UserRole.ACADEMY_ADMIN) &&
+      userHasRole(actor.user, UserRole.COACH)
+    ) {
       const assigned = await coachCategoryRepository.isCoachAssignedToCategory(
         actor.tenantId,
         actor.user.userId,
@@ -84,7 +88,10 @@ export class MatchService {
     const row = await matchRepository.findById(actor.tenantId, matchId);
     if (!row) throw new NotFoundError('Partido no encontrado');
 
-    if (actor.user.role === UserRole.COACH) {
+    if (
+      !userHasRole(actor.user, UserRole.ACADEMY_ADMIN) &&
+      userHasRole(actor.user, UserRole.COACH)
+    ) {
       const assigned = await coachCategoryRepository.isCoachAssignedToCategory(
         actor.tenantId,
         actor.user.userId,

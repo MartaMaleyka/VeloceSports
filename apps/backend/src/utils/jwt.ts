@@ -1,4 +1,5 @@
 import jwt, { type SignOptions } from 'jsonwebtoken';
+import type { UserRole } from '@velocesport/shared';
 import { env } from '../config/env.js';
 import type { JwtPayload } from '../types/index.js';
 
@@ -9,6 +10,7 @@ export function signAccessToken(payload: JwtPayload): string {
   const tokenPayload: Record<string, unknown> = {
     userId: payload.userId,
     role: payload.role,
+    roles: payload.roles,
   };
 
   if (payload.tenantId !== undefined && payload.tenantId !== null) {
@@ -24,6 +26,7 @@ export function signRefreshToken(payload: JwtPayload): string {
   const tokenPayload: Record<string, unknown> = {
     userId: payload.userId,
     role: payload.role,
+    roles: payload.roles,
   };
 
   if (payload.tenantId !== undefined && payload.tenantId !== null) {
@@ -37,9 +40,15 @@ export function signRefreshToken(payload: JwtPayload): string {
 
 export function verifyAccessToken(token: string): JwtPayload {
   const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as jwt.JwtPayload;
+  const role = decoded.role as JwtPayload['role'];
+  const roles = Array.isArray(decoded.roles)
+    ? (decoded.roles as UserRole[])
+    : [role];
+
   return {
     userId: Number(decoded.userId),
-    role: decoded.role as JwtPayload['role'],
+    role,
+    roles,
     tenantId: decoded.tenantId !== undefined ? Number(decoded.tenantId) : undefined,
   };
 }

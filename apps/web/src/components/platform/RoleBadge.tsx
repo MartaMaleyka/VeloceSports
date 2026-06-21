@@ -1,6 +1,6 @@
 import type { UserRole } from '@velocesport/shared';
 import { Badge } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, roleKey } from '@velocesport/i18n';
 
 function UserRoleIcon() {
   return (
@@ -23,7 +23,7 @@ export function RoleBadge({ role }: RoleBadgeProps) {
   const { t } = useTranslation();
   return (
     <Badge accent="users" icon={<UserRoleIcon />}>
-      {t(`roles.${role}` as never)}
+      {t(roleKey(role))}
     </Badge>
   );
 }

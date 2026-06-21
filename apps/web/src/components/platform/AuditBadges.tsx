@@ -1,7 +1,7 @@
 import { Badge, type BadgeVariant } from '@velocesport/design-system';
 import type { SectionAccentId } from '@velocesport/design-system';
 import { AuditEntity } from '@velocesport/shared';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, auditEntityKey, auditActionKey } from '@velocesport/i18n';
 
 function entityAccent(entity: string): SectionAccentId {
   switch (entity) {
@@ -73,8 +73,8 @@ function ActionIcon() {
 
 export function AuditEntityBadge({ entity }: { entity: string }) {
   const { t } = useTranslation();
-  const labelKey = `platform.audit.entities.${entity}` as const;
-  const label = t(labelKey as never);
+  const labelKey = auditEntityKey(entity);
+  const label = t(labelKey);
   return (
     <Badge variant="default" accent={entityAccent(entity)} icon={<EntityIcon entity={entity} />}>
       {label === labelKey ? entity : label}
@@ -84,8 +84,8 @@ export function AuditEntityBadge({ entity }: { entity: string }) {
 
 export function AuditActionBadge({ action }: { action: string }) {
   const { t } = useTranslation();
-  const labelKey = `platform.audit.actions.${action}` as const;
-  const label = t(labelKey as never);
+  const labelKey = auditActionKey(action);
+  const label = t(labelKey);
   return (
     <Badge variant={actionVariant(action)} icon={<ActionIcon />}>
       {label === labelKey ? action.replaceAll('_', ' ') : label}

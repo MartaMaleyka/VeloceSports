@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { UserRole } from '@velocesport/shared';
 import { getPool, closePool } from '../config/db.js';
+import { userRoleRepository } from '../repositories/user-role.repository.js';
 
 /** Contraseña conocida de desarrollo para todos los usuarios seed */
 export const DEV_PASSWORD = 'DevPass123!';
@@ -173,6 +174,8 @@ async function seed(): Promise<void> {
 
   await linkCoachCategory(coachId, categoryId, academyId);
   await linkParentPlayer(parentId, playerId, academyId);
+
+  await userRoleRepository.backfillFromUsers();
 
   console.log('\n✓ Seed de desarrollo completado (idempotente)\n');
   console.log('Academia:', SEED.academy.name, `(id: ${academyId})`);

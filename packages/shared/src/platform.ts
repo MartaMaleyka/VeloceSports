@@ -75,7 +75,10 @@ export interface CreateAcademyResponseDto {
 export interface PlatformUserDto {
   id: number;
   email: string;
+  /** Rol principal (legacy / users.role). */
   role: UserRole;
+  /** Todos los roles asignados en user_roles. */
+  roles: UserRole[];
   status: UserStatus;
   tenantId: number | null;
   lastLoginAt: string | null;

@@ -9,6 +9,21 @@ export interface NavItem {
   sectionAccent: SectionAccentId;
 }
 
+export interface NavSection {
+  /** Etiqueta de grupo (solo multi-rol). */
+  groupLabel?: string;
+  groupRole?: LoginRole;
+  items: NavItem[];
+}
+
+export interface NavLayout {
+  /** Inicio unificado (solo multi-rol); apunta al dashboard del rol principal. */
+  homeItem: NavItem | null;
+  sections: NavSection[];
+}
+
+const ROLE_NAV_ORDER: LoginRole[] = ['super_admin', 'academy_admin', 'coach', 'parent'];
+
 const roleSlugMap: Record<LoginRole, string> = {
   super_admin: '/dashboard/super-admin',
   academy_admin: '/dashboard/academy-admin',
@@ -110,6 +125,66 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
       sectionAccent: 'brand',
     },
   ];
+}
+
+/** Menú unificado: un solo Inicio arriba (multi-rol) + grupos por rol sin repetir rutas. */
+export function getNavLayoutForRoles(
+  roles: LoginRole[],
+  locale: Locale,
+  primaryRole: LoginRole,
+): NavLayout {
+  const orderedRoles = ROLE_NAV_ORDER.filter((role) => roles.includes(role));
+  const effectiveRoles = orderedRoles.length > 0 ? orderedRoles : roles;
+
+  if (effectiveRoles.length <= 1) {
+    const role = effectiveRoles[0] ?? primaryRole;
+    return { homeItem: null, sections: [{ items: getNavItemsForRole(role, locale) }] };
+  }
+
+  const homeRole = effectiveRoles.includes(primaryRole) ? primaryRole : effectiveRoles[0]!;
+  const homeItem =
+    getNavItemsForRole(homeRole, locale).find((item) => item.id === 'home') ?? null;
+
+  const seenHrefs = new Set<string>();
+  if (homeItem) seenHrefs.add(homeItem.href);
+
+  const sections: NavSection[] = [];
+
+  for (const role of effectiveRoles) {
+    const items = getNavItemsForRole(role, locale)
+      .filter((item) => item.id !== 'home')
+      .filter((item) => {
+        if (seenHrefs.has(item.href)) return false;
+        seenHrefs.add(item.href);
+        return true;
+      })
+      .map((item) => ({
+        ...item,
+        id: `${role}:${item.id}`,
+      }));
+
+    if (items.length === 0) continue;
+
+    sections.push({
+      groupLabel: getRoleLabel(role, locale),
+      groupRole: role,
+      items,
+    });
+  }
+
+  return { homeItem, sections };
+}
+
+/** @deprecated Usar getNavLayoutForRoles */
+export function getNavSectionsForRoles(roles: LoginRole[], locale: Locale): NavSection[] {
+  return getNavLayoutForRoles(roles, locale, roles[0] ?? 'coach').sections;
+}
+
+export function getSessionSubtitle(roles: LoginRole[], locale: Locale): string {
+  if (roles.length <= 1) {
+    return getRoleLabel(roles[0] ?? 'coach', locale);
+  }
+  return roles.map((role) => getRoleLabel(role, locale)).join(' · ');
 }
 
 export function getRoleLabel(role: LoginRole, locale: Locale): string {

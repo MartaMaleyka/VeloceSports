@@ -15,7 +15,11 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import {
+  useTranslation,
+  academySettingsStatusKey,
+  academySettingsBillingStatusKey,
+} from '@velocesport/i18n';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
 
 interface SettingsFormState {
@@ -125,6 +129,21 @@ function AcademySettingsContent() {
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale === 'es' ? 'es-PA' : 'en-US', { dateStyle: 'medium' });
+
+  const formatDateOrFallback = (iso: string | null | undefined) => {
+    if (!iso?.trim()) return t('academySettings.notAvailable');
+    const parsed = new Date(iso);
+    if (Number.isNaN(parsed.getTime())) return t('academySettings.notAvailable');
+    return formatDate(iso);
+  };
+
+  const formatBillingAnchorDay = (day: number | null | undefined) => {
+    if (day == null || day < 1 || day > 31) return t('academySettings.notAvailable');
+    return t('academySettings.billingAnchorDayValue', { day });
+  };
+
+  const formatSlug = (slug: string | null | undefined) =>
+    slug?.trim() ? slug : t('academySettings.notAvailable');
 
   const usageLabel = useMemo(() => {
     if (!settings) return '';
@@ -365,16 +384,22 @@ function AcademySettingsContent() {
           <StatCard
             accent="brand"
             label={t('academySettings.academyStatus')}
-            value={t(`academySettings.status.${ro.status}` as never)}
+            value={t(academySettingsStatusKey(ro.status))}
           />
         </StatCardGrid>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <DataCard className="p-4 opacity-90">
-            <LabeledValue label={t('academySettings.billingAnchorDay')} value={String(ro.billingAnchorDay)} />
+            <LabeledValue
+              label={t('academySettings.billingAnchorDay')}
+              value={formatBillingAnchorDay(ro.billingAnchorDay)}
+            />
           </DataCard>
           <DataCard className="p-4 opacity-90">
-            <LabeledValue label={t('academySettings.nextPeriodEnd')} value={formatDate(ro.nextPeriodEnd)} />
+            <LabeledValue
+              label={t('academySettings.nextPeriodEnd')}
+              value={formatDateOrFallback(ro.nextPeriodEnd)}
+            />
           </DataCard>
           <DataCard className="p-4 opacity-90">
             <LabeledValue label={t('academySettings.billingStatus')}>
@@ -387,12 +412,12 @@ function AcademySettingsContent() {
                       : 'success'
                 }
               >
-                {t(`academySettings.billingStatuses.${ro.academyBillingStatus}` as never)}
+                {t(academySettingsBillingStatusKey(ro.academyBillingStatus))}
               </Badge>
             </LabeledValue>
           </DataCard>
           <DataCard className="p-4 opacity-90">
-            <LabeledValue label={t('academySettings.slug')} value={ro.slug} />
+            <LabeledValue label={t('academySettings.slug')} value={formatSlug(ro.slug)} />
           </DataCard>
           <DataCard className="p-4 opacity-90">
             <LabeledValue label={t('academySettings.playersLimit')}>

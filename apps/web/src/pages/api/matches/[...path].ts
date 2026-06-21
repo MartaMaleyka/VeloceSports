@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { PUBLIC_API_URL } from 'astro:env/client';
 import { getAccessToken, getSession } from '../../../lib/session.js';
+import { sessionHasAnyRole } from '../../../lib/auth-config.js';
 import type { LoginRole } from '@velocesport/shared';
 
 const ALLOWED_ROLES: LoginRole[] = ['academy_admin', 'coach'];
@@ -24,7 +25,7 @@ async function handleProxy(
   method: string,
 ): Promise<Response> {
   const session = getSession(cookies);
-  if (!session || !ALLOWED_ROLES.includes(session.role)) {
+  if (!session || !sessionHasAnyRole(session, ALLOWED_ROLES)) {
     return json({ success: false, message: 'Acceso denegado' }, 403);
   }
 

@@ -7,7 +7,7 @@ import PreferenceToggles from './PreferenceToggles';
 import { sectionAccentFromNavId, type SectionAccentId } from '@velocesport/design-system';
 import {
   getDashboardTranslationPrefix,
-  getRoleLabel,
+  getSessionSubtitle,
   type DashboardContentKey,
 } from '../../lib/navigation';
 import { resolvePlatformPage, type PlatformPageId } from '../../lib/platform-pages';
@@ -37,7 +37,8 @@ function resolveDashboardPage(
 }
 
 interface DashboardShellInnerProps {
-  role: LoginRole;
+  roles: LoginRole[];
+  primaryRole: LoginRole;
   activeNavId: string;
   contentKey: DashboardContentKey;
   children?: ReactNode;
@@ -50,7 +51,8 @@ interface DashboardShellInnerProps {
 }
 
 function DashboardShellInner({
-  role,
+  roles,
+  primaryRole,
   activeNavId,
   contentKey,
   children,
@@ -66,8 +68,11 @@ function DashboardShellInner({
   const Page = resolveDashboardPage(contentKey, pageId);
 
   const prefix = getDashboardTranslationPrefix(contentKey);
-  const roleLabel = getRoleLabel(role, locale);
-  const defaultTitle = t(`${prefix}.greeting` as TranslationKey, { role: roleLabel });
+  const roleLabel = getSessionSubtitle(roles, locale);
+  const defaultTitle =
+    roles.length > 1
+      ? t(`${prefix}.greetingMulti` as TranslationKey, { roles: roleLabel })
+      : t(`${prefix}.greeting` as TranslationKey, { role: roleLabel });
   const defaultDescription = t(`${prefix}.description` as TranslationKey);
   const welcome = t(`${prefix}.welcome` as TranslationKey);
   const title = pageTitle ?? defaultTitle;
@@ -77,7 +82,7 @@ function DashboardShellInner({
   return (
     <div className="flex min-h-screen bg-bg-app">
       <div className="hidden w-64 shrink-0 md:block">
-        <Sidebar role={role} activeNavId={activeNavId} />
+        <Sidebar roles={roles} primaryRole={primaryRole} activeNavId={activeNavId} />
       </div>
 
       {mobileNavOpen && (
@@ -89,7 +94,7 @@ function DashboardShellInner({
             onClick={() => setMobileNavOpen(false)}
           />
           <div className="absolute left-0 top-0 h-full w-64 bg-bg-surface shadow-md">
-            <Sidebar role={role} activeNavId={activeNavId} />
+            <Sidebar roles={roles} primaryRole={primaryRole} activeNavId={activeNavId} />
           </div>
         </div>
       )}
@@ -138,6 +143,7 @@ function DashboardShellInner({
 export interface DashboardShellProps {
   initialLocale: Locale;
   role: LoginRole;
+  roles?: LoginRole[];
   activeNavId: string;
   contentKey: DashboardContentKey;
   children?: ReactNode;
@@ -152,6 +158,7 @@ export interface DashboardShellProps {
 export default function DashboardShell({
   initialLocale,
   role,
+  roles,
   activeNavId,
   contentKey,
   children,
@@ -162,10 +169,12 @@ export default function DashboardShell({
   hideWelcome,
   headerSectionAccent,
 }: DashboardShellProps) {
+  const sessionRoles = roles ?? [role];
   return (
     <I18nProvider initialLocale={initialLocale}>
       <DashboardShellInner
-        role={role}
+        roles={sessionRoles}
+        primaryRole={role}
         activeNavId={activeNavId}
         contentKey={contentKey}
         pageId={pageId}

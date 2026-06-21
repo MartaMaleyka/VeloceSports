@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { UserRole } from '@velocesport/shared';
 import { ForbiddenError, UnauthorizedError } from '../types/index.js';
+import { isSuperAdminAuth } from '../utils/role-check.js';
 
 /**
  * Deriva req.tenantId exclusivamente del JWT autenticado.
@@ -12,7 +12,7 @@ export function tenant(req: Request, _res: Response, next: NextFunction): void {
     return;
   }
 
-  if (req.user.role === UserRole.SUPER_ADMIN) {
+  if (isSuperAdminAuth(req.user)) {
     next(new ForbiddenError('Las rutas de tenant no están disponibles para super_admin'));
     return;
   }

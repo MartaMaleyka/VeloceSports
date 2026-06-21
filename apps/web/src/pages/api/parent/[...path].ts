@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { PUBLIC_API_URL } from 'astro:env/client';
 import { getAccessToken, getSession } from '../../../lib/session.js';
+import { sessionHasRole } from '../../../lib/auth-config.js';
 
 export const GET: APIRoute = async ({ params, request, cookies }) => {
   return handleProxy(request, cookies, params.path, 'GET');
@@ -21,7 +22,7 @@ async function handleProxy(
   method: string,
 ): Promise<Response> {
   const session = getSession(cookies);
-  if (!session || session.role !== 'parent') {
+  if (!session || !sessionHasRole(session, 'parent')) {
     return json({ success: false, message: 'Acceso denegado' }, 403);
   }
 

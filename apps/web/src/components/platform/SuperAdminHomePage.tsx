@@ -13,7 +13,7 @@ import {
   sectionQuickLinkClasses,
   type SectionAccentId,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, roleKey, roleKeys, type TranslationKey } from '@velocesport/i18n';
 import { PlatformApiError, platformFetch } from '../../lib/platform-api';
 import { PlatformMetricsCharts } from './PlatformMetricsCharts';
 
@@ -92,13 +92,7 @@ function QuickLinkCard({ href, title, description, accent }: QuickLinkProps) {
   );
 }
 
-const ROLE_LABEL_KEYS: Record<string, string> = {
-  [UserRole.SUPER_ADMIN]: 'roles.super_admin',
-  [UserRole.ACADEMY_ADMIN]: 'roles.academy_admin',
-  [UserRole.COACH]: 'roles.coach',
-  [UserRole.PARENT]: 'roles.parent',
-  [UserRole.PLAYER]: 'roles.player',
-};
+const ROLE_LABEL_KEYS: Record<string, TranslationKey> = roleKeys;
 
 function SuperAdminHomeContent() {
   const { t, locale } = useTranslation();
@@ -335,7 +329,7 @@ function SuperAdminHomeContent() {
         <div className="flex flex-wrap gap-2">
           {Object.entries(metrics.users.byRole).map(([role, count]) => (
             <Badge key={role} variant="default" accent="users">
-              {t((ROLE_LABEL_KEYS[role] ?? role) as never)}: {count}
+              {t(ROLE_LABEL_KEYS[role] ?? roleKey(role))}: {count}
             </Badge>
           ))}
         </div>

@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro';
 import { PUBLIC_API_URL } from 'astro:env/client';
 import { getAccessToken, getSession } from '../../../../../lib/session.js';
+import { sessionHasRole } from '../../../../../lib/auth-config.js';
 
 export const GET: APIRoute = async ({ params, request, cookies }) => {
   const session = getSession(cookies);
-  if (!session || session.role !== 'academy_admin') {
+  if (!session || !sessionHasRole(session, 'academy_admin')) {
     return new Response(JSON.stringify({ success: false, message: 'Acceso denegado' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' },

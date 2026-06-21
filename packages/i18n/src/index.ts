@@ -2,6 +2,25 @@ export { t } from './t.js';
 export { DEFAULT_LOCALE, locales, type Locale } from './locales/index.js';
 export type { TranslationKey, TranslationParams } from './types.js';
 export {
+  tenantPlayerStatusKey,
+  tenantPlayerStatusKeys,
+  roleKey,
+  roleKeys,
+  matchStatusKey,
+  matchStatusKeys,
+  matchTypeKey,
+  matchTypeKeys,
+  academySettingsStatusKey,
+  academySettingsBillingStatusKey,
+  academyAdminHomeBillingStatusKey,
+  platformBillingInvoiceStatusKey,
+  platformBillingAcademyStatusKey,
+  auditEntityKey,
+  auditActionKey,
+  reportTypeTitleKey,
+  reportTypeDescriptionKey,
+} from './keys.js';
+export {
   LOCALE_COOKIE,
   THEME_COOKIE,
   PREFERENCE_COOKIE_MAX_AGE,

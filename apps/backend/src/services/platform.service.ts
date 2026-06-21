@@ -24,6 +24,7 @@ import { userRepository } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
 import { invoiceService } from './invoice.service.js';
 import { resolveAnchoredBillingPeriod } from './billing-period.service.js';
+import { getUserRoles, getTenantManageableRolesForUser } from './user-roles.service.js';
 import { generateTemporaryPassword, slugify } from '../utils/strings.js';
 import {
   ConflictError,
@@ -290,9 +291,15 @@ export class PlatformService {
   ): Promise<PlatformUserDto[]> {
     await this.assertAcademyExists(academyId);
     const users = await userRepository.findByTenantId(academyId, filters);
-    return users
-      .filter((u) => u.role !== UserRole.PLAYER)
-      .map((u) => this.toUserDto(u));
+    const dtos = await Promise.all(
+      users
+        .filter((u) => u.role !== UserRole.PLAYER)
+        .map((u) => this.toUserDto(u, academyId)),
+    );
+    if (filters?.role) {
+      return dtos.filter((u) => u.roles.includes(filters.role!));
+    }
+    return dtos;
   }
 
   async createAcademyUser(
@@ -351,7 +358,7 @@ export class PlatformService {
     );
 
     return {
-      user: this.toUserDto(user),
+      user: await this.toUserDto(user, academyId),
       temporaryPassword,
     };
   }
@@ -366,12 +373,12 @@ export class PlatformService {
     const user = await userRepository.findById(academyId, userId);
     if (!user) throw new NotFoundError('Usuario no encontrado en esta academia');
 
-    const before = this.toUserDto(user);
+    const before = await this.toUserDto(user, academyId);
     await userRepository.updateStatus(userId, status);
     const updated = await userRepository.findById(academyId, userId);
     if (!updated) throw new NotFoundError('Usuario no encontrado');
 
-    const after = this.toUserDto(updated);
+    const after = await this.toUserDto(updated, academyId);
     await auditService.log(
       { userId: actorUserId, tenantId: academyId },
       'user',
@@ -385,7 +392,7 @@ export class PlatformService {
 
   async listSuperAdmins(): Promise<PlatformUserDto[]> {
     const users = await userRepository.findSuperAdmins();
-    return users.map((u) => this.toUserDto(u));
+    return Promise.all(users.map((u) => this.toUserDto(u)));
   }
 
   async createSuperAdmin(
@@ -412,7 +419,7 @@ export class PlatformService {
     await auditService.log({ userId: actorUserId }, 'super_admin', userId, 'create', null, { email });
 
     return {
-      user: this.toUserDto(user),
+      user: await this.toUserDto(user),
       temporaryPassword,
     };
   }
@@ -434,12 +441,12 @@ export class PlatformService {
       }
     }
 
-    const before = this.toUserDto(user);
+    const before = await this.toUserDto(user);
     await userRepository.updateStatus(targetUserId, status);
     const updated = await userRepository.findByIdGlobal(targetUserId);
     if (!updated) throw new NotFoundError('Super administrador no encontrado');
 
-    const after = this.toUserDto(updated);
+    const after = await this.toUserDto(updated);
     await auditService.log(
       { userId: actorUserId },
       'super_admin',
@@ -496,19 +503,31 @@ export class PlatformService {
     };
   }
 
-  private toUserDto(user: {
-    id: number;
-    email: string;
-    role: PlatformUserDto['role'];
-    tenant_id: number | null;
-    status: PlatformUserDto['status'];
-    last_login_at: Date | null;
-    created_at: Date;
-  }): PlatformUserDto {
+  private async toUserDto(
+    user: {
+      id: number;
+      email: string;
+      role: PlatformUserDto['role'];
+      tenant_id: number | null;
+      status: PlatformUserDto['status'];
+      last_login_at: Date | null;
+      created_at: Date;
+    },
+    tenantId?: number,
+  ): Promise<PlatformUserDto> {
+    let roles: PlatformUserDto['roles'];
+    if (user.role === UserRole.SUPER_ADMIN || tenantId === undefined) {
+      roles = await getUserRoles(user.id);
+      if (roles.length === 0) roles = [user.role];
+    } else {
+      roles = await getTenantManageableRolesForUser(user.id, tenantId);
+      if (roles.length === 0) roles = [user.role];
+    }
     return {
       id: user.id,
       email: user.email,
       role: user.role,
+      roles,
       status: user.status,
       tenantId: user.tenant_id,
       lastLoginAt: user.last_login_at?.toISOString() ?? null,

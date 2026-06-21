@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { UserRole } from '@velocesport/shared';
 import { ForbiddenError, UnauthorizedError } from '../types/index.js';
+import { isSuperAdminAuth } from '../utils/role-check.js';
 
 /**
  * Guard para rutas de plataforma (super_admin).
@@ -12,7 +12,7 @@ export function requireSuperAdmin(req: Request, _res: Response, next: NextFuncti
     return;
   }
 
-  if (req.user.role !== UserRole.SUPER_ADMIN) {
+  if (!isSuperAdminAuth(req.user)) {
     next(new ForbiddenError('Solo super_admin puede acceder a rutas de plataforma'));
     return;
   }

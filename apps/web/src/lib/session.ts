@@ -30,9 +30,20 @@ export function getSession(cookies: AstroCookies): SessionUser | null {
 
   try {
     const payload = jwt.verify(token, secret) as jwt.JwtPayload;
+    const role = payload.role as LoginRole;
+    const roles =
+      Array.isArray(payload.roles) && payload.roles.length > 0
+        ? (payload.roles as LoginRole[])
+        : role
+          ? [role]
+          : [];
+    if (roles.length === 0) {
+      return null;
+    }
     return {
       userId: Number(payload.userId),
-      role: payload.role as LoginRole,
+      role: roles.includes(role) ? role : roles[0]!,
+      roles,
       tenantId: payload.tenantId !== undefined ? Number(payload.tenantId) : null,
     };
   } catch (error) {

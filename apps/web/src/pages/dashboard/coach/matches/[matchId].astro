@@ -2,12 +2,12 @@
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import DashboardShell from '../../../../components/layout/DashboardShell';
 import { getSession } from '../../../../lib/session';
+import { redirectUnlessRole } from '../../../../lib/page-access';
 import { t } from '@velocesport/i18n';
 
 const session = getSession(Astro.cookies);
-if (!session || session.role !== 'coach') {
-  return Astro.redirect('/login');
-}
+const accessDenied = redirectUnlessRole(session, 'coach');
+if (accessDenied) return Astro.redirect(accessDenied);
 
 const matchId = Number(Astro.params.matchId);
 if (!Number.isInteger(matchId) || matchId <= 0) {
@@ -25,6 +25,7 @@ const locale = Astro.locals.locale;
     client:load
     initialLocale={locale}
     role={session.role}
+    roles={session.roles}
     activeNavId="matches"
     contentKey="coach"
     pageTitle={t('dashboard.coach.matches.title', locale)}

@@ -27,7 +27,7 @@ import {
   TableRow,
   ToastProvider,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, auditActionKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { formatAuditDate } from '../../lib/format-audit-date';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
@@ -165,8 +165,8 @@ function AuditLogContent() {
   };
 
   const actionLabel = (action: string) => {
-    const key = `platform.audit.actions.${action}` as const;
-    const label = t(key as never);
+    const key = auditActionKey(action);
+    const label = t(key);
     return label === key ? action.replaceAll('_', ' ') : label;
   };
 

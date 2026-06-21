@@ -32,9 +32,11 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, roleKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
+import { pickPrimaryTenantRole, syncTenantUserRoles } from '../../lib/tenant-roles';
+import { RoleBadgesList, RoleCheckboxGroup } from './RoleFields';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { StatusBadge } from '../platform/StatusBadge';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
@@ -46,14 +48,14 @@ interface UserFormState {
   email: string;
   firstName: string;
   lastName: string;
-  role: TenantManageableRole;
+  selectedRoles: TenantManageableRole[];
 }
 
 const emptyUserForm: UserFormState = {
   email: '',
   firstName: '',
   lastName: '',
-  role: 'coach',
+  selectedRoles: ['coach'],
 };
 
 interface ChildFormState {
@@ -93,7 +95,7 @@ function TenantUsersContent() {
   const [page, setPage] = useState(1);
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [createForm, setCreateForm] = useState<UserFormState>({ ...emptyUserForm, role: 'coach' });
+  const [createForm, setCreateForm] = useState<UserFormState>({ ...emptyUserForm });
   const [createFormError, setCreateFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -132,7 +134,7 @@ function TenantUsersContent() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return users.filter((u) => {
-      if (roleFilter && u.role !== roleFilter) return false;
+      if (roleFilter && !(u.roles ?? [u.role]).includes(roleFilter as TenantManageableRole)) return false;
       if (statusFilter && u.status !== statusFilter) return false;
       if (!term) return true;
       const haystack = `${u.email} ${u.firstName ?? ''} ${u.lastName ?? ''}`.toLowerCase();
@@ -141,7 +143,7 @@ function TenantUsersContent() {
   }, [users, search, roleFilter, statusFilter]);
 
   const openCreate = () => {
-    setCreateForm({ ...emptyUserForm, role: 'coach' });
+    setCreateForm({ ...emptyUserForm });
     setCreateFormError(null);
     setCreateOpen(true);
   };
@@ -149,25 +151,31 @@ function TenantUsersContent() {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setCreateFormError(null);
+    if (createForm.selectedRoles.length === 0) {
+      setCreateFormError(t('tenant.users.lastRoleWarning'));
+      return;
+    }
     setSubmitting(true);
     try {
+      const primaryRole = pickPrimaryTenantRole(createForm.selectedRoles);
       const res = await tenantFetch<CreateTenantUserResponseDto>('users', {
         method: 'POST',
         body: JSON.stringify({
           email: createForm.email.trim(),
-          role: createForm.role,
+          role: primaryRole,
           firstName: createForm.firstName.trim() || null,
           lastName: createForm.lastName.trim() || null,
         }),
       });
+      await syncTenantUserRoles(res.user.id, createForm.selectedRoles);
       if (res.temporaryPassword) {
         setTempCreds({ email: res.user.email, password: res.temporaryPassword });
       }
       showToast({ variant: 'success', message: t('tenant.users.successCreate') });
       setCreateOpen(false);
-      setCreateForm({ ...emptyUserForm, role: 'coach' });
+      setCreateForm({ ...emptyUserForm });
       await load();
-      if (res.user.role === UserRole.PARENT) {
+      if (createForm.selectedRoles.includes(UserRole.PARENT)) {
         await openEdit(res.user.id);
       }
     } catch (err) {
@@ -187,7 +195,7 @@ function TenantUsersContent() {
         email: detail.email,
         firstName: detail.firstName ?? '',
         lastName: detail.lastName ?? '',
-        role: detail.role,
+        selectedRoles: detail.roles?.length ? [...detail.roles] : [detail.role],
       });
       setLinkedPlayers(
         detail.linkedPlayers.map((p) => ({
@@ -209,6 +217,10 @@ function TenantUsersContent() {
     e.preventDefault();
     if (!editingUser) return;
     setFormError(null);
+    if (editForm.selectedRoles.length === 0) {
+      setFormError(t('tenant.users.lastRoleWarning'));
+      return;
+    }
     setSubmitting(true);
     try {
       await tenantFetch<TenantUserDetailDto>(`users/${editingUser.id}`, {
@@ -217,12 +229,12 @@ function TenantUsersContent() {
           email: editForm.email.trim(),
           firstName: editForm.firstName.trim() || null,
           lastName: editForm.lastName.trim() || null,
-          role: editForm.role,
-          ...(editForm.role === UserRole.PARENT
+          ...(editForm.selectedRoles.includes(UserRole.PARENT)
             ? { linkedPlayerIds: linkedPlayers.map((p) => p.id) }
             : {}),
         }),
       });
+      await syncTenantUserRoles(editingUser.id, editForm.selectedRoles);
       showToast({ variant: 'success', message: t('tenant.users.successUpdate') });
       setEditOpen(false);
       setEditingUser(null);
@@ -355,7 +367,7 @@ function TenantUsersContent() {
           { value: '', label: t('tenant.filters.all') },
           ...TENANT_MANAGEABLE_ROLES.map((r) => ({
             value: r,
-            label: t(`roles.${r}` as never),
+            label: t(roleKey(r)),
           })),
         ]}
         resultsLabel={
@@ -379,7 +391,9 @@ function TenantUsersContent() {
               badge={<StatusBadge type="user" status={user.status} />}
             />
             <LabeledValue label={t('tenant.users.email')} value={user.email} />
-            <LabeledValue label={t('tenant.users.role')} value={t(`roles.${user.role}` as never)} />
+            <LabeledValue label={t('tenant.users.role')}>
+              <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
+            </LabeledValue>
             <LabeledValue label={t('tenant.users.lastLogin')} value={formatLastLogin(user.lastLoginAt)} />
             <DataCardFooter>
               <RowActionsMenu {...userActions(user)} />
@@ -403,7 +417,9 @@ function TenantUsersContent() {
                 <TableRow key={user.id}>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{userDisplayName(user)}</TableCell>
-                  <TableCell>{t(`roles.${user.role}` as never)}</TableCell>
+                  <TableCell>
+                    <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
+                  </TableCell>
                   <TableCell>
                     <StatusBadge type="user" status={user.status} />
                   </TableCell>
@@ -470,20 +486,14 @@ function TenantUsersContent() {
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="create-role">{t('tenant.users.role')}</Label>
-            <Select
-              id="create-role"
-              value={createForm.role}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, role: e.target.value as TenantManageableRole }))
-              }
-              options={TENANT_MANAGEABLE_ROLES.map((r) => ({
-                value: r,
-                label: t(`roles.${r}` as never),
-              }))}
-            />
-          </div>
+          <RoleCheckboxGroup
+            idPrefix="create"
+            selected={createForm.selectedRoles}
+            onChange={(selectedRoles) => setCreateForm((f) => ({ ...f, selectedRoles }))}
+            lastRoleHint={
+              createForm.selectedRoles.length === 1 ? t('tenant.users.lastRoleWarning') : null
+            }
+          />
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -517,8 +527,8 @@ function TenantUsersContent() {
               {formError}
             </Alert>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="edit-email">{t('tenant.users.email')}</Label>
               <Input
                 id="edit-email"
@@ -528,21 +538,15 @@ function TenantUsersContent() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-role">{t('tenant.users.role')}</Label>
-              <Select
-                id="edit-role"
-                value={editForm.role}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, role: e.target.value as TenantManageableRole }))
-                }
-                options={TENANT_MANAGEABLE_ROLES.map((r) => ({
-                  value: r,
-                  label: t(`roles.${r}` as never),
-                }))}
-              />
-            </div>
           </div>
+          <RoleCheckboxGroup
+            idPrefix="edit"
+            selected={editForm.selectedRoles}
+            onChange={(selectedRoles) => setEditForm((f) => ({ ...f, selectedRoles }))}
+            lastRoleHint={
+              editForm.selectedRoles.length === 1 ? t('tenant.users.lastRoleWarning') : null
+            }
+          />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="edit-first">{t('tenant.users.firstName')}</Label>
@@ -562,7 +566,7 @@ function TenantUsersContent() {
             </div>
           </div>
 
-          {editForm.role === UserRole.PARENT && editingUser && (
+          {editForm.selectedRoles.includes(UserRole.PARENT) && editingUser && (
             <fieldset className="space-y-3 rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-medium text-text-primary">
                 {t('tenant.users.linkedPlayers')}

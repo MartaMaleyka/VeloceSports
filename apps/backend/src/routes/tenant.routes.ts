@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserRole } from '@velocesport/shared';
 import { tenantController } from '../controllers/tenant.controller.js';
+import { userRoleController } from '../controllers/user-role.controller.js';
 import { academyDashboardController } from '../controllers/academy-dashboard.controller.js';
 import { academySettingsController } from '../controllers/academy-settings.controller.js';
 import { authenticate } from '../middlewares/auth.js';
@@ -36,6 +37,10 @@ import {
   reportExportQuerySchema,
   reportTypeParamSchema,
 } from '../validators/report-export.validator.js';
+import {
+  assignUserRoleBodySchema,
+  userRoleParamSchema,
+} from '../validators/user-role.validator.js';
 
 const router = Router();
 
@@ -72,6 +77,25 @@ router.post(
   '/users',
   validate(createTenantUserBodySchema),
   (req, res, next) => tenantController.createUser(req, res, next),
+);
+
+router.get(
+  '/users/:userId/roles',
+  validate(tenantIdParamSchema, 'params'),
+  (req, res, next) => userRoleController.listTenantUserRoles(req, res, next),
+);
+
+router.post(
+  '/users/:userId/roles',
+  validate(tenantIdParamSchema, 'params'),
+  validate(assignUserRoleBodySchema),
+  (req, res, next) => userRoleController.assignTenantUserRole(req, res, next),
+);
+
+router.delete(
+  '/users/:userId/roles/:role',
+  validate(userRoleParamSchema, 'params'),
+  (req, res, next) => userRoleController.removeTenantUserRole(req, res, next),
 );
 
 router.get(

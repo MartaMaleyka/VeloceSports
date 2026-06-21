@@ -16,6 +16,8 @@ import {
 } from '../types/index.js';
 import { signAccessToken, signRefreshToken } from '../utils/jwt.js';
 import { isProduction } from '../config/env.js';
+import { getUserRoles } from './user-roles.service.js';
+import { assertValidLoginRoleSet } from '../utils/role-check.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -27,6 +29,7 @@ export interface LoginResult {
     email: string;
     role: string;
     tenantId: number | null;
+    roles: string[];
   };
 }
 
@@ -54,20 +57,11 @@ export class AuthService {
       throw new ForbiddenError('Usuario inactivo. Contacta al administrador.');
     }
 
-    if (!LOGIN_ROLES.includes(user.role as (typeof LOGIN_ROLES)[number])) {
-      throw new ForbiddenError('Este rol no tiene acceso al sistema');
-    }
+    const roles = await getUserRoles(user.id);
+    assertValidLoginRoleSet(roles, user.tenant_id);
 
-    if (user.role === UserRole.SUPER_ADMIN) {
-      if (user.tenant_id !== null) {
-        throw new ForbiddenError('Configuración inválida de super_admin');
-      }
-    } else {
-      if (user.tenant_id === null) {
-        throw new ForbiddenError('Usuario sin academia asignada');
-      }
-
-      const academy = await academyRepository.findByIdWithStatus(user.tenant_id);
+    if (!roles.includes(UserRole.SUPER_ADMIN)) {
+      const academy = await academyRepository.findByIdWithStatus(user.tenant_id!);
       if (!academy) {
         throw new ForbiddenError('Academia no encontrada');
       }
@@ -83,11 +77,14 @@ export class AuthService {
 
     await userRepository.updateLastLogin(user.id);
 
-    const tenantId = user.role === UserRole.SUPER_ADMIN ? undefined : user.tenant_id ?? undefined;
+    const tenantId = roles.includes(UserRole.SUPER_ADMIN)
+      ? undefined
+      : user.tenant_id ?? undefined;
 
     const tokenPayload = {
       userId: user.id,
       role: user.role,
+      roles,
       tenantId,
     };
 
@@ -99,6 +96,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         tenantId: user.tenant_id,
+        roles,
       },
     };
   }

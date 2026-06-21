@@ -1,7 +1,7 @@
 import { AcademyStatus, PlanStatus, UserStatus } from '@velocesport/shared';
 import type { AcademySuspensionReason } from '@velocesport/shared';
 import { Badge, type BadgeVariant } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, type TranslationKey } from '@velocesport/i18n';
 
 type StatusType = 'academy' | 'plan' | 'user';
 
@@ -23,7 +23,11 @@ function variantFor(type: StatusType, status: string): BadgeVariant {
   return 'default';
 }
 
-function labelKey(type: StatusType, status: string, suspensionReason?: AcademySuspensionReason | null): string {
+function labelKey(
+  type: StatusType,
+  status: string,
+  suspensionReason?: AcademySuspensionReason | null,
+): TranslationKey {
   if (type === 'plan') {
     return status === PlanStatus.ACTIVE ? 'common.active' : 'common.inactive';
   }
@@ -66,7 +70,7 @@ export function StatusBadge({ type, status, suspensionReason }: StatusBadgeProps
   const { t } = useTranslation();
   return (
     <Badge variant={variantFor(type, status)} icon={<StatusIcon type={type} status={status} />}>
-      {t(labelKey(type, status, suspensionReason) as never)}
+      {t(labelKey(type, status, suspensionReason))}
     </Badge>
   );
 }

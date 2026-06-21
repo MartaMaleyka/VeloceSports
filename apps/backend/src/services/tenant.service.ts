@@ -31,6 +31,8 @@ import { playerRepository, type PlayerWithCategoryRow } from '../repositories/pl
 import { userRepository, type UserRow } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
 import { planLimitService } from './plan-limit.service.js';
+import { userRoleManagementService } from './user-role-management.service.js';
+import { getUserRoles, getTenantManageableRolesForUser } from './user-roles.service.js';
 import {
   ConflictError,
   ForbiddenError,
@@ -59,14 +61,16 @@ function assertManageableRole(role: string): asserts role is TenantUserDto['role
 }
 
 export class TenantUserService {
-  private toDto(user: UserRow): TenantUserDto {
+  private async toDto(user: UserRow): Promise<TenantUserDto> {
     assertManageableRole(user.role);
+    const roles = await getTenantManageableRolesForUser(user.id, user.tenant_id!);
     return {
       id: user.id,
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
       role: user.role,
+      roles: roles.length > 0 ? roles : [user.role],
       status: user.status,
       lastLoginAt: toIso(user.last_login_at),
       createdAt: user.created_at.toISOString(),
@@ -84,8 +88,9 @@ export class TenantUserService {
     if (!user) throw new NotFoundError('Usuario no encontrado');
     assertManageableRole(user.role);
 
+    const userRoles = await getUserRoles(userId);
     let linkedPlayers: TenantLinkedPlayerSummaryDto[] = [];
-    if (user.role === UserRole.PARENT) {
+    if (userRoles.includes(UserRole.PARENT)) {
       const rows = await parentLinkRepository.findLinkedPlayersForParent(tenantId, userId);
       linkedPlayers = rows.map((r) => ({
         id: r.id,
@@ -96,7 +101,8 @@ export class TenantUserService {
       }));
     }
 
-    return { ...this.toDto(user), linkedPlayers };
+    const dto = await this.toDto(user);
+    return { ...dto, linkedPlayers };
   }
 
   async listUsers(
@@ -104,9 +110,13 @@ export class TenantUserService {
     filters?: { search?: string; role?: TenantUserDto['role']; status?: UserStatus },
   ): Promise<TenantUserDto[]> {
     const users = await userRepository.findByTenantId(tenantId, filters);
-    return users
-      .filter((u) => (TENANT_MANAGEABLE_ROLES as readonly string[]).includes(u.role))
-      .map((u) => this.toDto(u));
+    const dtos = await Promise.all(
+      users
+        .filter((u) => (TENANT_MANAGEABLE_ROLES as readonly string[]).includes(u.role))
+        .map((u) => this.toDto(u)),
+    );
+    if (!filters?.role) return dtos;
+    return dtos.filter((u) => u.roles.includes(filters.role!));
   }
 
   async getUsersKpis(tenantId: number): Promise<TenantUsersKpisDto> {
@@ -148,7 +158,7 @@ export class TenantUserService {
 
     await auditService.log(ctx, 'user', userId, 'create', null, { email, role: input.role });
 
-    return { user: this.toDto(user), temporaryPassword };
+    return { user: await this.toDto(user), temporaryPassword };
   }
 
   async updateUser(
@@ -178,13 +188,15 @@ export class TenantUserService {
       email?: string;
       firstName?: string | null;
       lastName?: string | null;
-      role?: UserRole;
     } = {};
 
     if (input.email !== undefined) profileUpdate.email = input.email.toLowerCase().trim();
     if (input.firstName !== undefined) profileUpdate.firstName = input.firstName?.trim() || null;
     if (input.lastName !== undefined) profileUpdate.lastName = input.lastName?.trim() || null;
-    if (input.role !== undefined) profileUpdate.role = input.role;
+
+    if (input.role !== undefined) {
+      await userRoleManagementService.replacePrimaryRole(ctx, tenantId, userId, input.role);
+    }
 
     if (Object.keys(profileUpdate).length > 0) {
       await userRepository.updateProfileInTenant(tenantId, userId, profileUpdate);
@@ -194,7 +206,8 @@ export class TenantUserService {
     if (!afterUser) throw new NotFoundError('Usuario no encontrado');
 
     if (input.linkedPlayerIds !== undefined) {
-      if (afterUser.role !== UserRole.PARENT) {
+      const roles = await getUserRoles(userId);
+      if (!roles.includes(UserRole.PARENT)) {
         throw new ValidationError('Solo los usuarios con rol padre pueden vincular jugadores');
       }
       await this.assertPlayersInTenant(tenantId, input.linkedPlayerIds);
@@ -253,20 +266,18 @@ export class TenantUserService {
       { status: after.status },
     );
 
-    return this.toDto(after);
+    return await this.toDto(after);
   }
 
   async listCoaches(tenantId: number): Promise<TenantCoachOptionDto[]> {
-    const coaches = await userRepository.findByTenantId(tenantId, {
-      role: UserRole.COACH,
+    const coaches = await userRepository.findByTenantIdHavingRole(tenantId, UserRole.COACH, {
       status: UserStatus.ACTIVE,
     });
     return coaches.map((c) => ({ id: c.id, email: c.email }));
   }
 
   async listParents(tenantId: number): Promise<TenantParentOptionDto[]> {
-    const parents = await userRepository.findByTenantId(tenantId, {
-      role: UserRole.PARENT,
+    const parents = await userRepository.findByTenantIdHavingRole(tenantId, UserRole.PARENT, {
       status: UserStatus.ACTIVE,
     });
     return parents.map((p) => ({ id: p.id, email: p.email }));

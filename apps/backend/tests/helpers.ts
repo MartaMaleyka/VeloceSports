@@ -3,6 +3,7 @@ import { type ResultSetHeader } from 'mysql2/promise';
 import { UserRole } from '@velocesport/shared';
 import { closePool, getPool } from '../src/config/db.js';
 import { runAllMigrations } from './migration-helper.js';
+import { userRoleRepository } from '../src/repositories/user-role.repository.js';
 
 export interface TestSeed {
   planId: number;
@@ -36,6 +37,7 @@ export async function cleanDatabase(): Promise<void> {
   await pool.query('TRUNCATE TABLE coach_categories');
   await pool.query('TRUNCATE TABLE players');
   await pool.query('TRUNCATE TABLE categories');
+  await pool.query('TRUNCATE TABLE user_roles');
   await pool.query('TRUNCATE TABLE users');
   await pool.query('TRUNCATE TABLE academies');
   await pool.query('TRUNCATE TABLE plans');
@@ -100,6 +102,8 @@ export async function seedTestData(): Promise<TestSeed> {
     ['admin-suspended@test.com', suspendedHash, UserRole.ACADEMY_ADMIN, academySuspendedId, 'active'],
   );
   const suspendedAdminId = suspendedAdminResult.insertId;
+
+  await userRoleRepository.backfillFromUsers();
 
   seed = {
     planId,

@@ -293,5 +293,22 @@ describe('Tenant management API (academy_admin)', () => {
       expect(ids).toContain(coachAId);
       expect(ids).not.toContain(coachBId);
     });
+
+    it('selector de coaches incluye usuarios multi-rol con rol coach', async () => {
+      const pool = getPool();
+      await pool.execute(
+        `INSERT INTO user_roles (user_id, role, tenant_id) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE tenant_id = VALUES(tenant_id)`,
+        [seed.adminAId, UserRole.COACH, seed.academyAId],
+      );
+
+      const res = await request(app)
+        .get('/api/tenant/lookups/coaches')
+        .set('Authorization', `Bearer ${adminAToken}`)
+        .expect(200);
+
+      const ids = (res.body.data as Array<{ id: number }>).map((c) => c.id);
+      expect(ids).toContain(seed.adminAId);
+    });
   });
 });

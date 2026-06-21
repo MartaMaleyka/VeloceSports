@@ -50,6 +50,7 @@ export const es = {
     academy_admin: 'Administrador de academia',
     coach: 'Entrenador',
     parent: 'Padre / acudiente',
+    player: 'Jugador',
   },
   nav: {
     home: 'Inicio',
@@ -410,6 +411,7 @@ export const es = {
   dashboard: {
     superAdmin: {
       greeting: 'Hola, {role}',
+      greetingMulti: 'Panel unificado ({roles})',
       description: 'Panel de super administrador de la plataforma.',
       welcome: 'Bienvenido al panel de plataforma. Aquí gestionarás academias, planes y métricas globales.',
       home: {
@@ -459,6 +461,7 @@ export const es = {
     },
     academyAdmin: {
       greeting: 'Hola, {role}',
+      greetingMulti: 'Panel unificado ({roles})',
       description: 'Panel de administración de tu academia.',
       welcome:
         'Bienvenido al panel de academia. Desde aquí gestionarás jugadores, categorías, entrenadores y partidos.',
@@ -540,6 +543,7 @@ export const es = {
     },
     coach: {
       greeting: 'Hola, {role}',
+      greetingMulti: 'Panel unificado ({roles})',
       description: 'Panel de operación en cancha y categorías asignadas.',
       welcome:
         'Bienvenido, entrenador. Aquí capturarás acciones en vivo y gestionarás tus categorías.',
@@ -550,6 +554,7 @@ export const es = {
     },
     parent: {
       greeting: 'Hola, {role}',
+      greetingMulti: 'Panel unificado ({roles})',
       description: 'Consulta reportes y notificaciones de tus hijos vinculados.',
       welcome:
         'Bienvenido. Aquí verás reportes y notificaciones de los jugadores vinculados a tu perfil.',
@@ -616,6 +621,10 @@ export const es = {
       firstName: 'Nombre',
       lastName: 'Apellido',
       role: 'Rol',
+      rolesLabel: 'Roles',
+      rolesHint: 'Selecciona uno o más roles. El usuario accederá a las secciones de todos ellos.',
+      primaryRole: 'principal',
+      lastRoleWarning: 'Debes dejar al menos un rol. Para quitar el acceso, desactiva al usuario.',
       status: 'Estado',
       lastLogin: 'Último acceso',
       lastLoginNever: 'Nunca',
@@ -852,7 +861,9 @@ export const es = {
     currentPlan: 'Plan actual',
     academyStatus: 'Estado de la academia',
     billingAnchorDay: 'Día de corte de facturación',
+    billingAnchorDayValue: 'Día {day} de cada mes',
     nextPeriodEnd: 'Fin del próximo periodo',
+    notAvailable: 'No disponible',
     billingStatus: 'Estado de facturación',
     slug: 'Identificador (slug)',
     playersLimit: 'Jugadores activos',

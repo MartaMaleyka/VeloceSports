@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { platformController } from '../controllers/platform.controller.js';
+import { userRoleController } from '../controllers/user-role.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireSuperAdmin } from '../middlewares/platformGuard.js';
 import { validate } from '../middlewares/validate.js';
@@ -31,6 +32,12 @@ import {
   auditLogKpisQuerySchema,
   listAuditLogQuerySchema,
 } from '../validators/audit.validator.js';
+import {
+  assignUserRoleBodySchema,
+  platformAcademyUserRoleDeleteParamsSchema,
+  platformAcademyUserRoleParamsSchema,
+  superAdminUserIdParamSchema,
+} from '../validators/user-role.validator.js';
 
 const router = Router();
 
@@ -79,6 +86,26 @@ router.get(
 router.post('/academies/:academyId/users', validate(createAcademyUserSchema), (req, res, next) =>
   platformController.createAcademyUser(req, res, next),
 );
+
+router.get(
+  '/academies/:academyId/users/:userId/roles',
+  validate(platformAcademyUserRoleParamsSchema, 'params'),
+  (req, res, next) => userRoleController.listPlatformAcademyUserRoles(req, res, next),
+);
+
+router.post(
+  '/academies/:academyId/users/:userId/roles',
+  validate(platformAcademyUserRoleParamsSchema, 'params'),
+  validate(assignUserRoleBodySchema),
+  (req, res, next) => userRoleController.assignPlatformAcademyUserRole(req, res, next),
+);
+
+router.delete(
+  '/academies/:academyId/users/:userId/roles/:role',
+  validate(platformAcademyUserRoleDeleteParamsSchema, 'params'),
+  (req, res, next) => userRoleController.removePlatformAcademyUserRole(req, res, next),
+);
+
 router.patch(
   '/academies/:academyId/users/:userId/status',
   validate(updateUserStatusSchema),
@@ -86,6 +113,13 @@ router.patch(
 );
 
 router.get('/super-admins', (req, res, next) => platformController.listSuperAdmins(req, res, next));
+
+router.get(
+  '/super-admins/:userId/roles',
+  validate(superAdminUserIdParamSchema, 'params'),
+  (req, res, next) => userRoleController.listSuperAdminRoles(req, res, next),
+);
+
 router.post('/super-admins', validate(createSuperAdminSchema), (req, res, next) =>
   platformController.createSuperAdmin(req, res, next),
 );

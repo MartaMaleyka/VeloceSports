@@ -13,7 +13,7 @@ import {
   sectionQuickLinkClasses,
   type SectionAccentId,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, academyAdminHomeBillingStatusKey } from '@velocesport/i18n';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
 import { AcademyDashboardChart } from './AcademyDashboardChart';
 
@@ -317,7 +317,7 @@ function AcademyAdminHomeContent() {
                     : 'success'
               }
             >
-              {t(`dashboard.academyAdmin.home.billingStatuses.${data.billing.academyBillingStatus}` as never)}
+              {t(academyAdminHomeBillingStatusKey(data.billing.academyBillingStatus))}
             </Badge>
           </LabeledValue>
           {data.billing.hasOverdueInvoice && (

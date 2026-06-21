@@ -11,3 +11,4 @@ export * from './match.js';
 export * from './academy-dashboard.js';
 export * from './academy-settings.js';
 export * from './tenant-reports.js';
+export * from './user-role.js';

@@ -29,7 +29,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
@@ -89,14 +89,14 @@ function MatchStatusBadge({ status }: { status: string }) {
       <span aria-hidden="true" className="mr-1">
         {icon}
       </span>
-      {t(`matches.status.${status}` as never)}
+      {t(matchStatusKey(status))}
     </Badge>
   );
 }
 
 function MatchTypeBadge({ type }: { type: string }) {
   const { t } = useTranslation();
-  return <Badge variant="default">{t(`matches.type.${type}` as never)}</Badge>;
+  return <Badge variant="default">{t(matchTypeKey(type))}</Badge>;
 }
 
 function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
@@ -315,7 +315,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
 
   const typeOptions = MATCH_TYPES.map((mt) => ({
     value: mt,
-    label: t(`matches.type.${mt}` as never),
+    label: t(matchTypeKey(mt)),
   }));
 
   const kpiHeader = kpis ? (
@@ -360,7 +360,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         statusFilterLabel={t('matches.filterStatus')}
         statusFilterOptions={[
           { value: '', label: t('tenant.filters.all') },
-          ...MATCH_STATUSES.map((s) => ({ value: s, label: t(`matches.status.${s}` as never) })),
+          ...MATCH_STATUSES.map((s) => ({ value: s, label: t(matchStatusKey(s)) })),
         ]}
         secondaryFilter={categoryFilter}
         onSecondaryFilterChange={setCategoryFilter}

@@ -9,7 +9,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 
 type DetailTab = 'overview' | 'attendance' | 'capture';
@@ -143,9 +143,9 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
             <p className="text-sm text-text-secondary">{match.categoryName}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="default">{t(`matches.type.${match.matchType}` as never)}</Badge>
+            <Badge variant="default">{t(matchTypeKey(match.matchType))}</Badge>
             <Badge variant={match.status === MatchStatus.IN_PROGRESS ? 'success' : 'info'}>
-              {t(`matches.status.${match.status}` as never)}
+              {t(matchStatusKey(match.status))}
             </Badge>
           </div>
         </div>

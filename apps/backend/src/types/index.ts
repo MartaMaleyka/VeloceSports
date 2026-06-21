@@ -2,13 +2,17 @@ import type { UserRole } from '@velocesport/shared';
 
 export interface JwtPayload {
   userId: number;
+  /** Rol principal (legacy) — convive con roles durante la migración. */
   role: UserRole;
+  /** Roles efectivos del usuario (permisos unificados). */
+  roles: UserRole[];
   tenantId?: number;
 }
 
 export interface AuthUser {
   userId: number;
   role: UserRole;
+  roles: UserRole[];
   tenantId: number | null;
 }
 

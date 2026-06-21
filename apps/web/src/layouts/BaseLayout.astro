@@ -19,7 +19,7 @@ const pageTitle = title ?? t('common.appName', locale);
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="light">
+<html lang={locale} data-theme="light" class="min-h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,7 +28,7 @@ const pageTitle = title ?? t('common.appName', locale);
     <script is:inline set:html={preferencesInit} />
     <title>{pageTitle}</title>
   </head>
-  <body>
+  <body class="min-h-full">
     <slot />
   </body>
 </html>

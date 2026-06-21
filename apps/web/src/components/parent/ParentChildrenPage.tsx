@@ -21,7 +21,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
@@ -39,7 +39,7 @@ function ChildStatusBadge({ player }: { player: PlayerDto }) {
   if (player.status === PlayerStatus.ACTIVE) {
     return <Badge variant="success">{t('parent.children.status.active')}</Badge>;
   }
-  return <Badge variant="default">{t(`tenant.players.status.${player.status}` as never)}</Badge>;
+  return <Badge variant="default">{t(tenantPlayerStatusKey(player.status))}</Badge>;
 }
 
 interface ChildFormState {

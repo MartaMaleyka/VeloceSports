@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Button, Modal } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, type TranslationKey } from '@velocesport/i18n';
 
 interface TemporaryPasswordModalProps {
   open: boolean;
   onClose: () => void;
   email: string;
   password: string;
-  titleKey: string;
-  descriptionKey: string;
-  emailLabelKey?: string;
+  titleKey: TranslationKey;
+  descriptionKey: TranslationKey;
+  emailLabelKey?: TranslationKey;
 }
 
 export function TemporaryPasswordModal({
@@ -38,8 +38,8 @@ export function TemporaryPasswordModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={t(titleKey as never)}
-      description={t(descriptionKey as never)}
+      title={t(titleKey)}
+      description={t(descriptionKey)}
       footer={
         <Button type="button" onClick={onClose}>
           {t('platform.academies.tempPassword.dismiss')}
@@ -48,7 +48,7 @@ export function TemporaryPasswordModal({
     >
       <dl className="space-y-4 text-sm">
         <div>
-          <dt className="font-medium text-text-muted">{t(emailLabelKey as never)}</dt>
+          <dt className="font-medium text-text-muted">{t(emailLabelKey)}</dt>
           <dd className="mt-1 text-text-primary">{email}</dd>
         </div>
         <div>

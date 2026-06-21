@@ -26,7 +26,7 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
-import { RoleBadge } from './RoleBadge';
+import { RoleBadgesList } from '../academy/RoleFields';
 import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './ReactivateAcademyModal';
 import { RowActionsMenu } from './RowActionsMenu';
 import { StatusBadge } from './StatusBadge';
@@ -74,7 +74,9 @@ function compareUsers(
   if (key === 'email') {
     cmp = a.email.localeCompare(b.email, undefined, { sensitivity: 'base' });
   } else if (key === 'role') {
-    cmp = a.role.localeCompare(b.role);
+    const roleA = (a.roles ?? [a.role]).join(',');
+    const roleB = (b.roles ?? [b.role]).join(',');
+    cmp = roleA.localeCompare(roleB);
   } else {
     cmp = a.status.localeCompare(b.status);
   }
@@ -136,9 +138,11 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
   const atUserLimit = planLimit !== null && academy !== null && academy.userCount >= planLimit;
 
   const userKpis = useMemo(() => {
-    const admins = users.filter((u) => u.role === UserRole.ACADEMY_ADMIN).length;
-    const coaches = users.filter((u) => u.role === UserRole.COACH).length;
-    const parents = users.filter((u) => u.role === UserRole.PARENT).length;
+    const hasRole = (u: PlatformUserDto, role: UserRole) =>
+      (u.roles ?? [u.role]).includes(role);
+    const admins = users.filter((u) => hasRole(u, UserRole.ACADEMY_ADMIN)).length;
+    const coaches = users.filter((u) => hasRole(u, UserRole.COACH)).length;
+    const parents = users.filter((u) => hasRole(u, UserRole.PARENT)).length;
     return { total: users.length, admins, coaches, parents };
   }, [users]);
 
@@ -235,7 +239,7 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
       <DataCardHeader title={user.email} />
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <LabeledValue label={t('platform.academies.users.columns.role')}>
-          <RoleBadge role={user.role} />
+          <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
         </LabeledValue>
         <LabeledValue label={t('platform.academies.users.columns.status')}>
           <StatusBadge type="user" status={user.status} />
@@ -291,7 +295,7 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
           <TableRow key={user.id}>
             <TableCell>{user.email}</TableCell>
             <TableCell>
-              <RoleBadge role={user.role} />
+              <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
             </TableCell>
             <TableCell>
               <StatusBadge type="user" status={user.status} />

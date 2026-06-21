@@ -17,7 +17,7 @@ import {
   TableRow,
   ToastProvider,
 } from '@velocesport/design-system';
-import { useTranslation } from '@velocesport/i18n';
+import { useTranslation, platformBillingAcademyStatusKey } from '@velocesport/i18n';
 import { billingFetch, billingFetchList, BillingApiError } from '../../lib/billing-api';
 import { downloadBillingInvoicePdf } from '../../lib/download-pdf';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
@@ -173,7 +173,7 @@ function AcademyBillingContent() {
         />
         <StatCard
           icon={<span aria-hidden="true">💳</span>}
-          value={t(`platform.billing.academyStatus.${summary.academyBillingStatus}` as never)}
+          value={t(platformBillingAcademyStatusKey(summary.academyBillingStatus))}
           label={t('platform.billing.summary.billingStatus')}
           variant={
             summary.academyBillingStatus === AcademyBillingStatus.OVERDUE
