@@ -310,5 +310,15 @@ describe('Tenant management API (academy_admin)', () => {
       const ids = (res.body.data as Array<{ id: number }>).map((c) => c.id);
       expect(ids).toContain(seed.adminAId);
     });
+
+    it('asigna usuario multi-rol admin+coach como entrenador de categoría', async () => {
+      const res = await request(app)
+        .patch(`/api/tenant/categories/${category2Id}`)
+        .set('Authorization', `Bearer ${adminAToken}`)
+        .send({ coachUserId: seed.adminAId })
+        .expect(200);
+
+      expect(res.body.data.coach?.id).toBe(seed.adminAId);
+    });
   });
 });

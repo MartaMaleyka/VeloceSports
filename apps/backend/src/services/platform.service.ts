@@ -22,6 +22,7 @@ import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
+import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
 import { invoiceService } from './invoice.service.js';
 import { resolveAnchoredBillingPeriod } from './billing-period.service.js';
 import { getUserRoles, getTenantManageableRolesForUser } from './user-roles.service.js';
@@ -126,6 +127,8 @@ export class PlatformService {
         },
         conn,
       );
+
+      await seedBaseActionCatalogForTenant(academyId, conn);
 
       await conn.commit();
 

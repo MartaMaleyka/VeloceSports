@@ -124,6 +124,7 @@ export function sectionAccentFromNavId(navId: string): SectionAccentId {
     categories: 'academies',
     players: 'plans',
     matches: 'matches',
+    actions: 'matches',
     children: 'users',
     'super-admins': 'super-admins',
     audit: 'audit',

@@ -4,6 +4,7 @@ import AcademyAdminHomePage from '../components/academy/AcademyAdminHomePage';
 import AcademySettingsPage from '../components/academy/AcademySettingsPage';
 import AcademyReportsPage from '../components/academy/AcademyReportsPage';
 import TenantUsersPage from '../components/academy/TenantUsersPage';
+import ActionCatalogPage from '../components/academy/ActionCatalogPage';
 import TenantCategoriesPage from '../components/academy/TenantCategoriesPage';
 import TenantPlayersPage from '../components/academy/TenantPlayersPage';
 import TenantMatchesPage from '../components/matches/TenantMatchesPage';
@@ -14,6 +15,7 @@ export const academyPages = {
   billing: AcademyBillingPage,
   users: TenantUsersPage,
   categories: TenantCategoriesPage,
+  actions: ActionCatalogPage,
   players: TenantPlayersPage,
   matches: TenantMatchesPage,
   matchDetail: MatchDetailPage,

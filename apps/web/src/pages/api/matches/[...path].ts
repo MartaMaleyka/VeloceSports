@@ -18,6 +18,10 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   return handleProxy(request, cookies, params.path, 'PATCH');
 };
 
+export const PUT: APIRoute = async ({ params, request, cookies }) => {
+  return handleProxy(request, cookies, params.path, 'PUT');
+};
+
 async function handleProxy(
   request: Request,
   cookies: Parameters<typeof getSession>[0],

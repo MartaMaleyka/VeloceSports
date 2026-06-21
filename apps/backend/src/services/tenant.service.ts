@@ -32,7 +32,7 @@ import { userRepository, type UserRow } from '../repositories/user.repository.js
 import { auditService } from './audit.service.js';
 import { planLimitService } from './plan-limit.service.js';
 import { userRoleManagementService } from './user-role-management.service.js';
-import { getUserRoles, getTenantManageableRolesForUser } from './user-roles.service.js';
+import { getUserRoles, getTenantManageableRolesForUser, userHasRoleInTenant } from './user-roles.service.js';
 import {
   ConflictError,
   ForbiddenError,
@@ -311,7 +311,12 @@ export class TenantUserService {
 
   protected async assertCoachInTenant(tenantId: number, coachUserId: number): Promise<void> {
     const coach = await userRepository.findById(tenantId, coachUserId);
-    if (!coach || coach.role !== UserRole.COACH) {
+    if (!coach) {
+      throw new ValidationError('El entrenador seleccionado no pertenece a esta academia');
+    }
+
+    const hasCoachRole = await userHasRoleInTenant(coachUserId, UserRole.COACH, tenantId);
+    if (!hasCoachRole) {
       throw new ValidationError('El entrenador seleccionado no pertenece a esta academia');
     }
   }

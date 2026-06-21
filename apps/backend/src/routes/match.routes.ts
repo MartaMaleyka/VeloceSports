@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { UserRole } from '@velocesport/shared';
 import { matchController } from '../controllers/match.controller.js';
+import { matchAttendanceController } from '../controllers/match-attendance.controller.js';
+import { actionCatalogController } from '../controllers/action-catalog.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/rbac.js';
 import { tenant } from '../middlewares/tenant.js';
@@ -12,6 +14,7 @@ import {
   updateMatchBodySchema,
   updateMatchStatusBodySchema,
 } from '../validators/match.validator.js';
+import { saveMatchAttendanceBodySchema } from '../validators/match-attendance.validator.js';
 
 const router = Router();
 
@@ -21,10 +24,27 @@ router.get('/categories', (req, res, next) => matchController.listCategories(req
 
 router.get('/kpis', (req, res, next) => matchController.getKpis(req, res, next));
 
+router.get('/action-catalog/active', (req, res, next) =>
+  actionCatalogController.listActiveActions(req, res, next),
+);
+
 router.get(
   '/',
   validate(listMatchesQuerySchema, 'query'),
   (req, res, next) => matchController.listMatches(req, res, next),
+);
+
+router.get(
+  '/:matchId/attendance',
+  validate(matchIdParamSchema, 'params'),
+  (req, res, next) => matchAttendanceController.getAttendance(req, res, next),
+);
+
+router.put(
+  '/:matchId/attendance',
+  validate(matchIdParamSchema, 'params'),
+  validate(saveMatchAttendanceBodySchema),
+  (req, res, next) => matchAttendanceController.saveAttendance(req, res, next),
 );
 
 router.get(

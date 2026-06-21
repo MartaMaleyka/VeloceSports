@@ -33,6 +33,9 @@ export async function cleanDatabase(): Promise<void> {
   await pool.query('TRUNCATE TABLE audit_log');
   await pool.query('TRUNCATE TABLE invoices');
   await pool.query('TRUNCATE TABLE parent_players');
+  await pool.query('TRUNCATE TABLE game_actions');
+  await pool.query('TRUNCATE TABLE action_catalog');
+  await pool.query('TRUNCATE TABLE match_attendance');
   await pool.query('TRUNCATE TABLE matches');
   await pool.query('TRUNCATE TABLE coach_categories');
   await pool.query('TRUNCATE TABLE players');
@@ -104,6 +107,13 @@ export async function seedTestData(): Promise<TestSeed> {
   const suspendedAdminId = suspendedAdminResult.insertId;
 
   await userRoleRepository.backfillFromUsers();
+
+  const { seedBaseActionCatalogForTenant } = await import(
+    '../src/services/action-catalog-seed.service.js'
+  );
+  await seedBaseActionCatalogForTenant(academyAId);
+  await seedBaseActionCatalogForTenant(academyBId);
+  await seedBaseActionCatalogForTenant(academySuspendedId);
 
   seed = {
     planId,

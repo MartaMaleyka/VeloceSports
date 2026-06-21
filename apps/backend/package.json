@@ -12,6 +12,7 @@
     "db:migrate": "tsx src/scripts/run-migration.ts",
     "db:repair": "tsx src/scripts/repair-schema.ts",
     "db:seed": "tsx src/scripts/seed.ts",
+    "db:backfill-action-catalog": "tsx src/scripts/backfill-action-catalog.ts",
     "billing:process-overdue": "tsx src/scripts/process-overdue-invoices.ts"
   },
   "dependencies": {

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter @velocesport/i18n build",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",

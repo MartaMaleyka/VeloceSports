@@ -79,6 +79,12 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
         sectionAccent: 'matches',
       },
       {
+        id: 'actions',
+        href: '/dashboard/academy-admin/actions',
+        label: t('nav.actions', locale),
+        sectionAccent: 'matches',
+      },
+      {
         id: 'reports',
         href: '/dashboard/academy-admin/reports',
         label: t('nav.reports', locale),

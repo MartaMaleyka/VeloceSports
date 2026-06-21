@@ -8,6 +8,8 @@ export * from './metrics.js';
 export * from './platform-metrics.js';
 export * from './tenant.js';
 export * from './match.js';
+export * from './match-attendance.js';
+export * from './action-catalog.js';
 export * from './academy-dashboard.js';
 export * from './academy-settings.js';
 export * from './tenant-reports.js';

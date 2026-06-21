@@ -11,6 +11,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
+import MatchAttendancePanel from './MatchAttendancePanel';
 
 type DetailTab = 'overview' | 'attendance' | 'capture';
 
@@ -102,9 +103,12 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
 
   const tabs: Array<{ id: DetailTab; label: string; disabled?: boolean }> = [
     { id: 'overview', label: t('matches.tabs.overview') },
-    { id: 'attendance', label: t('matches.tabs.attendance'), disabled: true },
+    { id: 'attendance', label: t('matches.tabs.attendance') },
     { id: 'capture', label: t('matches.tabs.capture'), disabled: true },
   ];
+
+  const matchLocked =
+    match.status === MatchStatus.FINISHED || match.status === MatchStatus.CANCELLED;
 
   return (
     <div className="space-y-6">
@@ -199,7 +203,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
         )}
 
         {activeTab === 'attendance' && (
-          <p className="text-text-secondary">{t('matches.tabs.attendanceHint')}</p>
+          <MatchAttendancePanel key={match.id} matchId={match.id} matchLocked={matchLocked} />
         )}
 
         {activeTab === 'capture' && (
