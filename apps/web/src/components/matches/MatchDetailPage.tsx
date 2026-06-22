@@ -13,8 +13,9 @@ import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n'
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 import MatchAttendancePanel from './MatchAttendancePanel';
 import MatchCapturePanel from './MatchCapturePanel';
+import { MatchObservationsTab } from './MatchObservationsTab';
 
-type DetailTab = 'overview' | 'attendance' | 'capture';
+type DetailTab = 'overview' | 'attendance' | 'capture' | 'observations';
 
 interface MatchDetailPageProps {
   matchId: number;
@@ -155,6 +156,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
       label: t('matches.tabs.capture'),
       disabled: captureAllowed === false,
     },
+    { id: 'observations', label: t('matches.tabs.observations') },
   ];
 
   const matchLocked =
@@ -279,6 +281,10 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
             match={match}
             onMatchUpdated={() => void load()}
           />
+        )}
+
+        {activeTab === 'observations' && (
+          <MatchObservationsTab key={match.id} matchId={match.id} />
         )}
       </div>
     </div>

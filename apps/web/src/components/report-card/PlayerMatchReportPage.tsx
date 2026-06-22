@@ -9,6 +9,7 @@ import {
   ParentApiError,
 } from '../../lib/report-card-api';
 import PlayerMatchReportCardView from './PlayerMatchReportCardView';
+import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 import { resolveNumericRouteId } from '../../lib/route-params';
 
 export interface PlayerMatchReportPageProps {
@@ -87,6 +88,21 @@ function PlayerMatchReportContent({
         ← {t('reportCard.back')}
       </Button>
       <PlayerMatchReportCardView data={data} />
+      {apiMode === 'parent' ? (
+        <PlayerObservationsPanel
+          mode="parent"
+          playerId={playerId}
+          matchId={matchId}
+          parentReportBasePath={`/dashboard/parent/children/${playerId}/matches`}
+        />
+      ) : (
+        <PlayerObservationsPanel
+          mode="coach"
+          playerId={playerId}
+          matchId={matchId}
+          defaultMatchId={matchId}
+        />
+      )}
     </div>
   );
 }

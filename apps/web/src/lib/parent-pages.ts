@@ -2,6 +2,7 @@ import { lazy, type ComponentType } from 'react';
 import ParentChildrenPage from '../components/parent/ParentChildrenPage';
 import ParentChildMatchesPage from '../components/parent/ParentChildMatchesPage';
 import ParentHomePage from '../components/parent/ParentHomePage';
+import ParentCalendarPage from '../components/parent/ParentCalendarPage';
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),
@@ -9,6 +10,7 @@ const PlayerMatchReportPage = lazy(
 
 export const parentPages = {
   home: ParentHomePage,
+  calendar: ParentCalendarPage,
   children: ParentChildrenPage,
   childMatches: ParentChildMatchesPage,
   matchReportCard: PlayerMatchReportPage as ComponentType<Record<string, unknown>>,

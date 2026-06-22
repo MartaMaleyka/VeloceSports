@@ -17,6 +17,10 @@ import {
   parentDashboardQuerySchema,
 } from '../validators/parent-dashboard.validator.js';
 import { parentDashboardController } from '../controllers/parent-dashboard.controller.js';
+import { playerObservationController } from '../controllers/player-observation.controller.js';
+import { parentListObservationsParamsSchema } from '../validators/player-observation.validator.js';
+import { parentMatchCalendarController } from '../controllers/parent-match-calendar.controller.js';
+import { parentMatchCalendarQuerySchema } from '../validators/parent-match-calendar.validator.js';
 
 const router = Router();
 
@@ -46,10 +50,22 @@ router.patch(
 router.get('/categories', (req, res, next) => parentController.listCategories(req, res, next));
 
 router.get(
+  '/matches/calendar',
+  validate(parentMatchCalendarQuerySchema, 'query'),
+  (req, res, next) => parentMatchCalendarController.getCalendar(req, res, next),
+);
+
+router.get(
   '/children/:playerId/dashboard',
   validate(parentDashboardParamsSchema, 'params'),
   validate(parentDashboardQuerySchema, 'query'),
   (req, res, next) => parentDashboardController.getChildDashboard(req, res, next),
+);
+
+router.get(
+  '/children/:playerId/observations',
+  validate(parentListObservationsParamsSchema, 'params'),
+  (req, res, next) => playerObservationController.listForParent(req, res, next),
 );
 
 router.get(

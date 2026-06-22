@@ -115,6 +115,12 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
     return [
       { id: 'home', href: '/dashboard/parent', label: t('nav.home', locale), sectionAccent: 'brand' },
       {
+        id: 'calendar',
+        href: '/dashboard/parent/calendar',
+        label: t('nav.parentCalendar', locale),
+        sectionAccent: 'matches',
+      },
+      {
         id: 'children',
         href: '/dashboard/parent/children',
         label: t('nav.children', locale),

@@ -34,6 +34,7 @@ export async function cleanDatabase(): Promise<void> {
   await pool.query('TRUNCATE TABLE invoices');
   await pool.query('TRUNCATE TABLE parent_players');
   await pool.query('TRUNCATE TABLE game_actions');
+  await pool.query('TRUNCATE TABLE player_observations');
   await pool.query('TRUNCATE TABLE action_catalog');
   await pool.query('TRUNCATE TABLE match_attendance');
   await pool.query('TRUNCATE TABLE matches');

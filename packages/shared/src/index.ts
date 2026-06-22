@@ -15,6 +15,8 @@ export * from './game-actions.js';
 export * from './performance-dimensions.js';
 export * from './player-match-report.js';
 export * from './parent-player-dashboard.js';
+export * from './parent-match-calendar.js';
+export * from './player-observations.js';
 export * from './academy-dashboard.js';
 export * from './academy-settings.js';
 export * from './tenant-reports.js';

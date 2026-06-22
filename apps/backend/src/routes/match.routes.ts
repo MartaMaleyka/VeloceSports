@@ -23,6 +23,14 @@ import {
 } from '../validators/game-action.validator.js';
 import { matchPlayerReportParamsSchema } from '../validators/player-match-report.validator.js';
 import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
+import { playerObservationController } from '../controllers/player-observation.controller.js';
+import {
+  createPlayerObservationBodySchema,
+  listPlayerObservationsQuerySchema,
+  playerObservationIdParamSchema,
+  playerObservationPlayerParamSchema,
+  updatePlayerObservationBodySchema,
+} from '../validators/player-observation.validator.js';
 import { requireDevelopment } from '../middlewares/require-development.js';
 
 const router = Router();
@@ -32,6 +40,33 @@ router.use(authenticate, tenant, requireRole(UserRole.ACADEMY_ADMIN, UserRole.CO
 router.get('/categories', (req, res, next) => matchController.listCategories(req, res, next));
 
 router.get('/kpis', (req, res, next) => matchController.getKpis(req, res, next));
+
+router.get(
+  '/players/:playerId/observations',
+  validate(playerObservationPlayerParamSchema, 'params'),
+  validate(listPlayerObservationsQuerySchema, 'query'),
+  (req, res, next) => playerObservationController.listForCoach(req, res, next),
+);
+
+router.post(
+  '/players/:playerId/observations',
+  validate(playerObservationPlayerParamSchema, 'params'),
+  validate(createPlayerObservationBodySchema),
+  (req, res, next) => playerObservationController.create(req, res, next),
+);
+
+router.patch(
+  '/player-observations/:observationId',
+  validate(playerObservationIdParamSchema, 'params'),
+  validate(updatePlayerObservationBodySchema),
+  (req, res, next) => playerObservationController.update(req, res, next),
+);
+
+router.delete(
+  '/player-observations/:observationId',
+  validate(playerObservationIdParamSchema, 'params'),
+  (req, res, next) => playerObservationController.delete(req, res, next),
+);
 
 router.get('/action-catalog/active', (req, res, next) =>
   actionCatalogController.listActiveActions(req, res, next),

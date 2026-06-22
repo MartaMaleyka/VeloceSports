@@ -19,6 +19,7 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
 import { ParentDashboardChart } from './ParentDashboardChart';
+import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 
 function formatMonthLabel(monthKey: string, locale: string): string {
   const [year, month] = monthKey.split('-').map(Number);
@@ -240,6 +241,12 @@ function ChildDashboardContent({
       )}
 
       <ParentDashboardChart timeline={data.timeline} formatMonth={formatMonth} />
+
+      <PlayerObservationsPanel
+        mode="parent"
+        playerId={playerId}
+        parentReportBasePath={`/dashboard/parent/children/${playerId}/matches`}
+      />
 
       <PivotTable
         title={t('parentDashboard.byMatchTitle')}
