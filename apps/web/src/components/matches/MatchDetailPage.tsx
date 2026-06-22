@@ -264,7 +264,12 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
         )}
 
         {activeTab === 'attendance' && (
-          <MatchAttendancePanel key={match.id} matchId={match.id} matchLocked={matchLocked} />
+          <MatchAttendancePanel
+            key={match.id}
+            matchId={match.id}
+            matchLocked={matchLocked}
+            reportCardListPath={listPath}
+          />
         )}
 
         {activeTab === 'capture' && captureAllowed && (

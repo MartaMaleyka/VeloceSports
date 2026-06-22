@@ -223,13 +223,28 @@ function ParentChildrenContent() {
             {statusMessage(child) && (
               <p className="text-sm text-text-secondary">{statusMessage(child)}</p>
             )}
-            {canEdit(child) && (
+            {(canEdit(child) || child.status === PlayerStatus.ACTIVE) && (
               <DataCardFooter>
-                <RowActionsMenu
-                  primaryActions={[
-                    { id: 'edit', label: t('common.edit'), onClick: () => openEdit(child) },
-                  ]}
-                />
+                <div className="flex flex-wrap gap-2">
+                  {canEdit(child) && (
+                    <RowActionsMenu
+                      primaryActions={[
+                        { id: 'edit', label: t('common.edit'), onClick: () => openEdit(child) },
+                      ]}
+                    />
+                  )}
+                  {child.status === PlayerStatus.ACTIVE && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        window.location.href = `/dashboard/parent/children/${child.id}/matches`;
+                      }}
+                    >
+                      {t('parent.children.viewReportCards')}
+                    </Button>
+                  )}
+                </div>
               </DataCardFooter>
             )}
           </DataCard>
@@ -256,11 +271,23 @@ function ParentChildrenContent() {
                       <ChildStatusBadge player={child} />
                     </td>
                     <td className="px-3 py-2">
-                      {canEdit(child) && (
-                        <Button type="button" variant="secondary" onClick={() => openEdit(child)}>
-                          {t('common.edit')}
-                        </Button>
-                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {canEdit(child) && (
+                          <Button type="button" variant="secondary" onClick={() => openEdit(child)}>
+                            {t('common.edit')}
+                          </Button>
+                        )}
+                        {child.status === PlayerStatus.ACTIVE && (
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              window.location.href = `/dashboard/parent/children/${child.id}/matches`;
+                            }}
+                          >
+                            {t('parent.children.viewReportCards')}
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -201,3 +201,26 @@ export function reportTypeDescriptionKey(type: string): TranslationKey {
   }
   return `reports.types.${type}.description` as TranslationKey;
 }
+
+export const performanceDimensionKeys = {
+  attack: 'reportCard.dimensions.attack',
+  creation: 'reportCard.dimensions.creation',
+  defense: 'reportCard.dimensions.defense',
+  recovery: 'reportCard.dimensions.recovery',
+  goalkeeping: 'reportCard.dimensions.goalkeeping',
+  discipline: 'reportCard.dimensions.discipline',
+} as const satisfies Record<string, TranslationKey>;
+
+export type PerformanceDimensionI18n = keyof typeof performanceDimensionKeys;
+
+export function performanceDimensionKey(slug: PerformanceDimensionI18n): TranslationKey;
+export function performanceDimensionKey(slug: string): TranslationKey {
+  if (slug in performanceDimensionKeys) {
+    return performanceDimensionKeys[slug as PerformanceDimensionI18n];
+  }
+  return `reportCard.dimensions.${slug}` as TranslationKey;
+}
+
+export function reportCardMotivationKey(slug: string): TranslationKey {
+  return `reportCard.motivation.${slug}` as TranslationKey;
+}

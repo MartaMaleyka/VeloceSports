@@ -19,6 +19,9 @@ export {
   auditActionKey,
   reportTypeTitleKey,
   reportTypeDescriptionKey,
+  performanceDimensionKey,
+  performanceDimensionKeys,
+  reportCardMotivationKey,
 } from './keys.js';
 export {
   LOCALE_COOKIE,

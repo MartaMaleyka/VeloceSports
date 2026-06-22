@@ -21,6 +21,8 @@ import {
   matchGameActionParamsSchema,
   voidGameActionBodySchema,
 } from '../validators/game-action.validator.js';
+import { matchPlayerReportParamsSchema } from '../validators/player-match-report.validator.js';
+import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
 import { requireDevelopment } from '../middlewares/require-development.js';
 
 const router = Router();
@@ -58,6 +60,12 @@ router.get(
   '/:matchId/actions',
   validate(matchIdParamSchema, 'params'),
   (req, res, next) => gameActionController.listActions(req, res, next),
+);
+
+router.get(
+  '/:matchId/players/:playerId/report-card',
+  validate(matchPlayerReportParamsSchema, 'params'),
+  (req, res, next) => playerMatchReportController.getStaffReportCard(req, res, next),
 );
 
 router.post(

@@ -87,6 +87,41 @@ export class MatchAttendanceRepository extends TenantScopedRepository {
       );
     }
   }
+
+  async findFinishedMatchesForPlayer(
+    tenantId: number,
+    playerId: number,
+  ): Promise<
+    Array<{
+      match_id: number;
+      opponent: string;
+      match_datetime: Date;
+      category_name: string;
+      match_jersey_number: number | null;
+    } & RowDataPacket>
+  > {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<
+      Array<{
+        match_id: number;
+        opponent: string;
+        match_datetime: Date;
+        category_name: string;
+        match_jersey_number: number | null;
+      } & RowDataPacket>
+    >(
+      `SELECT m.id AS match_id, m.opponent, m.match_datetime, c.name AS category_name,
+              ma.match_jersey_number
+       FROM match_attendance ma
+       INNER JOIN matches m ON m.id = ma.match_id AND m.tenant_id = ma.tenant_id
+       INNER JOIN categories c ON c.id = m.category_id AND c.tenant_id = m.tenant_id
+       WHERE ma.tenant_id = ? AND ma.player_id = ? AND ma.attended = 1 AND m.status = 'finished'
+       ORDER BY m.match_datetime DESC`,
+      [tenantId, playerId],
+    );
+    return rows;
+  }
 }
 
 export const matchAttendanceRepository = new MatchAttendanceRepository();

@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../../../lib/session';
+import { redirectUnlessRole } from '../../../../../../lib/page-access';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+const accessDenied = redirectUnlessRole(session, 'parent');
+if (accessDenied) return Astro.redirect(accessDenied);
+
+const playerId = Number(Astro.params.playerId);
+if (!Number.isInteger(playerId) || playerId <= 0) {
+  return Astro.redirect('/dashboard/parent/children');
+}
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('reportCard.matchesListTitle', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    roles={session.roles}
+    activeNavId="children"
+    contentKey="parent"
+    pageTitle={t('reportCard.matchesListTitle', locale)}
+    pageDescription={t('reportCard.matchesListDescription', locale)}
+    hideWelcome
+    pageId="childMatches"
+    pageProps={{ playerId }}
+    headerSectionAccent="users"
+  >
+    <p slot="fallback" class="p-8 text-text-secondary">{t('common.loading', locale)}</p>
+  </DashboardShell>
+</BaseLayout>

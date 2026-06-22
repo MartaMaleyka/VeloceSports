@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { Suspense, useState, type ReactNode } from 'react';
 import type { LoginRole } from '@velocesport/shared';
 import { I18nProvider, useTranslation, type Locale, type TranslationKey } from '@velocesport/i18n';
 import Sidebar from './Sidebar';
 import ModuleHeader from './ModuleHeader';
 import PreferenceToggles from './PreferenceToggles';
-import { sectionAccentFromNavId, type SectionAccentId } from '@velocesport/design-system';
+import { Alert, sectionAccentFromNavId, type SectionAccentId } from '@velocesport/design-system';
 import {
   getDashboardTranslationPrefix,
   getSessionSubtitle,
@@ -133,7 +133,17 @@ function DashboardShellInner({
               <p className="text-base text-text-secondary">{welcome}</p>
             </div>
           )}
-          {Page ? <Page {...pageProps} /> : children}
+          {Page ? (
+            <Suspense fallback={<p className="text-text-secondary">{t('common.loading')}</p>}>
+              <Page {...pageProps} />
+            </Suspense>
+          ) : pageId ? (
+            <Alert variant="error" title={t('reportCard.errors.title')}>
+              {t('reportCard.errors.notFound')}
+            </Alert>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

@@ -167,6 +167,47 @@ export class GameActionRepository extends TenantScopedRepository {
     );
     return Number(rows[0]?.cnt ?? 0);
   }
+
+  async countActiveByPlayerMatchGroupedByCode(
+    tenantId: number,
+    matchId: number,
+    playerId: number,
+  ): Promise<Array<{ actionCode: number; actionName: string; impact: string; count: number }>> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<
+      Array<{ action_code: number; action_name: string; impact: string; cnt: number } & RowDataPacket>
+    >(
+      `SELECT ga.action_code, ac.name AS action_name, ac.impact, COUNT(*) AS cnt
+       FROM game_actions ga
+       INNER JOIN action_catalog ac ON ac.id = ga.action_catalog_id AND ac.tenant_id = ga.tenant_id
+       WHERE ga.tenant_id = ? AND ga.match_id = ? AND ga.player_id = ? AND ga.status = 'active'
+       GROUP BY ga.action_code, ac.name, ac.impact
+       ORDER BY cnt DESC, ga.action_code ASC`,
+      [tenantId, matchId, playerId],
+    );
+    return rows.map((r) => ({
+      actionCode: r.action_code,
+      actionName: r.action_name,
+      impact: r.impact,
+      count: Number(r.cnt),
+    }));
+  }
+
+  async maxActiveMinuteForPlayerMatch(
+    tenantId: number,
+    matchId: number,
+    playerId: number,
+  ): Promise<number> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<Array<{ max_minute: number | null } & RowDataPacket>>(
+      `SELECT MAX(minute) AS max_minute FROM game_actions
+       WHERE tenant_id = ? AND match_id = ? AND player_id = ? AND status = 'active'`,
+      [tenantId, matchId, playerId],
+    );
+    return Number(rows[0]?.max_minute ?? 0);
+  }
 }
 
 export const gameActionRepository = new GameActionRepository();

@@ -10,6 +10,8 @@ import {
   parentPlayerIdParamSchema,
   parentUpdateChildBodySchema,
 } from '../validators/parent.validator.js';
+import { parentPlayerMatchParamsSchema } from '../validators/player-match-report.validator.js';
+import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
 
 const router = Router();
 
@@ -37,5 +39,17 @@ router.patch(
 );
 
 router.get('/categories', (req, res, next) => parentController.listCategories(req, res, next));
+
+router.get(
+  '/children/:playerId/matches',
+  validate(parentPlayerIdParamSchema, 'params'),
+  (req, res, next) => playerMatchReportController.listParentMatches(req, res, next),
+);
+
+router.get(
+  '/children/:playerId/matches/:matchId/report-card',
+  validate(parentPlayerMatchParamsSchema, 'params'),
+  (req, res, next) => playerMatchReportController.getParentReportCard(req, res, next),
+);
 
 export default router;

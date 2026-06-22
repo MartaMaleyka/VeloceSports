@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../../../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../../../../lib/session';
+import { redirectUnlessRole } from '../../../../../../../lib/page-access';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+const accessDenied = redirectUnlessRole(session, 'academy_admin');
+if (accessDenied) return Astro.redirect(accessDenied);
+
+const matchId = Number(Astro.params.matchId);
+const playerId = Number(Astro.params.playerId);
+if (
+  !Number.isInteger(matchId) ||
+  matchId <= 0 ||
+  !Number.isInteger(playerId) ||
+  playerId <= 0
+) {
+  return Astro.redirect('/dashboard/academy-admin/matches');
+}
+
+const locale = Astro.locals.locale;
+const backPath = `/dashboard/academy-admin/matches/${matchId}`;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('reportCard.viewCard', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    roles={session.roles}
+    activeNavId="matches"
+    contentKey="academyAdmin"
+    pageTitle={t('reportCard.viewCard', locale)}
+    hideWelcome
+    pageId="matchReportCard"
+    pageProps={{ playerId, matchId, apiMode: 'staff', backPath }}
+    headerSectionAccent="matches"
+  />
+</BaseLayout>

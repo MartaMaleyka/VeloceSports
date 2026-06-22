@@ -15,6 +15,8 @@ import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 interface MatchAttendancePanelProps {
   matchId: number;
   matchLocked: boolean;
+  /** Base path sin matchId, p.ej. /dashboard/coach/matches */
+  reportCardListPath?: string;
 }
 
 type LocalEntry = MatchAttendanceEntryDto;
@@ -30,7 +32,11 @@ function detectJerseyCollisions(entries: LocalEntry[]): number[] {
     .map(([jersey]) => jersey);
 }
 
-export default function MatchAttendancePanel({ matchId, matchLocked }: MatchAttendancePanelProps) {
+export default function MatchAttendancePanel({
+  matchId,
+  matchLocked,
+  reportCardListPath,
+}: MatchAttendancePanelProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
 
@@ -310,6 +316,21 @@ export default function MatchAttendancePanel({ matchId, matchLocked }: MatchAtte
                       inputMode="numeric"
                     />
                   </div>
+                </div>
+              )}
+
+              {matchLocked && entry.attended && reportCardListPath && (
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-touch w-full sm:w-auto"
+                    onClick={() => {
+                      window.location.href = `${reportCardListPath}/${matchId}/players/${entry.playerId}/report-card`;
+                    }}
+                  >
+                    {t('matches.attendance.viewReportCard')}
+                  </Button>
                 </div>
               )}
             </li>
