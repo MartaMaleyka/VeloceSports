@@ -1,12 +1,14 @@
 import { lazy, type ComponentType } from 'react';
 import ParentChildrenPage from '../components/parent/ParentChildrenPage';
 import ParentChildMatchesPage from '../components/parent/ParentChildMatchesPage';
+import ParentHomePage from '../components/parent/ParentHomePage';
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),
 );
 
 export const parentPages = {
+  home: ParentHomePage,
   children: ParentChildrenPage,
   childMatches: ParentChildMatchesPage,
   matchReportCard: PlayerMatchReportPage as ComponentType<Record<string, unknown>>,

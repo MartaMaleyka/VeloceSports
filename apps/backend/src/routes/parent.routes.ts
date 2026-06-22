@@ -12,6 +12,11 @@ import {
 } from '../validators/parent.validator.js';
 import { parentPlayerMatchParamsSchema } from '../validators/player-match-report.validator.js';
 import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
+import {
+  parentDashboardParamsSchema,
+  parentDashboardQuerySchema,
+} from '../validators/parent-dashboard.validator.js';
+import { parentDashboardController } from '../controllers/parent-dashboard.controller.js';
 
 const router = Router();
 
@@ -39,6 +44,13 @@ router.patch(
 );
 
 router.get('/categories', (req, res, next) => parentController.listCategories(req, res, next));
+
+router.get(
+  '/children/:playerId/dashboard',
+  validate(parentDashboardParamsSchema, 'params'),
+  validate(parentDashboardQuerySchema, 'query'),
+  (req, res, next) => parentDashboardController.getChildDashboard(req, res, next),
+);
 
 router.get(
   '/children/:playerId/matches',
