@@ -33,6 +33,7 @@ interface SettingsFormState {
   currency: string;
   defaultPeriodsCount: string;
   defaultPeriodDurationMinutes: string;
+  notificationsEnabled: boolean;
 }
 
 const TIMEZONE_OPTIONS = [
@@ -107,6 +108,7 @@ function AcademySettingsContent() {
     currency: data.currency,
     defaultPeriodsCount: String(data.defaultPeriodsCount),
     defaultPeriodDurationMinutes: String(data.defaultPeriodDurationMinutes),
+    notificationsEnabled: data.notificationsEnabled,
   });
 
   const load = useCallback(async () => {
@@ -192,6 +194,7 @@ function AcademySettingsContent() {
           currency: form.currency,
           defaultPeriodsCount: periods,
           defaultPeriodDurationMinutes: duration,
+          notificationsEnabled: form.notificationsEnabled,
         }),
       });
       setSettings(updated);
@@ -318,6 +321,29 @@ function AcademySettingsContent() {
                 ]}
               />
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-section-audit-border bg-section-audit-subtle/30 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold text-text-primary">
+            {t('academySettings.sections.notifications')}
+          </h2>
+          <p className="mt-1 text-sm text-text-secondary">
+            {t('academySettings.notificationsHint')}
+          </p>
+          <div className="mt-4 flex items-center gap-3">
+            <input
+              id="as-notifications-enabled"
+              type="checkbox"
+              className="h-5 w-5 rounded border-border text-section-audit-fg"
+              checked={form.notificationsEnabled}
+              onChange={(e) =>
+                setForm((f) => f && { ...f, notificationsEnabled: e.target.checked })
+              }
+            />
+            <Label htmlFor="as-notifications-enabled">
+              {t('academySettings.notificationsEnabled')}
+            </Label>
           </div>
         </section>
 

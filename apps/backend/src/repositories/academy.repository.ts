@@ -5,7 +5,7 @@ import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
 
 const ACADEMY_COLUMNS =
-  'id, name, slug, status, suspension_reason, plan_id, timezone, locale, currency, billing_anchor_day, logo_url, contact_email, contact_phone, address, default_periods_count, default_period_duration_minutes, created_at, updated_at';
+  'id, name, slug, status, suspension_reason, plan_id, timezone, locale, currency, billing_anchor_day, logo_url, contact_email, contact_phone, address, default_periods_count, default_period_duration_minutes, notifications_enabled, created_at, updated_at';
 
 export interface AcademyRow extends RowDataPacket {
   id: number;
@@ -24,6 +24,7 @@ export interface AcademyRow extends RowDataPacket {
   address: string | null;
   default_periods_count: number;
   default_period_duration_minutes: number;
+  notifications_enabled: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -237,6 +238,7 @@ export class AcademyRepository extends TenantScopedRepository {
       currency?: string;
       defaultPeriodsCount?: number;
       defaultPeriodDurationMinutes?: number;
+      notificationsEnabled?: boolean;
     },
   ): Promise<void> {
     this.assertTenantId(tenantId);
@@ -283,6 +285,10 @@ export class AcademyRepository extends TenantScopedRepository {
     if (input.defaultPeriodDurationMinutes !== undefined) {
       fields.push('default_period_duration_minutes = ?');
       params.push(input.defaultPeriodDurationMinutes);
+    }
+    if (input.notificationsEnabled !== undefined) {
+      fields.push('notifications_enabled = ?');
+      params.push(input.notificationsEnabled ? 1 : 0);
     }
 
     if (fields.length === 0) return;

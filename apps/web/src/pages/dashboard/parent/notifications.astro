@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../components/layout/DashboardShell';
+import { getSession } from '../../../lib/session';
+import { redirectUnlessRole } from '../../../lib/page-access';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+const accessDenied = redirectUnlessRole(session, 'parent');
+if (accessDenied) return Astro.redirect(accessDenied);
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('dashboard.parent.notifications.title', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    roles={session.roles}
+    activeNavId="notifications"
+    contentKey="parent"
+    pageTitle={t('dashboard.parent.notifications.title', locale)}
+    pageDescription={t('dashboard.parent.notifications.description', locale)}
+    hideWelcome
+    headerSectionAccent="audit"
+    pageId="notifications"
+  />
+</BaseLayout>

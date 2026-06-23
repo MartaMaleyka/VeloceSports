@@ -121,6 +121,12 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
         sectionAccent: 'matches',
       },
       {
+        id: 'notifications',
+        href: '/dashboard/parent/notifications',
+        label: t('nav.parentNotifications', locale),
+        sectionAccent: 'audit',
+      },
+      {
         id: 'children',
         href: '/dashboard/parent/children',
         label: t('nav.children', locale),

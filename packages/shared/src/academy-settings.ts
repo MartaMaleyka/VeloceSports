@@ -13,6 +13,7 @@ export const ACADEMY_ADMIN_EDITABLE_FIELDS = [
   'currency',
   'defaultPeriodsCount',
   'defaultPeriodDurationMinutes',
+  'notificationsEnabled',
 ] as const;
 
 export type AcademyAdminEditableField = (typeof ACADEMY_ADMIN_EDITABLE_FIELDS)[number];
@@ -51,6 +52,7 @@ export interface AcademySettingsDto {
   currency: string;
   defaultPeriodsCount: number;
   defaultPeriodDurationMinutes: number;
+  notificationsEnabled: boolean;
   readOnly: AcademySettingsReadOnlyDto;
 }
 
@@ -65,4 +67,5 @@ export interface UpdateAcademySettingsBody {
   currency?: string;
   defaultPeriodsCount?: number;
   defaultPeriodDurationMinutes?: number;
+  notificationsEnabled?: boolean;
 }

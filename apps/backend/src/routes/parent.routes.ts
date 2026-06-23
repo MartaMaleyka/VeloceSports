@@ -21,6 +21,14 @@ import { playerObservationController } from '../controllers/player-observation.c
 import { parentListObservationsParamsSchema } from '../validators/player-observation.validator.js';
 import { parentMatchCalendarController } from '../controllers/parent-match-calendar.controller.js';
 import { parentMatchCalendarQuerySchema } from '../validators/parent-match-calendar.validator.js';
+import { parentNotificationController } from '../controllers/parent-notification.controller.js';
+import {
+  parentNotificationIdParamSchema,
+  parentNotificationListQuerySchema,
+  parentNotificationPlayerParamSchema,
+  updateParentNotificationPreferencesBodySchema,
+  updateParentPlayerNotificationPreferenceBodySchema,
+} from '../validators/parent-notification.validator.js';
 
 const router = Router();
 
@@ -53,6 +61,43 @@ router.get(
   '/matches/calendar',
   validate(parentMatchCalendarQuerySchema, 'query'),
   (req, res, next) => parentMatchCalendarController.getCalendar(req, res, next),
+);
+
+router.get(
+  '/notifications',
+  validate(parentNotificationListQuerySchema, 'query'),
+  (req, res, next) => parentNotificationController.list(req, res, next),
+);
+
+router.get('/notifications/unread-count', (req, res, next) =>
+  parentNotificationController.unreadCount(req, res, next),
+);
+
+router.patch('/notifications/read-all', (req, res, next) =>
+  parentNotificationController.markAllRead(req, res, next),
+);
+
+router.patch(
+  '/notifications/:notificationId/read',
+  validate(parentNotificationIdParamSchema, 'params'),
+  (req, res, next) => parentNotificationController.markRead(req, res, next),
+);
+
+router.get('/notification-preferences', (req, res, next) =>
+  parentNotificationController.getPreferences(req, res, next),
+);
+
+router.patch(
+  '/notification-preferences',
+  validate(updateParentNotificationPreferencesBodySchema),
+  (req, res, next) => parentNotificationController.updatePreferences(req, res, next),
+);
+
+router.patch(
+  '/notification-preferences/players/:playerId',
+  validate(parentNotificationPlayerParamSchema, 'params'),
+  validate(updateParentPlayerNotificationPreferenceBodySchema),
+  (req, res, next) => parentNotificationController.updatePlayerPreference(req, res, next),
 );
 
 router.get(

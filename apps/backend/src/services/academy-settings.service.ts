@@ -26,6 +26,7 @@ export class AcademySettingsService {
       currency: academy.currency,
       defaultPeriodsCount: academy.default_periods_count,
       defaultPeriodDurationMinutes: academy.default_period_duration_minutes,
+      notificationsEnabled: Boolean(academy.notifications_enabled ?? true),
       readOnly: {
         slug: academy.slug,
         status: academy.status,
@@ -70,6 +71,7 @@ export class AcademySettingsService {
       currency: input.currency,
       defaultPeriodsCount: input.defaultPeriodsCount,
       defaultPeriodDurationMinutes: input.defaultPeriodDurationMinutes,
+      notificationsEnabled: input.notificationsEnabled,
     });
 
     await auditService.log(

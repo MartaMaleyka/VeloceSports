@@ -22,6 +22,16 @@ export class ParentLinkRepository extends TenantScopedRepository {
     return rows.map((r) => Number(r.player_id));
   }
 
+  async findParentUserIdsForPlayer(tenantId: number, playerId: number): Promise<number[]> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      'SELECT parent_user_id FROM parent_players WHERE tenant_id = ? AND player_id = ?',
+      [tenantId, playerId],
+    );
+    return rows.map((r) => Number(r.parent_user_id));
+  }
+
   async findLinkedPlayersForParent(
     tenantId: number,
     parentUserId: number,

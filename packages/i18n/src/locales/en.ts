@@ -1,6 +1,6 @@
 export const en = {
   common: {
-    appName: 'VeloceSport',
+    appName: 'REGITEC',
     home: 'Home',
     logout: 'Sign out',
     required: 'required',
@@ -65,6 +65,7 @@ export const en = {
     settings: 'My academy',
     children: 'My children',
     parentCalendar: 'Calendar',
+    parentNotifications: 'Notifications',
     superAdmins: 'Super admins',
     billing: 'Billing',
     audit: 'Audit log',
@@ -574,6 +575,10 @@ export const en = {
         title: 'Match calendar',
         description: 'Upcoming fixtures and recent matches for your children.',
       },
+      notifications: {
+        title: 'Notifications',
+        description: 'Choose which in-app alerts you want about your children.',
+      },
     },
   },
   parent: {
@@ -651,6 +656,63 @@ export const en = {
     inDays: 'In {count} days',
     inProgress: 'In progress now',
     viewReportCard: 'View report card',
+  },
+  parentNotifications: {
+    bellLabel: 'Notifications ({count} unread)',
+    bellLabelNone: 'Notifications',
+    panelTitle: 'Your notifications',
+    markAllRead: 'Mark all read',
+    markRead: 'Mark read',
+    viewMatch: 'View match',
+    empty: 'No notifications yet. When your child has a highlight on the pitch, we will let you know here.',
+    voidedHint: 'This action was corrected by the coach.',
+    managePreferences: 'Notification preferences',
+    preferences: {
+      globalTitle: 'In-app notifications',
+      globalDescription:
+        'Get warm alerts when your child has highlight actions in a match (goal, assist, etc.).',
+      inApp: 'Receive in-app notifications',
+      emailComingSoon: 'Email notifications will be available soon.',
+      byChildTitle: 'Per child',
+      byChildDescription: 'Turn alerts on or off for each linked child.',
+      inAppFor: 'Notifications for {name}',
+    },
+  },
+  notifications: {
+    messages: {
+      goal: {
+        title: 'Goal!',
+        body: '{playerName} scored a goal in minute {minute}!',
+      },
+      assist: {
+        title: 'Assist!',
+        body: '{playerName} assisted a goal in minute {minute}!',
+      },
+      shotOnTarget: {
+        title: 'Shot on target',
+        body: '{playerName} had a shot on target in minute {minute}.',
+      },
+      interception: {
+        title: 'Interception',
+        body: '{playerName} intercepted a pass in minute {minute}.',
+      },
+      tackle: {
+        title: 'Great tackle',
+        body: '{playerName} won the ball with a tackle in minute {minute}.',
+      },
+      ballRecovery: {
+        title: 'Ball recovery',
+        body: '{playerName} recovered the ball in minute {minute}.',
+      },
+      save: {
+        title: 'Save!',
+        body: '{playerName} made a save in minute {minute}!',
+      },
+      highlight: {
+        title: 'Highlight moment!',
+        body: '{playerName} had a highlight: {actionName} (min {minute})!',
+      },
+    },
   },
   playerObservations: {
     title: 'Coach observations',
@@ -1137,8 +1199,12 @@ export const en = {
       profileHint: 'Information visible to parents and coaches in your academy.',
       regional: 'Timezone, language & currency',
       gameConfig: 'Game periods',
+      notifications: 'Parent notifications',
       platformManaged: 'Plan & billing',
     },
+    notificationsEnabled: 'Send in-app notifications to parents',
+    notificationsHint:
+      'When disabled, no parent in the academy receives highlight alerts, even if their personal preferences are on.',
     validation: {
       nameRequired: 'Name is required',
       periodsInvalid: 'Enter between 1 and 6 periods',

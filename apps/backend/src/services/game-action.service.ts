@@ -336,6 +336,8 @@ export class GameActionService {
     const deleted = await gameActionRepository.deleteById(actor.tenantId, actionId);
     if (!deleted) throw new NotFoundError('Acción no encontrada');
 
+    await gameActionNotificationService.onGameActionVoided(actor.tenantId, actionId);
+
     await auditService.log(
       this.auditCtx(actor),
       'game_action',
@@ -395,6 +397,9 @@ export class GameActionService {
 
     const after = await gameActionRepository.findById(actor.tenantId, actionId);
     if (!after) throw new NotFoundError('Acción no encontrada tras anular');
+
+    await gameActionNotificationService.onGameActionVoided(actor.tenantId, actionId);
+
     return this.toDto(after);
   }
 

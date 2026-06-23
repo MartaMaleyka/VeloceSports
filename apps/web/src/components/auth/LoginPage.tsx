@@ -21,7 +21,7 @@ function LoginPageContent({ apiUrl, redirectPath }: LoginPageContentProps) {
         <header className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
             <div className="ds-brand-logo" aria-hidden="true">
-              V
+              R
             </div>
           </div>
           <div className="ds-brand-accent-bar mb-4" aria-hidden="true" />

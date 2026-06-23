@@ -4,6 +4,7 @@ import { I18nProvider, useTranslation, type Locale, type TranslationKey } from '
 import Sidebar from './Sidebar';
 import ModuleHeader from './ModuleHeader';
 import PreferenceToggles from './PreferenceToggles';
+import ParentNotificationBell from '../parent/ParentNotificationBell';
 import { Alert, sectionAccentFromNavId, type SectionAccentId } from '@velocesport/design-system';
 import {
   getDashboardTranslationPrefix,
@@ -78,6 +79,14 @@ function DashboardShellInner({
   const title = pageTitle ?? defaultTitle;
   const description = pageDescription ?? defaultDescription;
   const sectionAccent = headerSectionAccent ?? sectionAccentFromNavId(activeNavId);
+  const showParentBell = roles.includes('parent');
+
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      {showParentBell && <ParentNotificationBell />}
+      <PreferenceToggles />
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen bg-bg-app">
@@ -114,6 +123,7 @@ function DashboardShellInner({
             <span className="text-sm font-medium text-text-primary">{t('common.appName')}</span>
           </div>
           <PreferenceToggles />
+          {showParentBell && <ParentNotificationBell />}
         </div>
 
         <ModuleHeader
@@ -122,7 +132,7 @@ function DashboardShellInner({
           sectionAccent={sectionAccent}
           actions={
             <div className="hidden md:block">
-              <PreferenceToggles />
+              {headerActions}
             </div>
           }
         />

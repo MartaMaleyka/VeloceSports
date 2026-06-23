@@ -1,6 +1,6 @@
 export const es = {
   common: {
-    appName: 'VeloceSport',
+    appName: 'REGITEC',
     home: 'Inicio',
     logout: 'Cerrar sesión',
     required: 'obligatorio',
@@ -65,6 +65,7 @@ export const es = {
     settings: 'Mi academia',
     children: 'Mis hijos',
     parentCalendar: 'Calendario',
+    parentNotifications: 'Notificaciones',
     superAdmins: 'Super admins',
     billing: 'Facturación',
     audit: 'Auditoría',
@@ -573,6 +574,10 @@ export const es = {
         title: 'Calendario de partidos',
         description: 'Próximos encuentros y partidos recientes de tus hijos.',
       },
+      notifications: {
+        title: 'Notificaciones',
+        description: 'Elige qué avisos in-app quieres recibir sobre tus hijos.',
+      },
     },
   },
   parent: {
@@ -650,6 +655,63 @@ export const es = {
     inDays: 'En {count} días',
     inProgress: 'En curso ahora',
     viewReportCard: 'Ver ficha',
+  },
+  parentNotifications: {
+    bellLabel: 'Notificaciones ({count} sin leer)',
+    bellLabelNone: 'Notificaciones',
+    panelTitle: 'Tus notificaciones',
+    markAllRead: 'Marcar todas leídas',
+    markRead: 'Marcar leída',
+    viewMatch: 'Ver partido',
+    empty: 'Aún no tienes notificaciones. Cuando tu hijo tenga un momento destacado en cancha, te avisaremos aquí.',
+    voidedHint: 'Esta acción fue corregida por el entrenador.',
+    managePreferences: 'Preferencias de notificaciones',
+    preferences: {
+      globalTitle: 'Notificaciones in-app',
+      globalDescription:
+        'Recibe avisos cálidos cuando tu hijo tenga acciones destacadas en partido (gol, asistencia, etc.).',
+      inApp: 'Recibir notificaciones en la app',
+      emailComingSoon: 'Las notificaciones por correo estarán disponibles próximamente.',
+      byChildTitle: 'Por hijo',
+      byChildDescription: 'Activa o pausa los avisos para cada hijo vinculado.',
+      inAppFor: 'Notificaciones para {name}',
+    },
+  },
+  notifications: {
+    messages: {
+      goal: {
+        title: '¡Gol!',
+        body: '¡{playerName} marcó un gol en el minuto {minute}!',
+      },
+      assist: {
+        title: '¡Asistencia!',
+        body: '¡{playerName} dio una asistencia de gol en el minuto {minute}!',
+      },
+      shotOnTarget: {
+        title: 'Tiro al arco',
+        body: '{playerName} tuvo un tiro al arco en el minuto {minute}.',
+      },
+      interception: {
+        title: 'Intercepción',
+        body: '{playerName} interceptó un pase en el minuto {minute}.',
+      },
+      tackle: {
+        title: 'Quite destacado',
+        body: '{playerName} recuperó el balón con un quite en el minuto {minute}.',
+      },
+      ballRecovery: {
+        title: 'Recuperación del balón',
+        body: '{playerName} recuperó el balón en el minuto {minute}.',
+      },
+      save: {
+        title: '¡Atajada!',
+        body: '¡{playerName} hizo una atajada en el minuto {minute}!',
+      },
+      highlight: {
+        title: '¡Momento destacado!',
+        body: '¡{playerName} tuvo un momento destacado: {actionName} (min {minute})!',
+      },
+    },
   },
   playerObservations: {
     title: 'Observaciones del entrenador',
@@ -1136,8 +1198,12 @@ export const es = {
       profileHint: 'Información visible para padres y entrenadores de tu academia.',
       regional: 'Zona horaria, idioma y moneda',
       gameConfig: 'Periodos de juego',
+      notifications: 'Notificaciones a padres',
       platformManaged: 'Plan y facturación',
     },
+    notificationsEnabled: 'Enviar notificaciones in-app a padres',
+    notificationsHint:
+      'Si desactivas esta opción, ningún padre de la academia recibirá avisos de acciones destacadas, aunque tengan sus preferencias activas.',
     validation: {
       nameRequired: 'El nombre es obligatorio',
       periodsInvalid: 'Indica entre 1 y 6 periodos',

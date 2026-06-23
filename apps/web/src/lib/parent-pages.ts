@@ -3,6 +3,7 @@ import ParentChildrenPage from '../components/parent/ParentChildrenPage';
 import ParentChildMatchesPage from '../components/parent/ParentChildMatchesPage';
 import ParentHomePage from '../components/parent/ParentHomePage';
 import ParentCalendarPage from '../components/parent/ParentCalendarPage';
+import ParentNotificationPreferencesPage from '../components/parent/ParentNotificationPreferencesPage';
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),
@@ -11,6 +12,7 @@ const PlayerMatchReportPage = lazy(
 export const parentPages = {
   home: ParentHomePage,
   calendar: ParentCalendarPage,
+  notifications: ParentNotificationPreferencesPage,
   children: ParentChildrenPage,
   childMatches: ParentChildMatchesPage,
   matchReportCard: PlayerMatchReportPage as ComponentType<Record<string, unknown>>,

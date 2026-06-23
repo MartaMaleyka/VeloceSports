@@ -31,6 +31,7 @@ export const updateAcademySettingsBodySchema = z
     currency: z.enum(['USD', 'PAB']).optional(),
     defaultPeriodsCount: z.number().int().min(1).max(6).optional(),
     defaultPeriodDurationMinutes: z.number().int().min(1).max(120).optional(),
+    notificationsEnabled: z.boolean().optional(),
   })
   .strict();
 
