@@ -111,7 +111,7 @@ function LoginFormInner({ apiUrl, redirectPath }: LoginFormInnerProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
       {formError && (
         <Alert variant="error" title={t('auth.login.errorTitle')}>
           {formError}

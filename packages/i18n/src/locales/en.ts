@@ -28,7 +28,14 @@ export const en = {
     login: {
       tagline: 'Youth football academies',
       prompt: 'Sign in to access your dashboard',
+      formTitle: 'Welcome back',
+      formSubtitle: 'Enter your credentials to continue',
       footerNote: 'One login for admins, coaches, and parents.',
+      heroFeatures: {
+        capture: 'Live capture from the pitch',
+        progress: 'Player tracking and match reports',
+        alerts: 'Alerts when your child shines in a match',
+      },
       emailLabel: 'Email address',
       passwordLabel: 'Password',
       submit: 'Sign in',

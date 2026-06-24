@@ -28,7 +28,14 @@ export const es = {
     login: {
       tagline: 'Academias de fútbol formativo',
       prompt: 'Inicia sesión para acceder a tu panel',
+      formTitle: 'Bienvenido de vuelta',
+      formSubtitle: 'Ingresa tus credenciales para continuar',
       footerNote: 'Un solo acceso para administradores, entrenadores y padres.',
+      heroFeatures: {
+        capture: 'Captura en vivo desde la cancha',
+        progress: 'Seguimiento y reportes por jugador',
+        alerts: 'Alertas cuando tu hijo brilla en partido',
+      },
       emailLabel: 'Correo electrónico',
       passwordLabel: 'Contraseña',
       submit: 'Iniciar sesión',

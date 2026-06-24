@@ -1,12 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LoginFormIsland from '../components/auth/LoginFormIsland';
+import LoginHeroDecor from '../components/auth/LoginHeroDecor.astro';
+import LoginPanelDecor from '../components/auth/LoginPanelDecor.astro';
 import { resolveLocale, t } from '@velocesport/i18n';
 import { PUBLIC_API_URL } from 'astro:env/client';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
 const apiUrl = PUBLIC_API_URL;
 const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
+
+const heroFeatures = [
+  t('auth.login.heroFeatures.capture', locale),
+  t('auth.login.heroFeatures.progress', locale),
+  t('auth.login.heroFeatures.alerts', locale),
+];
 ---
 
 <BaseLayout
@@ -14,26 +22,52 @@ const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
   title={t('meta.loginTitle', locale)}
   description={t('meta.appDescription', locale)}
 >
-  <div class="ds-brand-page relative flex min-h-screen flex-col items-center justify-center px-4 py-8">
-    <header class="mb-8 w-full max-w-md text-center">
-      <div class="mb-4 flex justify-center">
-        <div class="ds-brand-logo" aria-hidden="true">R</div>
-      </div>
-      <div class="ds-brand-accent-bar mb-4" aria-hidden="true"></div>
-      <h1 class="ds-brand-title">{t('common.appName', locale)}</h1>
-      <p class="mt-3 text-lg text-text-secondary">{t('auth.login.tagline', locale)}</p>
-      <p class="mt-1 text-sm text-text-muted">{t('auth.login.prompt', locale)}</p>
-    </header>
+  <div class="ds-brand-page">
+    <div class="ds-brand-page__shell md:grid-cols-2">
+      <aside class="ds-brand-page__hero" aria-label={t('common.appName', locale)}>
+        <LoginHeroDecor />
 
-    <LoginFormIsland
-      client:idle
-      initialLocale={locale}
-      apiUrl={apiUrl}
-      redirectPath={redirectPath}
-    />
+        <div class="ds-brand-page__hero-content ds-stagger-enter">
+          <div class="ds-stagger-item">
+            <div class="ds-brand-logo-stage">
+              <span class="ds-brand-logo-ring" aria-hidden="true"></span>
+              <span class="ds-brand-logo-ring ds-brand-logo-ring--delayed" aria-hidden="true"></span>
+              <div class="ds-brand-logo ds-brand-logo--hero ds-brand-logo--live" aria-hidden="true">
+                R
+              </div>
+            </div>
+            <div class="ds-brand-accent-bar ds-brand-accent-bar--hero" aria-hidden="true"></div>
+            <h1 class="ds-brand-title ds-brand-title--hero">{t('common.appName', locale)}</h1>
+            <p class="ds-brand-tagline">{t('auth.login.tagline', locale)}</p>
+            <span class="ds-brand-tagline ds-brand-tagline--compact">
+              {t('auth.login.prompt', locale)}
+            </span>
+          </div>
 
-    <p class="mt-6 w-full max-w-md text-center text-sm text-text-muted">
-      {t('auth.login.footerNote', locale)}
-    </p>
+          <ul class="ds-brand-page__features ds-brand-page__features--flow ds-stagger-item">
+            {
+              heroFeatures.map((feature, index) => (
+                <li class="ds-brand-page__feature" style={`--feature-index: ${index}`}>
+                  <span class="ds-brand-page__feature-icon" aria-hidden="true">
+                    ✓
+                  </span>
+                  {feature}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </aside>
+
+      <main class="ds-brand-page__panel">
+        <LoginPanelDecor />
+        <LoginFormIsland
+          client:idle
+          initialLocale={locale}
+          apiUrl={apiUrl}
+          redirectPath={redirectPath}
+        />
+      </main>
+    </div>
   </div>
 </BaseLayout>

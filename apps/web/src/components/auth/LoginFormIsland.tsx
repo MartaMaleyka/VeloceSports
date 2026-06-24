@@ -1,4 +1,4 @@
-import { I18nProvider } from '@velocesport/i18n';
+import { I18nProvider, useTranslation } from '@velocesport/i18n';
 import type { Locale } from '@velocesport/i18n';
 import LoginForm from './LoginForm';
 import PreferenceToggles from '../layout/PreferenceToggles';
@@ -9,7 +9,29 @@ export interface LoginFormIslandProps {
   redirectPath?: string;
 }
 
-/** Isla mínima: toggles + formulario (branding estático en login.astro). */
+function LoginFormPanel({ apiUrl, redirectPath }: { apiUrl: string; redirectPath?: string }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="ds-brand-page__panel-inner ds-stagger-enter">
+      <div className="ds-brand-page__panel-toolbar ds-stagger-item">
+        <PreferenceToggles />
+      </div>
+
+      <div className="ds-stagger-item ds-brand-card ds-brand-card--login ds-brand-card--login-flow p-6 sm:p-8">
+        <div className="ds-brand-card__head">
+          <h2 className="ds-brand-card__title">{t('auth.login.formTitle')}</h2>
+          <p className="ds-brand-card__subtitle">{t('auth.login.formSubtitle')}</p>
+        </div>
+        <LoginForm apiUrl={apiUrl} redirectPath={redirectPath} />
+      </div>
+
+      <p className="ds-brand-page__footer ds-stagger-item">{t('auth.login.footerNote')}</p>
+    </div>
+  );
+}
+
+/** Isla: toggles + formulario (hero estático en login.astro). */
 export default function LoginFormIsland({
   initialLocale,
   apiUrl,
@@ -17,14 +39,7 @@ export default function LoginFormIsland({
 }: LoginFormIslandProps) {
   return (
     <I18nProvider initialLocale={initialLocale}>
-      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
-        <PreferenceToggles />
-      </div>
-      <div className="w-full max-w-md">
-        <div className="ds-brand-card p-6 sm:p-8">
-          <LoginForm apiUrl={apiUrl} redirectPath={redirectPath} />
-        </div>
-      </div>
+      <LoginFormPanel apiUrl={apiUrl} redirectPath={redirectPath} />
     </I18nProvider>
   );
 }
