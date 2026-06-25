@@ -68,8 +68,14 @@ export interface UpdateInvoicePaymentDto {
 
 export interface BillingSummaryDto {
   planName: string | null;
+  /** Mensualidad estimada por jugadores activos (modelo v2). */
   planPrice: number | null;
+  /** @deprecated Legacy — siempre monthly en modelo v2. */
   billingCycle: string | null;
+  annualFee: number | null;
+  pricePerPlayer: number | null;
+  activePlayerCount: number;
+  estimatedMonthlyPlayerFee: number | null;
   billingAnchorDay: number;
   currentPeriod: BillingPeriodRangeDto;
   nextPeriod: Pick<BillingPeriodRangeDto, 'periodStart' | 'periodEnd'>;

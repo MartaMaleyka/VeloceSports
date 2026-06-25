@@ -1,14 +1,14 @@
 import { z } from 'zod';
-import { AcademyStatus, BillingCycle, MAX_BILLING_ANCHOR_DAY, MIN_BILLING_ANCHOR_DAY, PlanStatus, UserRole, UserStatus } from '@velocesport/shared';
+import { AcademyStatus, MAX_BILLING_ANCHOR_DAY, MIN_BILLING_ANCHOR_DAY, PlanStatus, UserRole, UserStatus } from '@velocesport/shared';
 
 const positiveInt = z.coerce.number().int().min(0);
-const price = z.coerce.number().min(0).multipleOf(0.01);
+const moneyAmount = z.coerce.number().min(0).multipleOf(0.01);
 
 export const createPlanSchema = z.object({
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(2000).optional().nullable(),
-  price,
-  billingCycle: z.enum([BillingCycle.MONTHLY, BillingCycle.YEARLY]),
+  annualFee: moneyAmount,
+  pricePerPlayer: moneyAmount,
   maxPlayers: positiveInt.max(100000),
   maxCategories: positiveInt.max(1000),
   maxUsers: positiveInt.max(10000),

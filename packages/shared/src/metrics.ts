@@ -1,7 +1,8 @@
 import { BillingCycle } from './platform.js';
+import { calculateNormalizedMrr } from './plan-pricing.js';
 
 /**
- * Normaliza el precio de un plan a equivalente mensual para métricas SaaS.
+ * Normaliza el precio de un plan a equivalente mensual para métricas SaaS (modelo legacy).
  *
  * - Mensual: precio tal cual.
  * - Anual: precio / 12 (reconocimiento lineal mensual).
@@ -17,10 +18,27 @@ export function normalizePlanPriceToMonthly(
 }
 
 /**
- * MRR (Monthly Recurring Revenue):
- * Suma del valor mensual normalizado del plan de cada academia con status = active
- * y plan asignado. Excluye academias sin plan, inactivas o suspendidas.
- * No incluye ingresos one-off ni facturas puntuales.
+ * MRR (Monthly Recurring Revenue) — modelo v2:
+ * anualidad/12 + (precio por jugador × jugadores activos) por academia activa.
+ */
+export function calculateMrrFromBillingV2(
+  rows: Array<{ annualFee: number; pricePerPlayer: number; activePlayerCount: number }>,
+): number {
+  return rows.reduce(
+    (sum, row) =>
+      sum +
+      calculateNormalizedMrr({
+        annualFee: row.annualFee,
+        pricePerPlayer: row.pricePerPlayer,
+        activePlayerCount: row.activePlayerCount,
+      }),
+    0,
+  );
+}
+
+/**
+ * MRR (Monthly Recurring Revenue) — modelo legacy:
+ * Suma del valor mensual normalizado del plan de cada academia.
  */
 export function calculateMrrFromAcademyPlans(
   rows: Array<{ price: number; billingCycle: BillingCycle | string }>,

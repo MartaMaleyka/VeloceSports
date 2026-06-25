@@ -7,6 +7,8 @@ export interface PlanRow extends RowDataPacket {
   id: number;
   name: string;
   description: string | null;
+  annual_fee: string;
+  price_per_player: string;
   price: string;
   billing_cycle: BillingCycle;
   max_players: number;
@@ -18,11 +20,14 @@ export interface PlanRow extends RowDataPacket {
   updated_at: Date;
 }
 
+const PLAN_COLUMNS =
+  'id, name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status, created_at, updated_at';
+
 export interface CreatePlanInput {
   name: string;
   description?: string | null;
-  price: number;
-  billingCycle: BillingCycle;
+  annualFee: number;
+  pricePerPlayer: number;
   maxPlayers: number;
   maxCategories: number;
   maxUsers: number;
@@ -33,8 +38,8 @@ export interface CreatePlanInput {
 export interface UpdatePlanInput {
   name?: string;
   description?: string | null;
-  price?: number;
-  billingCycle?: BillingCycle;
+  annualFee?: number;
+  pricePerPlayer?: number;
   maxPlayers?: number;
   maxCategories?: number;
   maxUsers?: number;
@@ -60,7 +65,7 @@ export class PlanRepository {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const [rows] = await pool.execute<PlanRow[]>(
-      `SELECT id, name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status, created_at, updated_at FROM plans ${where} ORDER BY name ASC`,
+      `SELECT ${PLAN_COLUMNS} FROM plans ${where} ORDER BY name ASC`,
       params,
     );
     return rows;
@@ -69,7 +74,7 @@ export class PlanRepository {
   async findById(planId: number): Promise<PlanRow | null> {
     const pool = getPool();
     const [rows] = await pool.execute<PlanRow[]>(
-      'SELECT id, name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status, created_at, updated_at FROM plans WHERE id = ? LIMIT 1',
+      `SELECT ${PLAN_COLUMNS} FROM plans WHERE id = ? LIMIT 1`,
       [planId],
     );
     return rows[0] ?? null;
@@ -78,7 +83,7 @@ export class PlanRepository {
   async findByName(name: string): Promise<PlanRow | null> {
     const pool = getPool();
     const [rows] = await pool.execute<PlanRow[]>(
-      'SELECT id, name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status, created_at, updated_at FROM plans WHERE name = ? LIMIT 1',
+      `SELECT ${PLAN_COLUMNS} FROM plans WHERE name = ? LIMIT 1`,
       [name],
     );
     return rows[0] ?? null;
@@ -86,14 +91,17 @@ export class PlanRepository {
 
   async create(input: CreatePlanInput, conn?: DbConnection): Promise<number> {
     const executor = conn ?? getPool();
+    const legacyPrice = Math.round((input.annualFee / 12) * 100) / 100;
     const [result] = await executor.execute<ResultSetHeader>(
-      `INSERT INTO plans (name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.name,
         input.description ?? null,
-        input.price,
-        input.billingCycle,
+        input.annualFee,
+        input.pricePerPlayer,
+        legacyPrice,
+        'monthly',
         input.maxPlayers,
         input.maxCategories,
         input.maxUsers,
@@ -117,13 +125,15 @@ export class PlanRepository {
       fields.push('description = ?');
       params.push(input.description);
     }
-    if (input.price !== undefined) {
+    if (input.annualFee !== undefined) {
+      fields.push('annual_fee = ?');
+      params.push(input.annualFee);
       fields.push('price = ?');
-      params.push(input.price);
+      params.push(Math.round((input.annualFee / 12) * 100) / 100);
     }
-    if (input.billingCycle !== undefined) {
-      fields.push('billing_cycle = ?');
-      params.push(input.billingCycle);
+    if (input.pricePerPlayer !== undefined) {
+      fields.push('price_per_player = ?');
+      params.push(input.pricePerPlayer);
     }
     if (input.maxPlayers !== undefined) {
       fields.push('max_players = ?');

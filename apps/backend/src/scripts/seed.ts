@@ -74,7 +74,9 @@ async function getOrCreatePlan(): Promise<number> {
   const pool = getPool();
   if (existing) {
     await pool.execute(
-      `UPDATE plans SET max_players = ?, max_categories = ?, max_users = ?
+      `UPDATE plans SET max_players = ?, max_categories = ?, max_users = ?,
+        annual_fee = COALESCE(NULLIF(annual_fee, 0), 299),
+        price_per_player = COALESCE(NULLIF(price_per_player, 0), 4.00)
        WHERE id = ?`,
       [SEED.plan.maxPlayers, SEED.plan.maxCategories, SEED.plan.maxUsers, existing.id],
     );
@@ -82,11 +84,15 @@ async function getOrCreatePlan(): Promise<number> {
   }
 
   const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO plans (name, description, max_players, max_categories, max_users, max_matches_per_month, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       SEED.plan.name,
       SEED.plan.description,
+      299,
+      4.0,
+      29,
+      'monthly',
       SEED.plan.maxPlayers,
       SEED.plan.maxCategories,
       SEED.plan.maxUsers,

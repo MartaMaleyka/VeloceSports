@@ -77,25 +77,21 @@ export function PlanLimitsList({ plan }: { plan: PlanDto }) {
   return <FeatureList items={items} />;
 }
 
+function formatUsd(amount: number): string {
+  return `$${amount.toFixed(2)}`;
+}
+
 export function PlanPriceDisplay({ plan }: { plan: PlanDto }) {
   const { t } = useTranslation();
-  const formatted = `$${plan.price.toFixed(2)}`;
-  const cycleLabel =
-    plan.billingCycle === 'monthly'
-      ? t('platform.plans.pricePerMonth', { price: formatted })
-      : t('platform.plans.pricePerYear', { price: formatted });
 
   return (
-    <div className="flex flex-col">
-      <span className="text-2xl font-bold tabular-nums tracking-tight text-text-primary">
-        {formatted}
+    <div className="flex flex-col gap-1">
+      <span className="text-base font-semibold tabular-nums text-text-primary">
+        {t('platform.plans.pricing.annualFee', { price: formatUsd(plan.annualFee) })}
       </span>
-      <span className="text-sm font-medium text-text-secondary">
-        {plan.billingCycle === 'monthly'
-          ? t('platform.plans.billing.monthly')
-          : t('platform.plans.billing.yearly')}
+      <span className="text-sm text-text-secondary">
+        {t('platform.plans.pricing.pricePerPlayer', { price: formatUsd(plan.pricePerPlayer) })}
       </span>
-      <span className="sr-only">{cycleLabel}</span>
     </div>
   );
 }

@@ -34,6 +34,10 @@ import { TemporaryPasswordModal } from './TemporaryPasswordModal';
 
 const PAGE_SIZE = 12;
 
+function formatMoney(amount: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+}
+
 interface AcademyDetailPageProps {
   academyId: number;
 }
@@ -84,7 +88,7 @@ function compareUsers(
 }
 
 function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
@@ -448,6 +452,31 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
               <dt className="text-text-muted">{t('platform.academies.columns.plan')}</dt>
               <dd>{academy.plan?.name ?? t('platform.academies.noPlan')}</dd>
             </div>
+            {academy.billingEstimate && (
+              <div className="sm:col-span-2">
+                <dt className="text-text-muted">{t('platform.academies.billing.estimateLabel')}</dt>
+                <dd>
+                  {t('platform.academies.billing.estimate', {
+                    annual: formatMoney(
+                      academy.billingEstimate.annualFee,
+                      academy.billingEstimate.currency,
+                      locale,
+                    ),
+                    monthly: formatMoney(
+                      academy.billingEstimate.estimatedMonthlyFee,
+                      academy.billingEstimate.currency,
+                      locale,
+                    ),
+                    players: academy.billingEstimate.activePlayerCount,
+                    perPlayer: formatMoney(
+                      academy.billingEstimate.pricePerPlayer,
+                      academy.billingEstimate.currency,
+                      locale,
+                    ),
+                  })}
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-text-muted">{t('platform.academies.columns.users')}</dt>
               <dd>

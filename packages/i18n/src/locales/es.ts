@@ -106,10 +106,13 @@ export const es = {
       },
       pricePerMonth: '{price}/mes',
       pricePerYear: '{price}/año',
+      pricing: {
+        annualFee: 'Anualidad: {price}',
+        pricePerPlayer: '{price}/jugador activo/mes',
+      },
       columns: {
         name: 'Nombre',
-        price: 'Precio',
-        billing: 'Ciclo',
+        price: 'Precios',
         limits: 'Límites',
         status: 'Estado',
         actions: 'Acciones',
@@ -121,8 +124,10 @@ export const es = {
       form: {
         name: 'Nombre del plan',
         description: 'Descripción',
-        price: 'Precio (USD)',
-        billingCycle: 'Ciclo de facturación',
+        annualFee: 'Anualidad fija (USD)',
+        annualFeeHint: 'Se cobra una vez al año en el mes de aniversario de la academia.',
+        pricePerPlayer: 'Precio por jugador activo (USD/mes)',
+        pricePerPlayerHint: 'Mensualidad variable según jugadores con estado activo.',
         maxPlayers: 'Máx. jugadores',
         maxCategories: 'Máx. categorías',
         maxUsers: 'Máx. usuarios',
@@ -245,6 +250,8 @@ export const es = {
         currentPeriod: 'Periodo en curso',
         nextPeriod: 'Próximo periodo',
         periodRange: '{start} — {end}',
+        estimateLabel: 'Estimación de cobro',
+        estimate: 'Anualidad: {annual} · Mensualidad estimada: {monthly} ({players} jugadores × {perPlayer})',
       },
     },
     superAdmins: {

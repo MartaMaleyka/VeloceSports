@@ -20,7 +20,13 @@ export interface PlanDto {
   id: number;
   name: string;
   description: string | null;
+  /** Anualidad fija del plan (USD). */
+  annualFee: number;
+  /** Precio mensual por jugador activo (USD). */
+  pricePerPlayer: number;
+  /** @deprecated Legacy — se mantiene para facturas manuales hasta Parte 2 de facturación. */
   price: number;
+  /** @deprecated Legacy — siempre monthly en el modelo v2. */
   billingCycle: BillingCycle;
   maxPlayers: number;
   maxCategories: number;
@@ -29,6 +35,16 @@ export interface PlanDto {
   status: PlanStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Estimación de cobro para una academia (sin generar facturas). */
+export interface AcademyBillingEstimateDto {
+  annualFee: number;
+  pricePerPlayer: number;
+  activePlayerCount: number;
+  /** Mensualidad estimada: jugadores activos × pricePerPlayer. */
+  estimatedMonthlyFee: number;
+  currency: string;
 }
 
 export interface AcademyPlanSummaryDto {
@@ -61,6 +77,7 @@ export interface AcademyDetailDto extends AcademyListItemDto {
   logoUrl: string | null;
   currentBillingPeriod: { periodStart: string; periodEnd: string };
   nextBillingPeriod: { periodStart: string; periodEnd: string };
+  billingEstimate: AcademyBillingEstimateDto | null;
 }
 
 export interface CreateAcademyResponseDto {

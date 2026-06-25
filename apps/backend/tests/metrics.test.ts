@@ -2,6 +2,7 @@ import {
   BillingCycle,
   calculateDelinquencyRate,
   calculateMrrFromAcademyPlans,
+  calculateMrrFromBillingV2,
   normalizePlanPriceToMonthly,
 } from '@velocesport/shared';
 
@@ -17,6 +18,13 @@ describe('metrics — MRR y morosidad', () => {
       { price: 120, billingCycle: BillingCycle.YEARLY },
     ]);
     expect(mrr).toBe(39);
+  });
+
+  it('calculateMrrFromBillingV2: anualidad/12 + jugadores activos × precio', () => {
+    const mrr = calculateMrrFromBillingV2([
+      { annualFee: 120, pricePerPlayer: 4, activePlayerCount: 5 },
+    ]);
+    expect(mrr).toBe(30);
   });
 
   it('calculateDelinquencyRate = vencidas / emitidas', () => {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { PlanDto } from '@velocesport/shared';
 
-import { BillingCycle, PlanStatus } from '@velocesport/shared';
+import { PlanStatus } from '@velocesport/shared';
 
 import {
 
@@ -60,7 +60,7 @@ const PAGE_SIZE = 12;
 
 
 
-type SortKey = 'name' | 'price' | 'status';
+type SortKey = 'name' | 'annualFee' | 'status';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -136,9 +136,9 @@ function comparePlans(a: PlanDto, b: PlanDto, key: SortKey, direction: SortDirec
 
     cmp = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
 
-  } else if (key === 'price') {
+  } else if (key === 'annualFee') {
 
-    cmp = a.price - b.price;
+    cmp = a.annualFee - b.annualFee;
 
   } else {
 
@@ -478,7 +478,7 @@ function PlansListContent() {
 
             label={t('platform.plans.columns.price')}
 
-            sortKey="price"
+            sortKey="annualFee"
 
             activeSortKey={sortKey}
 
@@ -571,16 +571,6 @@ function PlansListContent() {
             <TableCell>
 
               <PlanPriceDisplay plan={plan} />
-
-            </TableCell>
-
-            <TableCell>
-
-              {plan.billingCycle === BillingCycle.MONTHLY
-
-                ? t('platform.plans.billing.monthly')
-
-                : t('platform.plans.billing.yearly')}
 
             </TableCell>
 

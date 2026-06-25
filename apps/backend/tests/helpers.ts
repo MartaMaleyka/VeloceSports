@@ -63,9 +63,9 @@ export async function seedTestData(): Promise<TestSeed> {
   const suspendedHash = await bcrypt.hash(suspendedPassword, 10);
 
   const [planResult] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO plans (name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['Plan Test', 'Plan para pruebas', 29, 'monthly', 100, 10, 50, 50, 'active'],
+    `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ['Plan Test', 'Plan para pruebas', 290, 0, 29, 'monthly', 100, 10, 50, 50, 'active'],
   );
   const planId = planResult.insertId;
 

@@ -12,16 +12,20 @@ import {
   AcademySuspensionReason,
   BILLING_DUE_DAYS_AFTER_PERIOD,
   BILLING_WARNING_DAYS,
+  calculateMonthlyPlayerFee,
+  calculatePeriodBillingEstimate,
+  getAcademyAnniversaryMonth,
   InvoiceStatus as InvoiceStatusConst,
+  isAnnualChargeDueInBillingPeriod,
 } from '@velocesport/shared';
 import { academyRepository } from '../repositories/academy.repository.js';
 import { invoiceRepository, type InvoiceRow } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
+import { playerRepository } from '../repositories/player.repository.js';
 import { auditService } from './audit.service.js';
 import { userSessionService } from './user-session.service.js';
 import {
   computeAnchoredMonthlyBillingPeriod,
-  computeBillingPeriod,
   computePeriodForAnchorMonth,
   resolveAnchoredBillingPeriod,
 } from './billing-period.service.js';
@@ -85,9 +89,26 @@ export class InvoiceService {
     const period =
       input.periodYear && input.periodMonth
         ? computePeriodForAnchorMonth(academy.billing_anchor_day, input.periodYear, input.periodMonth)
-        : computeBillingPeriod(plan.billing_cycle, new Date(), academy.billing_anchor_day);
+        : computeAnchoredMonthlyBillingPeriod(academy.billing_anchor_day, new Date());
 
-    const amount = input.amount ?? Number(plan.price);
+    let amount = input.amount;
+    if (amount === undefined) {
+      const activePlayerCount = await playerRepository.countActiveByTenant(academy.id);
+      const anniversaryMonth = getAcademyAnniversaryMonth(academy.created_at);
+      const includeAnnual = isAnnualChargeDueInBillingPeriod({
+        anniversaryMonth,
+        anchorDay: academy.billing_anchor_day,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
+      });
+      amount = calculatePeriodBillingEstimate({
+        annualFee: Number(plan.annual_fee),
+        pricePerPlayer: Number(plan.price_per_player),
+        activePlayerCount,
+        includeAnnualInPeriod: includeAnnual,
+      }).total;
+    }
+
     const currency = academy.currency ?? 'USD';
 
     try {
@@ -247,6 +268,14 @@ export class InvoiceService {
     const upcomingRow = await invoiceRepository.findUpcomingForTenant(tenantId, BILLING_WARNING_DAYS);
     const overdueRow = await invoiceRepository.findOverdueForTenant(tenantId);
 
+    const activePlayerCount = await playerRepository.countActiveByTenant(tenantId);
+    const annualFee = plan ? Number(plan.annual_fee) : null;
+    const pricePerPlayer = plan ? Number(plan.price_per_player) : null;
+    const estimatedMonthlyPlayerFee =
+      pricePerPlayer != null
+        ? calculateMonthlyPlayerFee(pricePerPlayer, activePlayerCount)
+        : null;
+
     const anchorDay = academy.billing_anchor_day;
     const currentRange = resolveAnchoredBillingPeriod(anchorDay, new Date(), 'current');
     const nextRange = resolveAnchoredBillingPeriod(anchorDay, new Date(), 'next');
@@ -254,8 +283,12 @@ export class InvoiceService {
 
     return {
       planName: plan?.name ?? academy.plan_name,
-      planPrice: plan ? Number(plan.price) : null,
+      planPrice: estimatedMonthlyPlayerFee,
       billingCycle: plan?.billing_cycle ?? null,
+      annualFee,
+      pricePerPlayer,
+      activePlayerCount,
+      estimatedMonthlyPlayerFee,
       billingAnchorDay: anchorDay,
       currentPeriod: {
         periodStart: currentRange.periodStart,

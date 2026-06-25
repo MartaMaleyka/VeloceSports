@@ -99,8 +99,8 @@ describe('Platform API (super_admin)', () => {
       .set('Authorization', `Bearer ${superToken}`)
       .send({
         name: `Plan Límite ${unique}`,
-        price: 10,
-        billingCycle: 'monthly',
+        annualFee: 100,
+        pricePerPlayer: 5,
         maxPlayers: 10,
         maxCategories: 1,
         maxUsers: 1,

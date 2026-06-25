@@ -12,6 +12,7 @@ import {
   AcademyBillingStatus as AcademyBillingStatusConst,
   AcademyStatus as AcademyStatusConst,
   AcademySuspensionReason,
+  calculateMonthlyPlayerFee,
   PlanStatus as PlanStatusConst,
   UserRole,
   UserStatus,
@@ -20,6 +21,7 @@ import { getPool } from '../config/db.js';
 import { academyRepository, type AcademyWithPlanRow } from '../repositories/academy.repository.js';
 import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
+import { playerRepository } from '../repositories/player.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
 import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
@@ -70,7 +72,7 @@ export class PlatformService {
     if (!row) throw new NotFoundError('Academia no encontrada');
     const billingMap = await invoiceService.getBillingStatusMap([academyId]);
     const overdueCount = await invoiceRepository.countOverdueByTenant(academyId);
-    return this.toDetailDto(
+    return await this.toDetailDto(
       row,
       billingMap.get(academyId) ?? AcademyBillingStatusConst.CURRENT,
       overdueCount,
@@ -500,19 +502,39 @@ export class PlatformService {
     };
   }
 
-  private toDetailDto(
+  private async toDetailDto(
     row: AcademyWithPlanRow,
     billingStatus: AcademyListItemDto['billingStatus'],
     overdueInvoiceCount: number,
-  ): AcademyDetailDto {
+  ): Promise<AcademyDetailDto> {
     const anchorDay = row.billing_anchor_day;
     const currentBillingPeriod = resolveAnchoredBillingPeriod(anchorDay, new Date(), 'current');
     const nextBillingPeriod = resolveAnchoredBillingPeriod(anchorDay, new Date(), 'next');
+
+    let billingEstimate: AcademyDetailDto['billingEstimate'] = null;
+    if (row.plan_id) {
+      const plan = await planRepository.findById(row.plan_id);
+      if (plan) {
+        const activePlayerCount = await playerRepository.countActiveByTenant(row.id);
+        billingEstimate = {
+          annualFee: Number(plan.annual_fee),
+          pricePerPlayer: Number(plan.price_per_player),
+          activePlayerCount,
+          estimatedMonthlyFee: calculateMonthlyPlayerFee(
+            Number(plan.price_per_player),
+            activePlayerCount,
+          ),
+          currency: row.currency ?? 'USD',
+        };
+      }
+    }
+
     return {
-      ...this.toListDto(row, billingStatus, overdueInvoiceCount),
+      ...(await Promise.resolve(this.toListDto(row, billingStatus, overdueInvoiceCount))),
       logoUrl: row.logo_url,
       currentBillingPeriod,
       nextBillingPeriod,
+      billingEstimate,
     };
   }
 

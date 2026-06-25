@@ -17,9 +17,9 @@ async function loginAs(email: string, password: string): Promise<string> {
 async function createRestrictedPlan(): Promise<number> {
   const pool = getPool();
   const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO plans (name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['Plan Restricted', 'Límites bajos para pruebas', 9, 'monthly', 2, 1, 2, 5, 'active'],
+    `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ['Plan Restricted', 'Límites bajos para pruebas', 90, 0, 9, 'monthly', 2, 1, 2, 5, 'active'],
   );
   return result.insertId;
 }

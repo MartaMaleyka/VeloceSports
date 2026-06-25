@@ -1,4 +1,4 @@
-import type { BillingCycle, PlanDto, PlanStatus } from '@velocesport/shared';
+import type { PlanDto, PlanStatus } from '@velocesport/shared';
 import { planRepository, type PlanRow } from '../repositories/plan.repository.js';
 import { auditService } from './audit.service.js';
 import {
@@ -26,8 +26,8 @@ export class PlanService {
     const planId = await planRepository.create({
       name: input.name,
       description: input.description ?? null,
-      price: input.price,
-      billingCycle: input.billingCycle as BillingCycle,
+      annualFee: input.annualFee,
+      pricePerPlayer: input.pricePerPlayer,
       maxPlayers: input.maxPlayers,
       maxCategories: input.maxCategories,
       maxUsers: input.maxUsers,
@@ -53,8 +53,8 @@ export class PlanService {
     await planRepository.update(planId, {
       name: input.name,
       description: input.description,
-      price: input.price,
-      billingCycle: input.billingCycle as BillingCycle | undefined,
+      annualFee: input.annualFee,
+      pricePerPlayer: input.pricePerPlayer,
       maxPlayers: input.maxPlayers,
       maxCategories: input.maxCategories,
       maxUsers: input.maxUsers,
@@ -80,6 +80,8 @@ export class PlanService {
       id: row.id,
       name: row.name,
       description: row.description,
+      annualFee: Number(row.annual_fee),
+      pricePerPlayer: Number(row.price_per_player),
       price: Number(row.price),
       billingCycle: row.billing_cycle,
       maxPlayers: row.max_players,

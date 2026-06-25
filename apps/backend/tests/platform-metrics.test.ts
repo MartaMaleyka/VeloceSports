@@ -25,9 +25,9 @@ describe('Platform dashboard metrics', () => {
     const pool = getPool();
 
     const [yearlyPlanResult] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO plans (name, description, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ['Plan Anual Test', 'Anual', 120, BillingCycle.YEARLY, 50, 5, 10, 20, 'active'],
+      `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['Plan MRR Test', 'MRR v2', 120, 0, 10, BillingCycle.MONTHLY, 50, 5, 10, 20, 'active'],
     );
     const yearlyPlanId = yearlyPlanResult.insertId;
 
@@ -75,7 +75,7 @@ describe('Platform dashboard metrics', () => {
     );
   });
 
-  it('MRR incluye solo academias activas y normaliza anual a mensual', async () => {
+  it('MRR incluye solo academias activas (anualidad/12 + jugadores × precio)', async () => {
     const res = await request(app)
       .get('/api/platform/metrics/dashboard')
       .set('Authorization', `Bearer ${superToken}`)
@@ -83,7 +83,7 @@ describe('Platform dashboard metrics', () => {
 
     const mrr = res.body.data.mrr.amount as number;
     expect(mrr).toBeGreaterThanOrEqual(10);
-    expect(mrr % 1).toBeLessThan(0.01);
+    expect(Number.isFinite(mrr)).toBe(true);
   });
 
   it('desgloses de academias cuadran: activas + suspendidas + inactivas = total', async () => {

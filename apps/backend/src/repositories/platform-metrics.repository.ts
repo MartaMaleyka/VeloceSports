@@ -1,9 +1,12 @@
 import type { RowDataPacket } from 'mysql2/promise';
 import { getPool } from '../config/db.js';
 
-/** SQL equivalente a normalizePlanPriceToMonthly — mantener sincronizado con shared/metrics.ts */
-const MONTHLY_PLAN_VALUE_SQL = `
-  CASE WHEN p.billing_cycle = 'yearly' THEN p.price / 12 ELSE p.price END
+/** SQL MRR modelo v2 — sincronizado con shared/plan-pricing.ts calculateNormalizedMrr */
+const MRR_V2_SQL = `
+  (p.annual_fee / 12) + (p.price_per_player * (
+    SELECT COUNT(*) FROM players pl
+    WHERE pl.tenant_id = a.id AND pl.status = 'active'
+  ))
 `;
 
 function formatMonthFilter(month: string): { start: string; end: string } | null {
@@ -23,7 +26,7 @@ export class PlatformMetricsRepository {
   async getMrr(): Promise<number> {
     const pool = getPool();
     const [rows] = await pool.query<Array<{ mrr: string | null } & RowDataPacket>>(
-      `SELECT COALESCE(SUM(${MONTHLY_PLAN_VALUE_SQL}), 0) AS mrr
+      `SELECT COALESCE(SUM(${MRR_V2_SQL}), 0) AS mrr
        FROM academies a
        INNER JOIN plans p ON p.id = a.plan_id
        WHERE a.status = 'active'`,
@@ -35,7 +38,7 @@ export class PlatformMetricsRepository {
   async getMrrBeforeDate(before: Date): Promise<number> {
     const pool = getPool();
     const [rows] = await pool.query<Array<{ mrr: string | null } & RowDataPacket>>(
-      `SELECT COALESCE(SUM(${MONTHLY_PLAN_VALUE_SQL}), 0) AS mrr
+      `SELECT COALESCE(SUM(${MRR_V2_SQL}), 0) AS mrr
        FROM academies a
        INNER JOIN plans p ON p.id = a.plan_id
        WHERE a.status = 'active' AND a.created_at < ?`,
