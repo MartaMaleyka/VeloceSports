@@ -308,7 +308,7 @@ export const en = {
       markPending: 'Mark pending',
       cancel: 'Cancel invoice',
       confirmCancel: 'Cancel this invoice? This cannot be undone.',
-      successCreate: 'Invoice created successfully.',
+      successCreate: 'Generated {count} invoice(s) for the period.',
       successPayment: 'Payment status updated.',
       successCancel: 'Invoice cancelled.',
       status: {
@@ -317,6 +317,11 @@ export const en = {
         overdue: 'Overdue',
         cancelled: 'Cancelled',
       },
+      invoiceType: {
+        monthly: 'Monthly',
+        annual: 'Annual',
+      },
+      breakdown: '{count} players × {price}',
       academyStatus: {
         current: 'Up to date',
         pending: 'Pending',
@@ -325,6 +330,7 @@ export const en = {
       columns: {
         academy: 'Academy',
         plan: 'Plan',
+        type: 'Type',
         period: 'Period',
         amount: 'Amount',
         dueDate: 'Due date',
@@ -339,10 +345,10 @@ export const en = {
       },
       form: {
         academy: 'Academy',
-        amount: 'Amount (optional)',
-        amountHint: 'Leave empty to use the plan price.',
+        periodMonth: 'Billing period (month)',
         notes: 'Notes',
-        submit: 'Generate invoice',
+        submit: 'Generate period invoices',
+        periodHint: 'Leave empty to use the current period based on the cut-off day.',
       },
       alerts: {
         upcomingTitle: 'Payment due soon',

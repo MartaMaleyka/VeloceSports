@@ -14,6 +14,7 @@ export {
   academySettingsBillingStatusKey,
   academyAdminHomeBillingStatusKey,
   platformBillingInvoiceStatusKey,
+  platformBillingInvoiceTypeKey,
   platformBillingAcademyStatusKey,
   auditEntityKey,
   auditActionKey,

@@ -3,6 +3,7 @@ import { Badge, type BadgeVariant } from '@velocesport/design-system';
 import {
   useTranslation,
   platformBillingInvoiceStatusKey,
+  platformBillingInvoiceTypeKey,
   platformBillingAcademyStatusKey,
 } from '@velocesport/i18n';
 
@@ -45,6 +46,20 @@ export function InvoiceStatusBadge({ status }: { status: InvoiceStatus | string 
     <Badge variant={variantMap[key] ?? 'default'} className="inline-flex items-center">
       <StatusIcon status={key} />
       {t(platformBillingInvoiceStatusKey(key))}
+    </Badge>
+  );
+}
+
+const invoiceTypeVariantMap: Record<string, BadgeVariant> = {
+  monthly: 'default',
+  annual: 'info',
+};
+
+export function InvoiceTypeBadge({ invoiceType }: { invoiceType: string }) {
+  const { t } = useTranslation();
+  return (
+    <Badge variant={invoiceTypeVariantMap[invoiceType] ?? 'default'}>
+      {t(platformBillingInvoiceTypeKey(invoiceType))}
     </Badge>
   );
 }

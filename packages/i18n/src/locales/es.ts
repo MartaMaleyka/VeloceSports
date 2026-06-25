@@ -308,7 +308,7 @@ export const es = {
       markPending: 'Marcar pendiente',
       cancel: 'Cancelar factura',
       confirmCancel: '¿Cancelar esta factura? Esta acción no se puede deshacer.',
-      successCreate: 'Creaste la factura correctamente.',
+      successCreate: 'Generaste {count} factura(s) del periodo.',
       successPayment: 'Actualizaste el estado de pago.',
       successCancel: 'Cancelaste la factura.',
       status: {
@@ -317,6 +317,11 @@ export const es = {
         overdue: 'Vencida',
         cancelled: 'Cancelada',
       },
+      invoiceType: {
+        monthly: 'Mensual',
+        annual: 'Anual',
+      },
+      breakdown: '{count} jugadores × {price}',
       academyStatus: {
         current: 'Al día',
         pending: 'Pendiente',
@@ -325,6 +330,7 @@ export const es = {
       columns: {
         academy: 'Academia',
         plan: 'Plan',
+        type: 'Tipo',
         period: 'Periodo',
         amount: 'Monto',
         dueDate: 'Vencimiento',
@@ -339,10 +345,10 @@ export const es = {
       },
       form: {
         academy: 'Academia',
-        amount: 'Monto (opcional)',
-        amountHint: 'Si lo dejas vacío, se usa el precio del plan.',
+        periodMonth: 'Periodo (mes)',
         notes: 'Notas',
-        submit: 'Generar factura',
+        submit: 'Generar facturas del periodo',
+        periodHint: 'Si lo dejas vacío, se usa el periodo en curso según el día de corte.',
       },
       alerts: {
         upcomingTitle: 'Pago próximo a vencer',

@@ -65,7 +65,7 @@ export async function seedTestData(): Promise<TestSeed> {
   const [planResult] = await pool.execute<ResultSetHeader>(
     `INSERT INTO plans (name, description, annual_fee, price_per_player, price, billing_cycle, max_players, max_categories, max_users, max_matches_per_month, status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['Plan Test', 'Plan para pruebas', 290, 0, 29, 'monthly', 100, 10, 50, 50, 'active'],
+    ['Plan Test', 'Plan para pruebas', 290, 4, 29, 'monthly', 100, 10, 50, 50, 'active'],
   );
   const planId = planResult.insertId;
 

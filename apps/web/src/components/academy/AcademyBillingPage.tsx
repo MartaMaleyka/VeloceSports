@@ -21,7 +21,7 @@ import { useTranslation, platformBillingAcademyStatusKey } from '@velocesport/i1
 import { billingFetch, billingFetchList, BillingApiError } from '../../lib/billing-api';
 import { downloadBillingInvoicePdf } from '../../lib/download-pdf';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
-import { BillingStatusBadge, InvoiceStatusBadge } from '../platform/BillingBadges';
+import { InvoiceStatusBadge, InvoiceTypeBadge } from '../platform/BillingBadges';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 
 const PAGE_SIZE = 12;
@@ -95,12 +95,35 @@ function AcademyBillingContent() {
     return items.length > 0 ? <div className="space-y-3">{items}</div> : null;
   }, [summary, t, locale]);
 
+  const invoiceDetailLine = (invoice: InvoiceDto) => {
+    if (
+      invoice.invoiceType === 'monthly' &&
+      invoice.billedPlayerCount != null &&
+      invoice.billedPricePerPlayer != null
+    ) {
+      return t('platform.billing.breakdown', {
+        count: invoice.billedPlayerCount,
+        price: formatMoney(invoice.billedPricePerPlayer, invoice.currency, locale),
+      });
+    }
+    return null;
+  };
+
   const renderCard = (invoice: InvoiceDto) => (
     <DataCard>
-      <DataCardHeader title={`#${invoice.id}`} subtitle={invoice.planName ?? undefined} />
+      <DataCardHeader
+        title={`#${invoice.id}`}
+        subtitle={invoice.planName ?? undefined}
+      />
+      <div className="mt-2">
+        <InvoiceTypeBadge invoiceType={invoice.invoiceType} />
+      </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <LabeledValue label={t('platform.billing.columns.amount')}>
           {formatMoney(invoice.amount, invoice.currency, locale)}
+          {invoiceDetailLine(invoice) && (
+            <p className="mt-1 text-xs text-text-muted">{invoiceDetailLine(invoice)}</p>
+          )}
         </LabeledValue>
         <LabeledValue label={t('platform.billing.columns.dueDate')}>{invoice.dueDate}</LabeledValue>
         <LabeledValue label={t('platform.billing.columns.period')}>
@@ -129,6 +152,7 @@ function AcademyBillingContent() {
       <TableHead>
         <TableRow>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">#</th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.type')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.period')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.amount')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.dueDate')}</th>
@@ -140,8 +164,14 @@ function AcademyBillingContent() {
         {visible.map((invoice) => (
           <TableRow key={invoice.id}>
             <TableCell>{invoice.id}</TableCell>
+            <TableCell><InvoiceTypeBadge invoiceType={invoice.invoiceType} /></TableCell>
             <TableCell>{invoice.periodStart} — {invoice.periodEnd}</TableCell>
-            <TableCell>{formatMoney(invoice.amount, invoice.currency, locale)}</TableCell>
+            <TableCell>
+              <div>{formatMoney(invoice.amount, invoice.currency, locale)}</div>
+              {invoiceDetailLine(invoice) && (
+                <div className="text-xs text-text-muted">{invoiceDetailLine(invoice)}</div>
+              )}
+            </TableCell>
             <TableCell>{invoice.dueDate}</TableCell>
             <TableCell><InvoiceStatusBadge status={invoice.status} /></TableCell>
             <TableCell>

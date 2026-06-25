@@ -500,18 +500,6 @@ function PlansListContent() {
 
           >
 
-            {t('platform.plans.columns.billing')}
-
-          </th>
-
-          <th
-
-            scope="col"
-
-            className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted"
-
-          >
-
             {t('platform.plans.columns.limits')}
 
           </th>

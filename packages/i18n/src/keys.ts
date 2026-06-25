@@ -117,6 +117,18 @@ export const platformBillingInvoiceStatusKeys = {
   cancelled: 'platform.billing.status.cancelled',
 } as const satisfies Record<string, TranslationKey>;
 
+export const platformBillingInvoiceTypeKeys = {
+  monthly: 'platform.billing.invoiceType.monthly',
+  annual: 'platform.billing.invoiceType.annual',
+} as const satisfies Record<string, TranslationKey>;
+
+export function platformBillingInvoiceTypeKey(type: string): TranslationKey {
+  if (type in platformBillingInvoiceTypeKeys) {
+    return platformBillingInvoiceTypeKeys[type as keyof typeof platformBillingInvoiceTypeKeys];
+  }
+  return `platform.billing.invoiceType.${type}` as TranslationKey;
+}
+
 export function platformBillingInvoiceStatusKey(status: string): TranslationKey {
   if (status in platformBillingInvoiceStatusKeys) {
     return platformBillingInvoiceStatusKeys[status as keyof typeof platformBillingInvoiceStatusKeys];

@@ -1,12 +1,16 @@
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import type { InvoiceStatus } from '@velocesport/shared';
+import type { InvoiceStatus, InvoiceType } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
 
 export interface InvoiceRow extends RowDataPacket {
   id: number;
   tenant_id: number;
   plan_id: number;
+  invoice_type: InvoiceType;
   amount: string;
+  billed_player_count: number | null;
+  billed_price_per_player: string | null;
+  billed_annual_fee: string | null;
   currency: string;
   period_start: Date;
   period_end: Date;
@@ -25,6 +29,7 @@ export interface InvoiceRow extends RowDataPacket {
 export interface InvoiceFilters {
   tenantId?: number;
   status?: InvoiceStatus;
+  invoiceType?: InvoiceType;
   month?: string;
   search?: string;
 }
@@ -66,6 +71,10 @@ export class InvoiceRepository {
     if (filters?.status) {
       conditions.push('i.status = ?');
       params.push(filters.status);
+    }
+    if (filters?.invoiceType) {
+      conditions.push('i.invoice_type = ?');
+      params.push(filters.invoiceType);
     }
     if (filters?.month) {
       const range = formatMonthFilter(filters.month);
@@ -137,10 +146,33 @@ export class InvoiceRepository {
     return rows[0] ?? null;
   }
 
+  async findByTenantPeriodAndType(
+    tenantId: number,
+    periodStart: string,
+    periodEnd: string,
+    invoiceType: InvoiceType,
+  ): Promise<InvoiceRow | null> {
+    const pool = getPool();
+    const [rows] = await pool.execute<InvoiceRow[]>(
+      `SELECT i.*, a.name AS academy_name, p.name AS plan_name
+       FROM invoices i
+       INNER JOIN academies a ON a.id = i.tenant_id
+       INNER JOIN plans p ON p.id = i.plan_id
+       WHERE i.tenant_id = ? AND i.period_start = ? AND i.period_end = ? AND i.invoice_type = ?
+       LIMIT 1`,
+      [tenantId, periodStart, periodEnd, invoiceType],
+    );
+    return rows[0] ?? null;
+  }
+
   async create(input: {
     tenantId: number;
     planId: number;
+    invoiceType: InvoiceType;
     amount: number;
+    billedPlayerCount?: number | null;
+    billedPricePerPlayer?: number | null;
+    billedAnnualFee?: number | null;
     currency: string;
     periodStart: string;
     periodEnd: string;
@@ -151,12 +183,17 @@ export class InvoiceRepository {
     const pool = getPool();
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO invoices
-        (tenant_id, plan_id, amount, currency, period_start, period_end, issue_date, due_date, status, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+        (tenant_id, plan_id, invoice_type, amount, billed_player_count, billed_price_per_player,
+         billed_annual_fee, currency, period_start, period_end, issue_date, due_date, status, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
       [
         input.tenantId,
         input.planId,
+        input.invoiceType,
         input.amount,
+        input.billedPlayerCount ?? null,
+        input.billedPricePerPlayer ?? null,
+        input.billedAnnualFee ?? null,
         input.currency,
         input.periodStart,
         input.periodEnd,

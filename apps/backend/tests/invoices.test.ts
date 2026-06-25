@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { InvoiceStatus } from '@velocesport/shared';
+import { InvoiceStatus, InvoiceType } from '@velocesport/shared';
 import { getPool } from '../src/config/db.js';
 import { getTestSeed } from './helpers.js';
 
@@ -31,7 +31,7 @@ describe('Invoices API', () => {
       .expect(403);
   });
 
-  it('super_admin crea factura manual y academy_admin solo ve la suya', async () => {
+  it('super_admin crea facturas del periodo y academy_admin solo ve la suya', async () => {
     const unique = Date.now();
     const createRes = await request(app)
       .post('/api/platform/invoices')
@@ -39,8 +39,11 @@ describe('Invoices API', () => {
       .send({ tenantId: seed.academyAId, notes: `Test ${unique}` })
       .expect(201);
 
-    const invoiceId = createRes.body.data.id as number;
-    expect(createRes.body.data.status).toBe(InvoiceStatus.PENDING);
+    expect(Array.isArray(createRes.body.data.invoices)).toBe(true);
+    expect(createRes.body.data.created.length).toBeGreaterThanOrEqual(1);
+
+    const invoiceId = createRes.body.data.invoices[0].id as number;
+    expect(createRes.body.data.invoices[0].invoiceType).toBe(InvoiceType.MONTHLY);
 
     const listA = await request(app)
       .get('/api/billing/invoices')
@@ -68,7 +71,7 @@ describe('Invoices API', () => {
       .send({ tenantId: seed.academyBId })
       .expect(201);
 
-    const invoiceId = createRes.body.data.id as number;
+    const invoiceId = createRes.body.data.invoices[0].id as number;
 
     const paidRes = await request(app)
       .patch(`/api/platform/invoices/${invoiceId}/payment`)
@@ -105,8 +108,8 @@ describe('Invoices API', () => {
 
     const [invoiceResult] = await pool.execute<import('mysql2/promise').ResultSetHeader>(
       `INSERT INTO invoices
-        (tenant_id, plan_id, amount, currency, period_start, period_end, issue_date, due_date, status)
-       VALUES (?, ?, ?, 'USD', '2025-01-01', '2025-01-31', '2025-01-01', ?, 'pending')`,
+        (tenant_id, plan_id, invoice_type, amount, currency, period_start, period_end, issue_date, due_date, status)
+       VALUES (?, ?, 'monthly', ?, 'USD', '2025-01-01', '2025-01-31', '2025-01-01', ?, 'pending')`,
       [academyId, seed.planId, 29, dueDate],
     );
     const invoiceId = invoiceResult.insertId;

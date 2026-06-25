@@ -1,6 +1,7 @@
 import type {
   AcademyBillingStatus,
   BillingSummaryDto,
+  GeneratePeriodInvoicesResultDto,
   InvoiceDto,
   InvoiceMonthlyKpisDto,
   ProcessOverdueResultDto,
@@ -13,10 +14,7 @@ import {
   BILLING_DUE_DAYS_AFTER_PERIOD,
   BILLING_WARNING_DAYS,
   calculateMonthlyPlayerFee,
-  calculatePeriodBillingEstimate,
-  getAcademyAnniversaryMonth,
   InvoiceStatus as InvoiceStatusConst,
-  isAnnualChargeDueInBillingPeriod,
 } from '@velocesport/shared';
 import { academyRepository } from '../repositories/academy.repository.js';
 import { invoiceRepository, type InvoiceRow } from '../repositories/invoice.repository.js';
@@ -26,16 +24,11 @@ import { auditService } from './audit.service.js';
 import { userSessionService } from './user-session.service.js';
 import {
   computeAnchoredMonthlyBillingPeriod,
-  computePeriodForAnchorMonth,
   resolveAnchoredBillingPeriod,
 } from './billing-period.service.js';
+import { invoiceGenerationService } from './invoice-generation.service.js';
 import { generateInvoicePdf, type InvoicePdfLabels } from './invoice-pdf.service.js';
-import {
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from '../types/index.js';
+import { ForbiddenError, NotFoundError } from '../types/index.js';
 import type {
   CreateInvoiceBody,
   ListInvoicesQuery,
@@ -47,6 +40,7 @@ export class InvoiceService {
     const rows = await invoiceRepository.findAll({
       tenantId: filters.tenantId,
       status: filters.status,
+      invoiceType: filters.invoiceType,
       month: filters.month,
       search: filters.search,
     });
@@ -56,6 +50,7 @@ export class InvoiceService {
   async listForTenant(tenantId: number, filters: Omit<ListInvoicesQuery, 'tenantId' | 'search'>): Promise<InvoiceDto[]> {
     const rows = await invoiceRepository.findByTenantId(tenantId, {
       status: filters.status,
+      invoiceType: filters.invoiceType,
       month: filters.month,
     });
     return rows.map((row) => this.toDto(row));
@@ -78,68 +73,14 @@ export class InvoiceService {
     return { ...kpis, currency: 'USD' };
   }
 
-  async createManual(actorUserId: number, input: CreateInvoiceBody): Promise<InvoiceDto> {
-    const academy = await academyRepository.findById(input.tenantId);
-    if (!academy) throw new NotFoundError('Academia no encontrada');
-    if (!academy.plan_id) throw new ValidationError('La academia no tiene un plan asignado');
-
-    const plan = await planRepository.findById(academy.plan_id);
-    if (!plan) throw new NotFoundError('Plan no encontrado');
-
-    const period =
-      input.periodYear && input.periodMonth
-        ? computePeriodForAnchorMonth(academy.billing_anchor_day, input.periodYear, input.periodMonth)
-        : computeAnchoredMonthlyBillingPeriod(academy.billing_anchor_day, new Date());
-
-    let amount = input.amount;
-    if (amount === undefined) {
-      const activePlayerCount = await playerRepository.countActiveByTenant(academy.id);
-      const anniversaryMonth = getAcademyAnniversaryMonth(academy.created_at);
-      const includeAnnual = isAnnualChargeDueInBillingPeriod({
-        anniversaryMonth,
-        anchorDay: academy.billing_anchor_day,
-        periodStart: period.periodStart,
-        periodEnd: period.periodEnd,
-      });
-      amount = calculatePeriodBillingEstimate({
-        annualFee: Number(plan.annual_fee),
-        pricePerPlayer: Number(plan.price_per_player),
-        activePlayerCount,
-        includeAnnualInPeriod: includeAnnual,
-      }).total;
-    }
-
-    const currency = academy.currency ?? 'USD';
-
-    try {
-      const invoiceId = await invoiceRepository.create({
-        tenantId: academy.id,
-        planId: plan.id,
-        amount,
-        currency,
-        periodStart: period.periodStart,
-        periodEnd: period.periodEnd,
-        issueDate: period.issueDate,
-        dueDate: period.dueDate,
-        notes: input.notes ?? null,
-      });
-
-      const invoice = await this.getByIdPlatform(invoiceId);
-      await auditService.log(
-        { userId: actorUserId, tenantId: academy.id },
-        'invoice',
-        invoiceId,
-        'create',
-        null,
-        invoice as unknown as Record<string, unknown>,
-      );
-      return invoice;
-    } catch (err) {
-      if (err instanceof Error && 'code' in err && (err as { code: string }).code === 'ER_DUP_ENTRY') {
-        throw new ConflictError('Ya existe una factura para ese periodo en esta academia');
-      }
-      throw err;
-    }
+  async createManual(actorUserId: number, input: CreateInvoiceBody): Promise<GeneratePeriodInvoicesResultDto> {
+    return invoiceGenerationService.generatePeriodInvoicesForAcademy({
+      tenantId: input.tenantId,
+      periodYear: input.periodYear,
+      periodMonth: input.periodMonth,
+      notes: input.notes ?? null,
+      actorUserId,
+    });
   }
 
   async updatePayment(
@@ -211,10 +152,6 @@ export class InvoiceService {
     return after;
   }
 
-  /**
-   * Marca facturas vencidas y suspende academias afectadas.
-   * Invocable manualmente (endpoint super_admin) o desde tarea programada futura.
-   */
   async processOverdueInvoices(
     asOfDate: Date = new Date(),
     actorUserId?: number,
@@ -235,7 +172,9 @@ export class InvoiceService {
           AcademySuspensionReason.BILLING,
         );
         await userSessionService.revokeAllSessionsForTenant(invoice.tenant_id);
-        suspendedAcademyIds.push(invoice.tenant_id);
+        if (!suspendedAcademyIds.includes(invoice.tenant_id)) {
+          suspendedAcademyIds.push(invoice.tenant_id);
+        }
       }
 
       if (auditUserId > 0) {
@@ -315,7 +254,12 @@ export class InvoiceService {
       id: row.id,
       tenantId: row.tenant_id,
       planId: row.plan_id,
+      invoiceType: row.invoice_type,
       amount: Number(row.amount),
+      billedPlayerCount: row.billed_player_count,
+      billedPricePerPlayer:
+        row.billed_price_per_player != null ? Number(row.billed_price_per_player) : null,
+      billedAnnualFee: row.billed_annual_fee != null ? Number(row.billed_annual_fee) : null,
       currency: row.currency,
       periodStart: this.dateToString(row.period_start),
       periodEnd: this.dateToString(row.period_end),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { InvoiceStatus } from '@velocesport/shared';
+import { InvoiceStatus, InvoiceType } from '@velocesport/shared';
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -11,6 +11,7 @@ export const listInvoicesQuerySchema = z.object({
     InvoiceStatus.OVERDUE,
     InvoiceStatus.CANCELLED,
   ]).optional(),
+  invoiceType: z.enum([InvoiceType.MONTHLY, InvoiceType.ANNUAL]).optional(),
   month: z.string().regex(monthRegex, 'Formato de mes inválido (YYYY-MM)').optional(),
   search: z.string().trim().max(200).optional(),
 });
@@ -22,7 +23,6 @@ export type ListTenantInvoicesQuery = z.infer<typeof listTenantInvoicesQuerySche
 
 export const createInvoiceSchema = z.object({
   tenantId: z.number().int().positive(),
-  amount: z.number().positive().max(999999).optional(),
   periodYear: z.number().int().min(2020).max(2100).optional(),
   periodMonth: z.number().int().min(1).max(12).optional(),
   notes: z.string().trim().max(2000).nullable().optional(),

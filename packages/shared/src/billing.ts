@@ -7,6 +7,13 @@ export const InvoiceStatus = {
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus];
 
+export const InvoiceType = {
+  MONTHLY: 'monthly',
+  ANNUAL: 'annual',
+} as const;
+
+export type InvoiceType = (typeof InvoiceType)[keyof typeof InvoiceType];
+
 export const AcademyBillingStatus = {
   CURRENT: 'current',
   PENDING: 'pending',
@@ -36,7 +43,14 @@ export interface InvoiceDto {
   id: number;
   tenantId: number;
   planId: number;
+  invoiceType: InvoiceType;
   amount: number;
+  /** Solo facturas mensuales — jugadores activos cobrados. */
+  billedPlayerCount: number | null;
+  /** Solo facturas mensuales — precio unitario aplicado. */
+  billedPricePerPlayer: number | null;
+  /** Solo facturas anuales — anualidad del plan aplicada. */
+  billedAnnualFee: number | null;
   currency: string;
   periodStart: string;
   periodEnd: string;
@@ -52,14 +66,33 @@ export interface InvoiceDto {
   planName?: string;
 }
 
+/** Desglose legible de factura mensual: "45 jugadores × $4.00 = $180.00" */
+export function formatMonthlyInvoiceBreakdown(
+  billedPlayerCount: number,
+  billedPricePerPlayer: number,
+  amount: number,
+  currency = 'USD',
+): string {
+  const unit = new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(
+    billedPricePerPlayer,
+  );
+  const total = new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  return `${billedPlayerCount} × ${unit} = ${total}`;
+}
+
 export interface InvoiceListItemDto extends InvoiceDto {}
 
 export interface CreateInvoiceDto {
   tenantId: number;
-  amount?: number;
   periodYear?: number;
   periodMonth?: number;
   notes?: string | null;
+}
+
+export interface GeneratePeriodInvoicesResultDto {
+  invoices: InvoiceDto[];
+  created: InvoiceDto[];
+  skipped: Array<{ invoiceType: InvoiceType; reason: 'already_exists' }>;
 }
 
 export interface UpdateInvoicePaymentDto {

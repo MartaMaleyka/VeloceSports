@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type {
   AcademyListItemDto,
+  GeneratePeriodInvoicesResultDto,
   InvoiceDto,
   InvoiceMonthlyKpisDto,
   InvoicePaymentReactivationHintDto,
@@ -33,7 +34,7 @@ import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { downloadPlatformInvoicePdf } from '../../lib/download-pdf';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
-import { BillingStatusBadge, InvoiceStatusBadge } from './BillingBadges';
+import { BillingStatusBadge, InvoiceStatusBadge, InvoiceTypeBadge } from './BillingBadges';
 import { ReactivateAfterPaymentModal } from './ReactivateAcademyModal';
 import { RowActionsMenu } from './RowActionsMenu';
 
@@ -77,7 +78,7 @@ function InvoicesListContent() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [createTenantId, setCreateTenantId] = useState('');
-  const [createAmount, setCreateAmount] = useState('');
+  const [createPeriodMonth, setCreatePeriodMonth] = useState('');
   const [createNotes, setCreateNotes] = useState('');
   const [creating, setCreating] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<InvoiceDto | null>(null);
@@ -132,22 +133,44 @@ function InvoicesListContent() {
       ? t('dataView.resultsOne')
       : t('dataView.results', { count: filteredInvoices.length });
 
+  const invoiceDetailLine = (invoice: InvoiceDto) => {
+    if (
+      invoice.invoiceType === 'monthly' &&
+      invoice.billedPlayerCount != null &&
+      invoice.billedPricePerPlayer != null
+    ) {
+      return t('platform.billing.breakdown', {
+        count: invoice.billedPlayerCount,
+        price: formatMoney(invoice.billedPricePerPlayer, invoice.currency, locale),
+      });
+    }
+    return null;
+  };
+
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setCreating(true);
     try {
-      await platformFetch('invoices', {
+      const body: Record<string, unknown> = {
+        tenantId: Number(createTenantId),
+        notes: createNotes || null,
+      };
+      if (createPeriodMonth) {
+        const [year, month] = createPeriodMonth.split('-').map(Number);
+        body.periodYear = year;
+        body.periodMonth = month;
+      }
+      const result = await platformFetch<GeneratePeriodInvoicesResultDto>('invoices', {
         method: 'POST',
-        body: JSON.stringify({
-          tenantId: Number(createTenantId),
-          amount: createAmount ? Number(createAmount) : undefined,
-          notes: createNotes || null,
-        }),
+        body: JSON.stringify(body),
       });
-      showToast({ variant: 'success', message: t('platform.billing.successCreate') });
+      showToast({
+        variant: 'success',
+        message: t('platform.billing.successCreate', { count: result.created.length }),
+      });
       setShowCreate(false);
       setCreateTenantId('');
-      setCreateAmount('');
+      setCreatePeriodMonth('');
       setCreateNotes('');
       await load();
     } catch (err) {
@@ -254,6 +277,12 @@ function InvoicesListContent() {
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <LabeledValue label={t('platform.billing.columns.amount')}>
           {formatMoney(invoice.amount, invoice.currency, locale)}
+          {invoiceDetailLine(invoice) && (
+            <p className="mt-1 text-xs text-text-muted">{invoiceDetailLine(invoice)}</p>
+          )}
+        </LabeledValue>
+        <LabeledValue label={t('platform.billing.columns.type')}>
+          <InvoiceTypeBadge invoiceType={invoice.invoiceType} />
         </LabeledValue>
         <LabeledValue label={t('platform.billing.columns.dueDate')}>{invoice.dueDate}</LabeledValue>
         <LabeledValue label={t('platform.billing.columns.period')}>
@@ -275,6 +304,7 @@ function InvoicesListContent() {
         <TableRow>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.academy')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.plan')}</th>
+          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.type')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.period')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.amount')}</th>
           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted">{t('platform.billing.columns.dueDate')}</th>
@@ -287,8 +317,14 @@ function InvoicesListContent() {
           <TableRow key={invoice.id} className={invoice.status === InvoiceStatus.OVERDUE ? 'bg-feedback-error/5' : undefined}>
             <TableCell>{invoice.academyName}</TableCell>
             <TableCell>{invoice.planName}</TableCell>
+            <TableCell><InvoiceTypeBadge invoiceType={invoice.invoiceType} /></TableCell>
             <TableCell>{invoice.periodStart} — {invoice.periodEnd}</TableCell>
-            <TableCell>{formatMoney(invoice.amount, invoice.currency, locale)}</TableCell>
+            <TableCell>
+              <div>{formatMoney(invoice.amount, invoice.currency, locale)}</div>
+              {invoiceDetailLine(invoice) && (
+                <div className="text-xs text-text-muted">{invoiceDetailLine(invoice)}</div>
+              )}
+            </TableCell>
             <TableCell>{invoice.dueDate}</TableCell>
             <TableCell><InvoiceStatusBadge status={invoice.status} /></TableCell>
             <TableCell><RowActionsMenu {...invoiceActions(invoice)} /></TableCell>
@@ -322,8 +358,9 @@ function InvoicesListContent() {
         />
       </div>
       <div>
-        <Label htmlFor="amount">{t('platform.billing.form.amount')}</Label>
-        <Input id="amount" type="number" step="0.01" min="0" value={createAmount} onChange={(e) => setCreateAmount(e.target.value)} placeholder={t('platform.billing.form.amountHint')} />
+        <Label htmlFor="periodMonth">{t('platform.billing.form.periodMonth')}</Label>
+        <Input id="periodMonth" type="month" value={createPeriodMonth} onChange={(e) => setCreatePeriodMonth(e.target.value)} />
+        <p className="mt-1 text-xs text-text-muted">{t('platform.billing.form.periodHint')}</p>
       </div>
       <div>
         <Label htmlFor="notes">{t('platform.billing.form.notes')}</Label>
