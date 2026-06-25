@@ -1,0 +1,36 @@
+FROM node:20-alpine AS build
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+ARG ASTRO_BASE=/profe
+ARG JWT_ACCESS_SECRET
+ARG JWT_ACCESS_EXPIRES_IN=15m
+ARG JWT_REFRESH_EXPIRES_IN=7d
+
+ENV ASTRO_BASE=${ASTRO_BASE}
+ENV JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+ENV JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
+ENV JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+ENV NODE_ENV=production
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
+COPY packages ./packages
+COPY apps/web ./apps/web
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @velocesport/shared build \
+ && pnpm --filter @velocesport/i18n build \
+ && pnpm --filter @velocesport/design-system build
+RUN pnpm --filter @velocesport/web build
+
+FROM node:20-alpine AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=4321
+
+COPY --from=build /app/apps/web/dist ./dist
+
+EXPOSE 4321
+CMD ["node", "./dist/server/entry.mjs"]

@@ -1,0 +1,68 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: velocesport-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u${DB_USER}', '-p${DB_PASSWORD}']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - velocesport
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: velocesport-backend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      DB_HOST: mysql
+      RUN_PRODUCTION_SEED: ${RUN_PRODUCTION_SEED:-false}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - velocesport
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+      args:
+        ASTRO_BASE: ${ASTRO_BASE:-/profe}
+        JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+        JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+        JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+    container_name: velocesport-web
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4321
+      INTERNAL_API_URL: http://backend:3000
+    ports:
+      - '127.0.0.1:9082:4321'
+    depends_on:
+      - backend
+    networks:
+      - velocesport
+
+volumes:
+  mysql_data:
+
+networks:
+  velocesport:
+    driver: bridge

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { PUBLIC_API_URL } from 'astro:env/client';
+import { INTERNAL_API_URL } from 'astro:env/server';
 import { getSession } from '../../../../../lib/session.js';
 import { sessionHasRole } from '../../../../../lib/auth-config.js';
 import { proxyWithSessionRefresh } from '../../../../../lib/bff-proxy.js';
@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
   }
 
   const url = new URL(request.url);
-  const target = `${PUBLIC_API_URL}/api/tenant/reports/${reportType}/export${url.search}`;
+  const target = `${INTERNAL_API_URL}/api/tenant/reports/${reportType}/export${url.search}`;
 
   return proxyWithSessionRefresh({
     cookies,

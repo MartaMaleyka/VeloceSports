@@ -59,7 +59,7 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
 
     setLoading(true);
     try {
-      const loginRes = await fetch(`${apiUrl}/auth/login`, {
+      const loginRes = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
@@ -78,7 +78,7 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
         return;
       }
 
-      const sessionRes = await fetch('/api/auth/session', {
+      const sessionRes = await fetch(`${apiUrl}/session`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -98,10 +98,12 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
         message: t('auth.login.successToast'),
       });
 
-      const destination =
+      const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+      const dashboardPath =
         redirectPath && redirectPath.startsWith('/dashboard')
           ? redirectPath
           : getDashboardRoute(loginBody.data.user.role);
+      const destination = `${base}${dashboardPath}`;
 
       window.location.href = destination;
     } catch {

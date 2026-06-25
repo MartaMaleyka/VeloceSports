@@ -4,10 +4,10 @@ import LoginFormIsland from '../components/auth/LoginFormIsland';
 import LoginHeroDecor from '../components/auth/LoginHeroDecor.astro';
 import LoginPanelDecor from '../components/auth/LoginPanelDecor.astro';
 import { resolveLocale, t } from '@velocesport/i18n';
-import { PUBLIC_API_URL } from 'astro:env/client';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
-const apiUrl = PUBLIC_API_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const apiUrl = `${base}/api/auth`;
 const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
 const sessionEndReason =
   Astro.url.searchParams.get('reason') === 'inactivity' ? 'inactivity' : undefined;

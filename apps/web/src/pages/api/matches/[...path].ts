@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { PUBLIC_API_URL } from 'astro:env/client';
+import { INTERNAL_API_URL } from 'astro:env/server';
 import { getSession } from '../../../lib/session.js';
 import { sessionHasAnyRole } from '../../../lib/auth-config.js';
 import { proxyWithSessionRefresh } from '../../../lib/bff-proxy.js';
@@ -36,7 +36,7 @@ async function handleProxy(
   const segments = pathParam?.split('/').filter(Boolean) ?? [];
   const path = segments.join('/');
   const url = new URL(request.url);
-  const target = `${PUBLIC_API_URL}/api/tenant/matches/${path}${url.search}`;
+  const target = `${INTERNAL_API_URL}/api/tenant/matches/${path}${url.search}`;
 
   const hasBody = method !== 'GET' && method !== 'HEAD';
   const body = hasBody ? await request.text() : undefined;

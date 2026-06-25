@@ -1,6 +1,6 @@
 import type { AstroCookies } from 'astro';
 import jwt from 'jsonwebtoken';
-import { PUBLIC_API_URL } from 'astro:env/client';
+import { INTERNAL_API_URL } from 'astro:env/server';
 import { REFRESH_TOKEN_COOKIE, ACCESS_TOKEN_COOKIE } from './auth-config.js';
 import { clearAuthCookies, setAuthCookies } from './auth-cookies.js';
 
@@ -58,7 +58,7 @@ async function performRefresh(
   refreshToken: string,
 ): Promise<RefreshSessionResult> {
   try {
-    const res = await fetch(`${PUBLIC_API_URL}/auth/refresh`, {
+    const res = await fetch(`${INTERNAL_API_URL}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),

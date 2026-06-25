@@ -3,7 +3,10 @@ import node from '@astrojs/node';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
+const astroBase = process.env.ASTRO_BASE ?? '/';
+
 export default defineConfig({
+  base: astroBase,
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   integrations: [
@@ -33,6 +36,11 @@ export default defineConfig({
       PUBLIC_API_URL: envField.string({
         context: 'client',
         access: 'public',
+        default: 'http://localhost:3000',
+      }),
+      INTERNAL_API_URL: envField.string({
+        context: 'server',
+        access: 'secret',
         default: 'http://localhost:3000',
       }),
     },

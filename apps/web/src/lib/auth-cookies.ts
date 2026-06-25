@@ -3,6 +3,12 @@ import { parseJwtDurationToSeconds } from '@velocesport/shared';
 import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN } from 'astro:env/server';
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './auth-config.js';
 
+function cookiePath(): string {
+  const base = import.meta.env.BASE_URL ?? '/';
+  if (base === '/') return '/';
+  return base.endsWith('/') ? base.slice(0, -1) : base;
+}
+
 function cookieMaxAgeSeconds(duration: string, fallback: string): number {
   try {
     return parseJwtDurationToSeconds(duration);
@@ -24,7 +30,7 @@ export function setAuthCookies(
     httpOnly: true,
     secure,
     sameSite: 'lax',
-    path: '/',
+    path: cookiePath(),
     maxAge: accessMaxAge,
   });
 
@@ -32,12 +38,13 @@ export function setAuthCookies(
     httpOnly: true,
     secure,
     sameSite: 'lax',
-    path: '/',
+    path: cookiePath(),
     maxAge: refreshMaxAge,
   });
 }
 
 export function clearAuthCookies(cookies: AstroCookies): void {
-  cookies.delete(ACCESS_TOKEN_COOKIE, { path: '/' });
-  cookies.delete(REFRESH_TOKEN_COOKIE, { path: '/' });
+  const path = cookiePath();
+  cookies.delete(ACCESS_TOKEN_COOKIE, { path });
+  cookies.delete(REFRESH_TOKEN_COOKIE, { path });
 }
