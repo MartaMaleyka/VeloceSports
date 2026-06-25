@@ -7,9 +7,18 @@ export interface LoginFormIslandProps {
   initialLocale: Locale;
   apiUrl: string;
   redirectPath?: string;
+  sessionEndReason?: 'inactivity';
 }
 
-function LoginFormPanel({ apiUrl, redirectPath }: { apiUrl: string; redirectPath?: string }) {
+function LoginFormPanel({
+  apiUrl,
+  redirectPath,
+  sessionEndReason,
+}: {
+  apiUrl: string;
+  redirectPath?: string;
+  sessionEndReason?: 'inactivity';
+}) {
   const { t } = useTranslation();
 
   return (
@@ -23,7 +32,11 @@ function LoginFormPanel({ apiUrl, redirectPath }: { apiUrl: string; redirectPath
           <h2 className="ds-brand-card__title">{t('auth.login.formTitle')}</h2>
           <p className="ds-brand-card__subtitle">{t('auth.login.formSubtitle')}</p>
         </div>
-        <LoginForm apiUrl={apiUrl} redirectPath={redirectPath} />
+        <LoginForm
+          apiUrl={apiUrl}
+          redirectPath={redirectPath}
+          sessionEndReason={sessionEndReason}
+        />
       </div>
 
       <p className="ds-brand-page__footer ds-stagger-item">{t('auth.login.footerNote')}</p>
@@ -36,10 +49,15 @@ export default function LoginFormIsland({
   initialLocale,
   apiUrl,
   redirectPath,
+  sessionEndReason,
 }: LoginFormIslandProps) {
   return (
     <I18nProvider initialLocale={initialLocale}>
-      <LoginFormPanel apiUrl={apiUrl} redirectPath={redirectPath} />
+      <LoginFormPanel
+        apiUrl={apiUrl}
+        redirectPath={redirectPath}
+        sessionEndReason={sessionEndReason}
+      />
     </I18nProvider>
   );
 }

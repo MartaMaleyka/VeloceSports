@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseJwtDurationToSeconds } from '@velocesport/shared';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -15,9 +16,12 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
+  /** Tiempo máximo sin actividad antes de cerrar la sesión (ej. 60m, 1h). */
+  SESSION_INACTIVITY_TIMEOUT: z.string().default('60m'),
+
   CORS_ORIGINS: z.string().min(1),
 
-  SESSION_SECRET: z.string().min(16),
+  SESSION_SECRET: z.string().min(16).optional(),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
@@ -66,4 +70,8 @@ export function getGameActionImmediateUndoWindowMs(): number {
 
 export function getMatchCorrectionWindowDays(): number {
   return env.MATCH_CORRECTION_WINDOW_DAYS;
+}
+
+export function getSessionInactivityTimeoutMs(): number {
+  return parseJwtDurationToSeconds(env.SESSION_INACTIVITY_TIMEOUT) * 1000;
 }

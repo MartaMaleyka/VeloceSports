@@ -1,8 +1,5 @@
 import type { APIRoute } from 'astro';
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from '../../../lib/auth-config.js';
-
-const FIFTEEN_MINUTES = 60 * 15;
-const SEVEN_DAYS = 60 * 60 * 24 * 7;
+import { setAuthCookies } from '../../../lib/auth-cookies.js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -18,23 +15,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const secure = import.meta.env.PROD;
-
-    cookies.set(ACCESS_TOKEN_COOKIE, body.accessToken, {
-      httpOnly: true,
-      secure, // false en dev (http://localhost) — true solo en producción
-      sameSite: 'lax',
-      path: '/',
-      maxAge: FIFTEEN_MINUTES,
-    });
-
-    cookies.set(REFRESH_TOKEN_COOKIE, body.refreshToken, {
-      httpOnly: true,
-      secure,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: SEVEN_DAYS,
-    });
+    setAuthCookies(cookies, body.accessToken, body.refreshToken);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

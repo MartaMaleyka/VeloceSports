@@ -20,6 +20,16 @@ export default defineConfig({
         access: 'secret',
         min: 32,
       }),
+      JWT_ACCESS_EXPIRES_IN: envField.string({
+        context: 'server',
+        access: 'secret',
+        default: '15m',
+      }),
+      JWT_REFRESH_EXPIRES_IN: envField.string({
+        context: 'server',
+        access: 'secret',
+        default: '7d',
+      }),
       PUBLIC_API_URL: envField.string({
         context: 'client',
         access: 'public',

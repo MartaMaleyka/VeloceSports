@@ -3,7 +3,7 @@ import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { authLoginRateLimiter } from '../middlewares/rateLimit.js';
 import { validate } from '../middlewares/validate.js';
-import { loginSchema, registerSchema } from '../validators/auth.validator.js';
+import { loginSchema, registerSchema, refreshSchema, logoutSchema } from '../validators/auth.validator.js';
 
 const router = Router();
 
@@ -59,6 +59,60 @@ router.post(
   authLoginRateLimiter,
   validate(loginSchema),
   (req, res, next) => authController.login(req, res, next),
+);
+
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Renueva access token usando refresh token (con rotación)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refreshToken]
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Tokens renovados
+ *       401:
+ *         description: Refresh inválido, expirado o revocado
+ *       403:
+ *         description: Usuario o academia inactiva
+ */
+router.post(
+  '/refresh',
+  validate(refreshSchema),
+  (req, res, next) => authController.refresh(req, res, next),
+);
+
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Cierra sesión revocando el refresh token server-side
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada (idempotente)
+ */
+router.post(
+  '/logout',
+  validate(logoutSchema),
+  (req, res, next) => authController.logout(req, res, next),
 );
 
 /**

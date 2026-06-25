@@ -15,6 +15,11 @@ export interface LoginResponseDto {
   user: AuthUserDto;
 }
 
+export interface RefreshResponseDto {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface ApiSuccessResponse<T> {
   success: true;
   data: T;

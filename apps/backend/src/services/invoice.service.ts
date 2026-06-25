@@ -18,6 +18,7 @@ import { academyRepository } from '../repositories/academy.repository.js';
 import { invoiceRepository, type InvoiceRow } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
 import { auditService } from './audit.service.js';
+import { userSessionService } from './user-session.service.js';
 import {
   computeAnchoredMonthlyBillingPeriod,
   computeBillingPeriod,
@@ -212,6 +213,7 @@ export class InvoiceService {
           AcademyStatus.SUSPENDED,
           AcademySuspensionReason.BILLING,
         );
+        await userSessionService.revokeAllSessionsForTenant(invoice.tenant_id);
         suspendedAcademyIds.push(invoice.tenant_id);
       }
 

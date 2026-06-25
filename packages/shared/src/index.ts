@@ -18,6 +18,7 @@ export * from './parent-player-dashboard.js';
 export * from './parent-match-calendar.js';
 export * from './player-observations.js';
 export * from './notifications.js';
+export * from './jwt-duration.js';
 export * from './academy-dashboard.js';
 export * from './academy-settings.js';
 export * from './tenant-reports.js';

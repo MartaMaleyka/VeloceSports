@@ -34,8 +34,8 @@ export class AppError extends Error {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = 'No autenticado') {
-    super(401, message, 'UNAUTHORIZED');
+  constructor(message = 'No autenticado', code = 'UNAUTHORIZED') {
+    super(401, message, code);
   }
 }
 

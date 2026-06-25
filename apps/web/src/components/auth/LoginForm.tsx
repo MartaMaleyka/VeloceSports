@@ -24,9 +24,10 @@ interface FieldErrors {
 interface LoginFormInnerProps {
   apiUrl: string;
   redirectPath?: string;
+  sessionEndReason?: 'inactivity';
 }
 
-function LoginFormInner({ apiUrl, redirectPath }: LoginFormInnerProps) {
+function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInnerProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
@@ -112,6 +113,10 @@ function LoginFormInner({ apiUrl, redirectPath }: LoginFormInnerProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      {sessionEndReason === 'inactivity' && (
+        <Alert variant="info">{t('auth.login.sessionEndedInactivity')}</Alert>
+      )}
+
       {formError && (
         <Alert variant="error" title={t('auth.login.errorTitle')}>
           {formError}
@@ -178,12 +183,17 @@ function LoginFormInner({ apiUrl, redirectPath }: LoginFormInnerProps) {
 interface LoginFormProps {
   apiUrl: string;
   redirectPath?: string;
+  sessionEndReason?: 'inactivity';
 }
 
-export default function LoginForm({ apiUrl, redirectPath }: LoginFormProps) {
+export default function LoginForm({ apiUrl, redirectPath, sessionEndReason }: LoginFormProps) {
   return (
     <ToastProvider>
-      <LoginFormInner apiUrl={apiUrl} redirectPath={redirectPath} />
+      <LoginFormInner
+        apiUrl={apiUrl}
+        redirectPath={redirectPath}
+        sessionEndReason={sessionEndReason}
+      />
     </ToastProvider>
   );
 }

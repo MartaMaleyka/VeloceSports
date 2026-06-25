@@ -24,6 +24,7 @@ import { userRepository } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
 import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
 import { invoiceService } from './invoice.service.js';
+import { userSessionService } from './user-session.service.js';
 import { resolveAnchoredBillingPeriod } from './billing-period.service.js';
 import { getUserRoles, getTenantManageableRolesForUser } from './user-roles.service.js';
 import { generateTemporaryPassword, slugify } from '../utils/strings.js';
@@ -229,6 +230,9 @@ export class PlatformService {
       status === AcademyStatusConst.SUSPENDED ? AcademySuspensionReason.MANUAL : null;
 
     await academyRepository.updateStatus(academyId, status, suspensionReason);
+    if (status === AcademyStatusConst.SUSPENDED || status === AcademyStatusConst.INACTIVE) {
+      await userSessionService.revokeAllSessionsForTenant(academyId);
+    }
     const after = await this.getAcademy(academyId);
     await auditService.log(
       { userId: actorUserId, tenantId: academyId },
@@ -378,6 +382,9 @@ export class PlatformService {
 
     const before = await this.toUserDto(user, academyId);
     await userRepository.updateStatus(userId, status);
+    if (status === UserStatus.INACTIVE) {
+      await userSessionService.revokeAllSessionsForUser(userId);
+    }
     const updated = await userRepository.findById(academyId, userId);
     if (!updated) throw new NotFoundError('Usuario no encontrado');
 
@@ -446,6 +453,9 @@ export class PlatformService {
 
     const before = await this.toUserDto(user);
     await userRepository.updateStatus(targetUserId, status);
+    if (status === UserStatus.INACTIVE) {
+      await userSessionService.revokeAllSessionsForUser(targetUserId);
+    }
     const updated = await userRepository.findByIdGlobal(targetUserId);
     if (!updated) throw new NotFoundError('Super administrador no encontrado');
 

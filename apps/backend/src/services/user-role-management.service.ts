@@ -8,6 +8,7 @@ import { userRepository } from '../repositories/user.repository.js';
 import { userRoleRepository } from '../repositories/user-role.repository.js';
 import { getUserRoles } from './user-roles.service.js';
 import { auditService, type AuditContext } from './audit.service.js';
+import { userSessionService } from './user-session.service.js';
 import { ForbiddenError, NotFoundError, ValidationError } from '../types/index.js';
 import { assertValidLoginRoleSet } from '../utils/role-check.js';
 
@@ -129,6 +130,8 @@ export class UserRoleManagementService {
       removedRole: role,
     });
 
+    await userSessionService.revokeAllSessionsForUser(targetUserId);
+
     const updated = await userRepository.findById(tenantId, targetUserId);
     const finalRoles = await getUserRoles(targetUserId);
     return {
@@ -172,6 +175,8 @@ export class UserRoleManagementService {
       roles: afterRoles,
       primaryRole: newRole,
     });
+
+    await userSessionService.revokeAllSessionsForUser(targetUserId);
   }
 
   private async syncPrimaryRoleColumn(

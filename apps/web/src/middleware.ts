@@ -7,11 +7,11 @@ import {
   PUBLIC_PATHS,
   sessionHasRole,
 } from './lib/auth-config.js';
-import { getSession } from './lib/session.js';
+import { ensureSession } from './lib/session.js';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
-  const session = getSession(context.cookies);
+  const { session, endReason } = await ensureSession(context.cookies);
   const locale = resolveLocale(
     context.cookies,
     context.request.headers.get('accept-language'),
@@ -37,8 +37,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (isProtectedPath(pathname)) {
     if (!session) {
-      const redirectTo = encodeURIComponent(pathname);
-      return context.redirect(`/login?redirect=${redirectTo}`);
+      const params = new URLSearchParams({ redirect: pathname });
+      if (endReason === 'inactivity') {
+        params.set('reason', 'inactivity');
+      }
+      return context.redirect(`/login?${params.toString()}`);
     }
 
     const requiredRole = getRequiredRoleForPath(pathname);

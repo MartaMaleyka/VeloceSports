@@ -41,6 +41,8 @@ export const es = {
       submit: 'Iniciar sesión',
       errorTitle: 'Error al iniciar sesión',
       successToast: 'Iniciaste sesión correctamente',
+      sessionEndedInactivity:
+        'Tu sesión se cerró por inactividad. Vuelve a iniciar sesión.',
       errors: {
         emailRequired: 'Ingresa tu correo electrónico',
         emailInvalid: 'Correo electrónico inválido',

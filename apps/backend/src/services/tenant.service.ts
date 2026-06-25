@@ -31,6 +31,7 @@ import { playerRepository, type PlayerWithCategoryRow } from '../repositories/pl
 import { userRepository, type UserRow } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
 import { planLimitService } from './plan-limit.service.js';
+import { userSessionService } from './user-session.service.js';
 import { userRoleManagementService } from './user-role-management.service.js';
 import { getUserRoles, getTenantManageableRolesForUser, userHasRoleInTenant } from './user-roles.service.js';
 import {
@@ -253,6 +254,10 @@ export class TenantUserService {
     }
 
     await userRepository.updateStatusInTenant(tenantId, userId, status);
+
+    if (status === UserStatus.INACTIVE) {
+      await userSessionService.revokeAllSessionsForUser(userId);
+    }
 
     const after = await userRepository.findById(tenantId, userId);
     if (!after) throw new NotFoundError('Usuario no encontrado');

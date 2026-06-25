@@ -14,10 +14,10 @@ import {
   ValidationError,
   ConflictError,
 } from '../types/index.js';
-import { signAccessToken, signRefreshToken } from '../utils/jwt.js';
 import { isProduction } from '../config/env.js';
 import { getUserRoles } from './user-roles.service.js';
 import { assertValidLoginRoleSet } from '../utils/role-check.js';
+import { userSessionService, type SessionClientContext } from './user-session.service.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -41,7 +41,11 @@ export interface RegisterInput {
 }
 
 export class AuthService {
-  async login(email: string, password: string): Promise<LoginResult> {
+  async login(
+    email: string,
+    password: string,
+    client?: SessionClientContext,
+  ): Promise<LoginResult> {
     const user = await userRepository.findByEmail(email.toLowerCase().trim());
 
     if (!user) {
@@ -88,9 +92,14 @@ export class AuthService {
       tenantId,
     };
 
+    const { accessToken, refreshToken } = await userSessionService.createSessionWithTokens(
+      tokenPayload,
+      client,
+    );
+
     return {
-      accessToken: signAccessToken(tokenPayload),
-      refreshToken: signRefreshToken(tokenPayload),
+      accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
@@ -99,6 +108,14 @@ export class AuthService {
         roles,
       },
     };
+  }
+
+  async refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    return userSessionService.refresh(refreshToken);
+  }
+
+  async logout(refreshToken?: string | null): Promise<void> {
+    await userSessionService.logout(refreshToken);
   }
 
   async register(input: RegisterInput): Promise<{ id: number; email: string; role: string }> {

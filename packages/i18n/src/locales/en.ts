@@ -41,6 +41,8 @@ export const en = {
       submit: 'Sign in',
       errorTitle: 'Sign-in error',
       successToast: 'You signed in successfully',
+      sessionEndedInactivity:
+        'Your session ended due to inactivity. Please sign in again.',
       errors: {
         emailRequired: 'Enter your email address',
         emailInvalid: 'Invalid email address',

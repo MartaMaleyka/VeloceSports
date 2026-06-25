@@ -3,6 +3,20 @@ import { JWT_ACCESS_SECRET } from 'astro:env/server';
 import type { AstroCookies } from 'astro';
 import type { LoginRole } from '@velocesport/shared';
 import { ACCESS_TOKEN_COOKIE, type SessionUser } from './auth-config.js';
+import {
+  accessNeedsRefresh,
+  hasRefreshToken,
+  refreshSessionCookies,
+  SESSION_INACTIVITY_EXPIRED_CODE,
+} from './token-refresh.js';
+import { clearAuthCookies } from './auth-cookies.js';
+
+export type SessionEndReason = 'inactivity' | 'terminated';
+
+export interface EnsureSessionResult {
+  session: SessionUser | null;
+  endReason?: SessionEndReason;
+}
 
 function getJwtSecret(): string {
   const secret = JWT_ACCESS_SECRET.trim();
@@ -57,4 +71,33 @@ export function getSession(cookies: AstroCookies): SessionUser | null {
 
 export function getAccessToken(cookies: AstroCookies): string | null {
   return cookies.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+}
+
+/**
+ * Obtiene sesión válida, renovando access con refresh si expiró o está por expirar.
+ * Si el refresh falla, limpia cookies y retorna endReason para UX en login.
+ */
+export async function ensureSession(cookies: AstroCookies): Promise<EnsureSessionResult> {
+  let session = getSession(cookies);
+
+  if (session && !accessNeedsRefresh(cookies)) {
+    return { session };
+  }
+
+  if (!hasRefreshToken(cookies)) {
+    return { session: session ?? null };
+  }
+
+  const result = await refreshSessionCookies(cookies);
+  if (!result.ok) {
+    clearAuthCookies(cookies);
+    return {
+      session: null,
+      endReason:
+        result.code === SESSION_INACTIVITY_EXPIRED_CODE ? 'inactivity' : 'terminated',
+    };
+  }
+
+  session = getSession(cookies);
+  return { session: session ?? null };
 }

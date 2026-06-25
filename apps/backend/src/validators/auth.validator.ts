@@ -6,6 +6,14 @@ export const loginSchema = z.object({
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 });
 
+export const refreshSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token requerido'),
+});
+
+export const logoutSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token requerido').optional(),
+});
+
 export const registerSchema = z.object({
   email: z.string().email('Correo electrónico inválido'),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
