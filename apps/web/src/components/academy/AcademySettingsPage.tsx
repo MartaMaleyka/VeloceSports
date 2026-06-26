@@ -21,6 +21,7 @@ import {
   academySettingsBillingStatusKey,
 } from '@velocesport/i18n';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
+import { appPath } from '../../lib/app-path';
 
 interface SettingsFormState {
   name: string;
@@ -463,7 +464,7 @@ function AcademySettingsContent() {
               ? t('academySettings.billingAlertOverdue')
               : t('academySettings.billingAlertPending')}
             {' '}
-            <a href="/dashboard/academy-admin/billing" className="font-medium underline">
+            <a href={appPath('/dashboard/academy-admin/billing')} className="font-medium underline">
               {t('academySettings.viewBilling')}
             </a>
           </Alert>

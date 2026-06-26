@@ -15,6 +15,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
+import { appPath } from '../../lib/app-path';
 
 interface FieldErrors {
   email?: string;
@@ -98,14 +99,12 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
         message: t('auth.login.successToast'),
       });
 
-      const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       const dashboardPath =
         redirectPath && redirectPath.startsWith('/dashboard')
           ? redirectPath
           : getDashboardRoute(loginBody.data.user.role);
-      const destination = `${base}${dashboardPath}`;
 
-      window.location.href = destination;
+      window.location.href = appPath(dashboardPath);
     } catch {
       setFormError(t('auth.login.errors.network'));
     } finally {

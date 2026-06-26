@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export class BillingApiError extends Error {
   constructor(
     message: string,
@@ -22,7 +24,7 @@ export async function billingFetch<T>(path: string, options: RequestInit = {}): 
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`/api/billing/${path}`, {
+  const response = await fetch(appPath(`/api/billing/${path}`), {
     ...options,
     credentials: 'same-origin',
     headers,

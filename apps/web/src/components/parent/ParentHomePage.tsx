@@ -18,6 +18,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
+import { appPath } from '../../lib/app-path';
 import { ParentDashboardChart } from './ParentDashboardChart';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 
@@ -180,7 +181,7 @@ function ChildDashboardContent({
   );
 
   const reportPath = (matchId: number) =>
-    `/dashboard/parent/children/${playerId}/matches/${matchId}`;
+    appPath(`/dashboard/parent/children/${playerId}/matches/${matchId}`);
 
   const hasData =
     data.kpis.matchesPlayed > 0 ||
@@ -245,7 +246,7 @@ function ChildDashboardContent({
       <PlayerObservationsPanel
         mode="parent"
         playerId={playerId}
-        parentReportBasePath={`/dashboard/parent/children/${playerId}/matches`}
+        parentReportBasePath={appPath(`/dashboard/parent/children/${playerId}/matches`)}
       />
 
       <PivotTable
@@ -447,7 +448,7 @@ export function ParentHomePage() {
         description={t('parent.children.emptyDescription')}
         actionLabel={t('parent.children.enroll')}
         onAction={() => {
-          window.location.href = '/dashboard/parent/children';
+          window.location.href = appPath('/dashboard/parent/children');
         }}
       />
     );

@@ -26,6 +26,7 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 import { RoleBadgesList } from '../academy/RoleFields';
 import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './ReactivateAcademyModal';
 import { RowActionsMenu } from './RowActionsMenu';
@@ -182,15 +183,9 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
     setUserFormError(null);
     setUserSubmitting(true);
     try {
-      const res = await fetch(`/api/platform/academies/${academyId}/users`, {
+      const res = await platformFetch<CreatePlatformUserResponseDto>(`academies/${academyId}/users`, {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail.trim(), role: userRole }),
-      }).then(async (r) => {
-        const body = await r.json();
-        if (!r.ok) throw new PlatformApiError(body.message, r.status, body.code);
-        return body.data as CreatePlatformUserResponseDto;
       });
       if (res.temporaryPassword) {
         setTempCreds({ email: res.user.email, password: res.temporaryPassword });
@@ -209,14 +204,9 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
   const toggleUserStatus = async (user: PlatformUserDto) => {
     const next = user.status === UserStatus.ACTIVE ? UserStatus.INACTIVE : UserStatus.ACTIVE;
     try {
-      await fetch(`/api/platform/academies/${academyId}/users/${user.id}/status`, {
+      await platformFetch(`academies/${academyId}/users/${user.id}/status`, {
         method: 'PATCH',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: next }),
-      }).then(async (r) => {
-        const body = await r.json();
-        if (!r.ok) throw new PlatformApiError(body.message, r.status);
       });
       showToast({ variant: 'success', message: t('platform.academies.users.successStatus') });
       await load();
@@ -516,7 +506,7 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
               type="button"
               variant="secondary"
               onClick={() => {
-                window.location.href = `/dashboard/super-admin/academies/${academyId}/edit`;
+                window.location.href = appPath(`/dashboard/super-admin/academies/${academyId}/edit`);
               }}
             >
               {t('common.edit')}

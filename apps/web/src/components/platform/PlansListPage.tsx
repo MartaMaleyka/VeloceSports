@@ -46,7 +46,8 @@ import { useTranslation } from '@velocesport/i18n';
 
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 
-import { PlatformApiError, platformFetchList } from '../../lib/platform-api';
+import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 
 import { PlanLimitsList, PlanPriceDisplay } from './PlanLimitsList';
 
@@ -312,22 +313,9 @@ function PlansListContent() {
 
         confirmPlan.status === PlanStatus.ACTIVE ? PlanStatus.INACTIVE : PlanStatus.ACTIVE;
 
-      await fetch(`/api/platform/plans/${confirmPlan.id}/status`, {
-
+      await platformFetch(`plans/${confirmPlan.id}/status`, {
         method: 'PATCH',
-
-        credentials: 'same-origin',
-
-        headers: { 'Content-Type': 'application/json' },
-
         body: JSON.stringify({ status: next }),
-
-      }).then(async (r) => {
-
-        const body = await r.json();
-
-        if (!r.ok) throw new PlatformApiError(body.message, r.status);
-
       });
 
       showToast({ variant: 'success', message: t('platform.plans.successStatus') });
@@ -368,7 +356,7 @@ function PlansListContent() {
 
         onClick: () => {
 
-          window.location.href = `/dashboard/super-admin/plans/${plan.id}`;
+          window.location.href = appPath(`/dashboard/super-admin/plans/${plan.id}`);
 
         },
 
@@ -691,7 +679,7 @@ function PlansListContent() {
 
             onClick={() => {
 
-              window.location.href = '/dashboard/super-admin/plans/new';
+              window.location.href = appPath('/dashboard/super-admin/plans/new');
 
             }}
 
@@ -713,7 +701,7 @@ function PlansListContent() {
 
         onEmptyAction={() => {
 
-          window.location.href = '/dashboard/super-admin/plans/new';
+          window.location.href = appPath('/dashboard/super-admin/plans/new');
 
         }}
 

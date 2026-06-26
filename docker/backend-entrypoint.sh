@@ -4,12 +4,12 @@ set -e
 cd /app/apps/backend
 
 echo ">> Aplicando migraciones..."
-node dist/scripts/run-migration.js
+pnpm exec tsx src/scripts/run-migration.ts
 
 if [ "${RUN_PRODUCTION_SEED}" = "true" ]; then
   echo ">> Seed de producción (super_admin)..."
-  node dist/scripts/seed-production.js
+  pnpm exec tsx src/scripts/seed-production.ts
 fi
 
 echo ">> Iniciando API..."
-exec node dist/index.js
+exec pnpm exec tsx src/index.ts

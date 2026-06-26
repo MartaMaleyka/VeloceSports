@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export class MatchesApiError extends Error {
   constructor(
     message: string,
@@ -22,7 +24,7 @@ export async function matchesFetch<T>(path: string, options: RequestInit = {}): 
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`/api/matches/${path}`, {
+  const response = await fetch(appPath(`/api/matches/${path}`), {
     ...options,
     credentials: 'same-origin',
     headers,

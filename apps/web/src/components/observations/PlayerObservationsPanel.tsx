@@ -18,6 +18,7 @@ import {
   ParentApiError,
   updateCoachObservation,
 } from '../../lib/player-observations-api';
+import { appPath } from '../../lib/app-path';
 
 export interface PlayerObservationsPanelProps {
   mode: 'coach' | 'parent';
@@ -131,7 +132,7 @@ export function PlayerObservationsPanel({
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const reportBase =
-    parentReportBasePath ?? `/dashboard/parent/children/${playerId}/matches`;
+    parentReportBasePath ?? appPath(`/dashboard/parent/children/${playerId}/matches`);
 
   const load = useCallback(async () => {
     setLoading(true);

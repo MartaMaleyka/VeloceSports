@@ -15,6 +15,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation, roleKey, roleKeys, type TranslationKey } from '@velocesport/i18n';
 import { PlatformApiError, platformFetch } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 import { PlatformMetricsCharts } from './PlatformMetricsCharts';
 
 function MrrIcon() {
@@ -277,7 +278,7 @@ function SuperAdminHomeContent() {
                         type="button"
                         variant="secondary"
                         onClick={() => {
-                          window.location.href = `/dashboard/super-admin/academies/${academy.id}`;
+                          window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}`);
                         }}
                       >
                         {t('dashboard.superAdmin.home.viewAcademy')}
@@ -308,7 +309,7 @@ function SuperAdminHomeContent() {
                         type="button"
                         variant="secondary"
                         onClick={() => {
-                          window.location.href = `/dashboard/super-admin/billing?status=overdue`;
+                          window.location.href = appPath('/dashboard/super-admin/billing?status=overdue');
                         }}
                       >
                         {t('dashboard.superAdmin.home.viewBilling')}
@@ -340,11 +341,11 @@ function SuperAdminHomeContent() {
           {t('dashboard.superAdmin.home.quickLinks')}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <QuickLinkCard href="/dashboard/super-admin/plans" title={t('dashboard.superAdmin.home.quickLinksPlans')} description={t('dashboard.superAdmin.home.quickLinksPlansDesc')} accent="plans" />
-          <QuickLinkCard href="/dashboard/super-admin/academies" title={t('dashboard.superAdmin.home.quickLinksAcademies')} description={t('dashboard.superAdmin.home.quickLinksAcademiesDesc')} accent="academies" />
-          <QuickLinkCard href="/dashboard/super-admin/billing" title={t('dashboard.superAdmin.home.quickLinksBilling')} description={t('dashboard.superAdmin.home.quickLinksBillingDesc')} accent="billing" />
-          <QuickLinkCard href="/dashboard/super-admin/audit" title={t('dashboard.superAdmin.home.quickLinksAudit')} description={t('dashboard.superAdmin.home.quickLinksAuditDesc')} accent="audit" />
-          <QuickLinkCard href="/dashboard/super-admin/super-admins" title={t('dashboard.superAdmin.home.quickLinksSuperAdmins')} description={t('dashboard.superAdmin.home.quickLinksSuperAdminsDesc')} accent="super-admins" />
+          <QuickLinkCard href={appPath('/dashboard/super-admin/plans')} title={t('dashboard.superAdmin.home.quickLinksPlans')} description={t('dashboard.superAdmin.home.quickLinksPlansDesc')} accent="plans" />
+          <QuickLinkCard href={appPath('/dashboard/super-admin/academies')} title={t('dashboard.superAdmin.home.quickLinksAcademies')} description={t('dashboard.superAdmin.home.quickLinksAcademiesDesc')} accent="academies" />
+          <QuickLinkCard href={appPath('/dashboard/super-admin/billing')} title={t('dashboard.superAdmin.home.quickLinksBilling')} description={t('dashboard.superAdmin.home.quickLinksBillingDesc')} accent="billing" />
+          <QuickLinkCard href={appPath('/dashboard/super-admin/audit')} title={t('dashboard.superAdmin.home.quickLinksAudit')} description={t('dashboard.superAdmin.home.quickLinksAuditDesc')} accent="audit" />
+          <QuickLinkCard href={appPath('/dashboard/super-admin/super-admins')} title={t('dashboard.superAdmin.home.quickLinksSuperAdmins')} description={t('dashboard.superAdmin.home.quickLinksSuperAdminsDesc')} accent="super-admins" />
         </div>
       </section>
     </div>

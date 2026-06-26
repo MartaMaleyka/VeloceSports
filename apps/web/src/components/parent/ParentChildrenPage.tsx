@@ -24,6 +24,7 @@ import {
 import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
+import { appPath } from '../../lib/app-path';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 
 function ChildStatusBadge({ player }: { player: PlayerDto }) {
@@ -238,7 +239,7 @@ function ParentChildrenContent() {
                       type="button"
                       variant="secondary"
                       onClick={() => {
-                        window.location.href = `/dashboard/parent/children/${child.id}/matches`;
+                        window.location.href = appPath(`/dashboard/parent/children/${child.id}/matches`);
                       }}
                     >
                       {t('parent.children.viewReportCards')}
@@ -281,7 +282,7 @@ function ParentChildrenContent() {
                           <Button
                             type="button"
                             onClick={() => {
-                              window.location.href = `/dashboard/parent/children/${child.id}/matches`;
+                              window.location.href = appPath(`/dashboard/parent/children/${child.id}/matches`);
                             }}
                           >
                             {t('parent.children.viewReportCards')}

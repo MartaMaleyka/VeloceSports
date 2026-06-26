@@ -11,6 +11,7 @@ import {
 import PlayerMatchReportCardView from './PlayerMatchReportCardView';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 import { resolveNumericRouteId } from '../../lib/route-params';
+import { appPath } from '../../lib/app-path';
 
 export interface PlayerMatchReportPageProps {
   playerId?: number;
@@ -30,7 +31,7 @@ function PlayerMatchReportContent({
     resolveNumericRouteId(playerIdProp, /\/players\/(\d+)\/report-card/);
   const matchId =
     resolveNumericRouteId(matchIdProp, /\/matches\/(\d+)/);
-  const backPath = backPathProp ?? '/dashboard/parent/children';
+  const backPath = backPathProp ?? appPath('/dashboard/parent/children');
   const { t } = useTranslation();
   const [data, setData] = useState<PlayerMatchReportCardDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +94,7 @@ function PlayerMatchReportContent({
           mode="parent"
           playerId={playerId}
           matchId={matchId}
-          parentReportBasePath={`/dashboard/parent/children/${playerId}/matches`}
+          parentReportBasePath={appPath(`/dashboard/parent/children/${playerId}/matches`)}
         />
       ) : (
         <PlayerObservationsPanel

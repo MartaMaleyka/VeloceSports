@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export class TenantApiError extends Error {
   constructor(
     message: string,
@@ -22,7 +24,7 @@ export async function tenantFetch<T>(path: string, options: RequestInit = {}): P
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`/api/tenant/${path}`, {
+  const response = await fetch(appPath(`/api/tenant/${path}`), {
     ...options,
     credentials: 'same-origin',
     headers,

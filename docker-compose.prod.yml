@@ -12,10 +12,11 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u${DB_USER}', '-p${DB_PASSWORD}']
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -uroot -p"$$MYSQL_ROOT_PASSWORD" || exit 1']
       interval: 5s
-      timeout: 5s
-      retries: 15
+      timeout: 10s
+      retries: 20
+      start_period: 40s
     networks:
       - velocesport
 
@@ -30,6 +31,16 @@ services:
     environment:
       DB_HOST: mysql
       RUN_PRODUCTION_SEED: ${RUN_PRODUCTION_SEED:-false}
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://127.0.0.1:3000/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     depends_on:
       mysql:
         condition: service_healthy
@@ -52,11 +63,17 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 4321
+      ASTRO_BASE: ${ASTRO_BASE:-/profe}
       INTERNAL_API_URL: http://backend:3000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://aby.litomalone.dev/profe}
     ports:
       - '127.0.0.1:9082:4321'
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - velocesport
 

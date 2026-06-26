@@ -22,7 +22,8 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
-import { PlatformApiError, platformFetchList } from '../../lib/platform-api';
+import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 import { RowActionsMenu } from './RowActionsMenu';
 import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './ReactivateAcademyModal';
 import { StatusBadge } from './StatusBadge';
@@ -195,14 +196,9 @@ function AcademiesListContent() {
     if (!confirmAcademy) return;
     setStatusLoading(true);
     try {
-      await fetch(`/api/platform/academies/${confirmAcademy.id}/status`, {
+      await platformFetch(`academies/${confirmAcademy.id}/status`, {
         method: 'PATCH',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: confirmAcademy.status }),
-      }).then(async (r) => {
-        const body = await r.json();
-        if (!r.ok) throw new PlatformApiError(body.message, r.status);
       });
       showToast({ variant: 'success', message: t('platform.academies.successStatus') });
       setConfirmAcademy(null);
@@ -223,14 +219,14 @@ function AcademiesListContent() {
         id: 'view',
         label: t('common.view'),
         onClick: () => {
-          window.location.href = `/dashboard/super-admin/academies/${academy.id}`;
+          window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}`);
         },
       },
       {
         id: 'edit',
         label: t('common.edit'),
         onClick: () => {
-          window.location.href = `/dashboard/super-admin/academies/${academy.id}/edit`;
+          window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}/edit`);
         },
       },
       ...(academy.status === AcademyStatus.SUSPENDED
@@ -452,7 +448,7 @@ function AcademiesListContent() {
           <Button
             type="button"
             onClick={() => {
-              window.location.href = '/dashboard/super-admin/academies/new';
+              window.location.href = appPath('/dashboard/super-admin/academies/new');
             }}
           >
             {t('platform.academies.create')}
@@ -463,7 +459,7 @@ function AcademiesListContent() {
         emptyTitle={t('platform.academies.empty')}
         emptyActionLabel={t('platform.academies.emptyAction')}
         onEmptyAction={() => {
-          window.location.href = '/dashboard/super-admin/academies/new';
+          window.location.href = appPath('/dashboard/super-admin/academies/new');
         }}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}

@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export async function downloadPdf(url: string, filename: string): Promise<void> {
   const response = await fetch(url, { credentials: 'same-origin' });
   if (!response.ok) {
@@ -13,9 +15,9 @@ export async function downloadPdf(url: string, filename: string): Promise<void> 
 }
 
 export function downloadPlatformInvoicePdf(invoiceId: number): Promise<void> {
-  return downloadPdf(`/api/platform/invoices/${invoiceId}/pdf`, `invoice-${invoiceId}.pdf`);
+  return downloadPdf(appPath(`/api/platform/invoices/${invoiceId}/pdf`), `invoice-${invoiceId}.pdf`);
 }
 
 export function downloadBillingInvoicePdf(invoiceId: number): Promise<void> {
-  return downloadPdf(`/api/billing/invoices/${invoiceId}/pdf`, `invoice-${invoiceId}.pdf`);
+  return downloadPdf(appPath(`/api/billing/invoices/${invoiceId}/pdf`), `invoice-${invoiceId}.pdf`);
 }
