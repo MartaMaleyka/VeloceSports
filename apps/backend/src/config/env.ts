@@ -24,7 +24,7 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(16).optional(),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(2_000),
   AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
 

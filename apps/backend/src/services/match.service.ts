@@ -14,6 +14,7 @@ import { getPool } from '../config/db.js';
 import { categoryRepository } from '../repositories/category.repository.js';
 import { coachCategoryRepository } from '../repositories/coach-category.repository.js';
 import { matchRepository, type MatchWithCategoryRow } from '../repositories/match.repository.js';
+import { buildClockDtoFromRow } from '../utils/match-clock-mapper.js';
 import { auditService } from './audit.service.js';
 import { gameActionService } from './game-action.service.js';
 import { isDevelopment } from '../config/env.js';
@@ -137,6 +138,14 @@ export class MatchService {
     };
   }
 
+  async getEffectivePeriodsCount(
+    tenantId: number,
+    row: Pick<MatchWithCategoryRow, 'periods_count' | 'period_duration_minutes'>,
+  ): Promise<number> {
+    const config = await this.resolveEffectivePeriods(tenantId, row);
+    return config.periodsCount;
+  }
+
   private async toDto(tenantId: number, row: MatchWithCategoryRow): Promise<MatchDto> {
     const correctionWindow = await gameActionService.buildCorrectionWindowForMatch(tenantId, row);
     return {
@@ -154,6 +163,7 @@ export class MatchService {
       periodsCount: row.periods_count,
       periodDurationMinutes: row.period_duration_minutes,
       effectivePeriods: await this.resolveEffectivePeriods(tenantId, row),
+      clock: buildClockDtoFromRow(row),
       createdBy: row.created_by,
       createdByEmail: row.created_by_email,
       createdAt: row.created_at.toISOString(),

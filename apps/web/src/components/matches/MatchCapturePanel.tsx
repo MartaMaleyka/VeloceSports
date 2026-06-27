@@ -7,6 +7,13 @@ import type {
 } from '@velocesport/shared';
 import { GameActionStatus, MatchLineupRole, MatchStatus } from '@velocesport/shared';
 import {
+  VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE,
+  interpretVoiceCapture,
+  isVoiceAffirmation,
+  isVoiceCancellation,
+  type VoiceInterpretFailure,
+} from '@velocesport/shared';
+import {
   Alert,
   Button,
   ConfirmModal,
@@ -29,11 +36,23 @@ import {
   type CapturePlayerRef,
 } from './capture/capture-types';
 import { useCaptureQueue } from './capture/useCaptureQueue';
+import { useMatchClock } from './capture/useMatchClock';
+import MatchClockBar from './capture/MatchClockBar';
+import VoiceCaptureExperiment, {
+  VoiceMicButton,
+  type VoiceFeedbackMessage,
+  type VoicePendingCapture,
+} from './capture/VoiceCaptureExperiment';
+import { useSpeechRecognitionExperiment } from './capture/useSpeechRecognitionExperiment';
+import {
+  getVoiceConfirmBeforeRegister,
+  setVoiceConfirmBeforeRegister,
+} from './capture/voice-capture-preferences';
 
 interface MatchCapturePanelProps {
   matchId: number;
   match: MatchDto;
-  onMatchUpdated: () => void;
+  onMatchUpdated: (updated?: MatchDto) => void;
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -81,7 +100,7 @@ export default function MatchCapturePanel({
   match,
   onMatchUpdated,
 }: MatchCapturePanelProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { showToast } = useToast();
   const reducedMotion = usePrefersReducedMotion();
   const isDesktopCapture = useMediaQuery('(min-width: 768px)');
@@ -102,14 +121,6 @@ export default function MatchCapturePanel({
     setMinuteInput(String(clamped));
   }, []);
 
-  const bumpMinute = useCallback((delta: number) => {
-    setMinute((current) => {
-      const next = clampCaptureMinute(current + delta);
-      setMinuteInput(String(next));
-      return next;
-    });
-  }, []);
-
   const commitMinuteInput = useCallback(() => {
     applyMinute(parseCaptureMinuteInput(minuteInput));
   }, [applyMinute, minuteInput]);
@@ -123,6 +134,13 @@ export default function MatchCapturePanel({
   const [voidReason, setVoidReason] = useState('');
   const [statusLoading, setStatusLoading] = useState(false);
   const [tick, setTick] = useState(Date.now());
+  const [voiceConfirmBeforeRegister, setVoiceConfirmBeforeRegisterState] = useState(true);
+  const [pendingVoiceCapture, setPendingVoiceCapture] = useState<VoicePendingCapture | null>(null);
+  const [voiceFeedback, setVoiceFeedback] = useState<VoiceFeedbackMessage | null>(null);
+
+  useEffect(() => {
+    setVoiceConfirmBeforeRegisterState(getVoiceConfirmBeforeRegister());
+  }, []);
 
   const isLiveMode = match.status === MatchStatus.IN_PROGRESS;
   const isCorrectionMode =
@@ -130,6 +148,16 @@ export default function MatchCapturePanel({
   const isCorrectionClosed =
     match.status === MatchStatus.FINISHED &&
     (match.correctionWindow == null || !match.correctionWindow.open);
+
+  const periodCount = match.effectivePeriods.periodsCount;
+
+  const matchClock = useMatchClock({
+    matchId,
+    clock: match.clock,
+    periodsCount: periodCount,
+    enabled: isLiveMode,
+    onUpdated: onMatchUpdated,
+  });
 
   const canEditActions = isLiveMode || isCorrectionMode;
   const captureLocked = !canEditActions;
@@ -236,8 +264,11 @@ export default function MatchCapturePanel({
 
   const triggerCapture = useCallback(
     (player: CapturePlayerRef, action: CaptureActionRef) => {
-      const captureMinute = parseCaptureMinuteInput(minuteInput);
-      if (captureMinute !== minute) {
+      const capturePeriod = isLiveMode ? matchClock.period : period;
+      const captureMinute = isLiveMode
+        ? matchClock.minute
+        : parseCaptureMinuteInput(minuteInput);
+      if (!isLiveMode && captureMinute !== minute) {
         setMinute(captureMinute);
         setMinuteInput(String(captureMinute));
       }
@@ -245,7 +276,7 @@ export default function MatchCapturePanel({
         player,
         action,
         minute: captureMinute,
-        period,
+        period: capturePeriod,
       });
       lastCaptureRef.current = clientId;
       setPulseClientId(clientId);
@@ -263,7 +294,7 @@ export default function MatchCapturePanel({
         }),
       });
     },
-    [enqueueCapture, minute, minuteInput, period, reducedMotion, showToast, t],
+    [enqueueCapture, isLiveMode, matchClock.minute, matchClock.period, minute, minuteInput, period, reducedMotion, showToast, t],
   );
 
   const tryCapture = useCallback(
@@ -277,6 +308,169 @@ export default function MatchCapturePanel({
     },
     [captureLocked, catalogByCode, presentPlayers, triggerCapture],
   );
+
+  const voiceCatalog = useMemo(
+    () =>
+      catalog.map((item) => ({
+        code: item.code,
+        name: item.name,
+        description: item.description,
+      })),
+    [catalog],
+  );
+
+  const voiceErrorMessage = useCallback(
+    (failure: VoiceInterpretFailure): string => {
+      switch (failure.code) {
+        case 'no_jersey':
+          return t('matches.capture.voiceCapture.errors.noJersey');
+        case 'no_player':
+          return t('matches.capture.voiceCapture.errors.noPlayer', {
+            jersey: failure.jerseyNumber ?? 0,
+          });
+        case 'no_action':
+          return t('matches.capture.voiceCapture.errors.noAction');
+        case 'ambiguous_action':
+          return t('matches.capture.voiceCapture.errors.ambiguous');
+        case 'empty':
+        default:
+          return t('matches.capture.voiceCapture.errors.empty');
+      }
+    },
+    [t],
+  );
+
+  const handleVoiceFinalPhrase = useCallback(
+    (text: string) => {
+      if (captureLocked) return;
+
+      if (pendingVoiceCapture) {
+        if (isVoiceAffirmation(text, locale)) {
+          const player = presentPlayers.find(
+            (p) => p.jerseyNumber === pendingVoiceCapture.jerseyNumber,
+          );
+          const action = catalogByCode.get(pendingVoiceCapture.actionCode);
+          if (player && action) {
+            triggerCapture(player, action);
+            setVoiceFeedback({
+              variant: 'success',
+              message: t('matches.capture.voiceCapture.registered', {
+                jersey: player.jerseyNumber,
+                action: action.name,
+              }),
+            });
+          }
+          setPendingVoiceCapture(null);
+          return;
+        }
+        if (isVoiceCancellation(text, locale)) {
+          setPendingVoiceCapture(null);
+          setVoiceFeedback({
+            variant: 'info',
+            message: t('matches.capture.voiceCapture.cancelled'),
+          });
+          return;
+        }
+      }
+
+      const result = interpretVoiceCapture({
+        text,
+        locale,
+        presentPlayers,
+        catalog: voiceCatalog,
+      });
+
+      if (!result.ok) {
+        setVoiceFeedback({ variant: 'error', message: voiceErrorMessage(result) });
+        return;
+      }
+
+      const player = presentPlayers.find((p) => p.playerId === result.player.playerId);
+      const action = catalogByCode.get(result.action.code);
+      if (!player || !action) {
+        setVoiceFeedback({
+          variant: 'error',
+          message: t('matches.capture.voiceCapture.errors.generic'),
+        });
+        return;
+      }
+
+      const needsConfirm =
+        voiceConfirmBeforeRegister ||
+        result.ambiguous ||
+        result.confidence < VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE;
+
+      if (needsConfirm) {
+        setPendingVoiceCapture({
+          jerseyNumber: player.jerseyNumber,
+          playerLastName: player.lastName,
+          actionName: action.name,
+          actionCode: action.code,
+          heardText: text.trim(),
+        });
+        setVoiceFeedback(null);
+        return;
+      }
+
+      triggerCapture(player, action);
+      setVoiceFeedback({
+        variant: 'success',
+        message: t('matches.capture.voiceCapture.registered', {
+          jersey: player.jerseyNumber,
+          action: action.name,
+        }),
+      });
+    },
+    [
+      captureLocked,
+      pendingVoiceCapture,
+      locale,
+      presentPlayers,
+      catalogByCode,
+      voiceCatalog,
+      voiceErrorMessage,
+      voiceConfirmBeforeRegister,
+      triggerCapture,
+      t,
+    ],
+  );
+
+  const voiceExperiment = useSpeechRecognitionExperiment({
+    locale,
+    onFinalPhrase: handleVoiceFinalPhrase,
+  });
+
+  const handleVoiceConfirmBeforeRegisterChange = useCallback((value: boolean) => {
+    setVoiceConfirmBeforeRegisterState(value);
+    setVoiceConfirmBeforeRegister(value);
+  }, []);
+
+  const handleVoiceConfirmPending = useCallback(() => {
+    if (!pendingVoiceCapture) return;
+    const player = presentPlayers.find(
+      (p) => p.jerseyNumber === pendingVoiceCapture.jerseyNumber,
+    );
+    const action = catalogByCode.get(pendingVoiceCapture.actionCode);
+    if (player && action) {
+      triggerCapture(player, action);
+      setVoiceFeedback({
+        variant: 'success',
+        message: t('matches.capture.voiceCapture.registered', {
+          jersey: player.jerseyNumber,
+          action: action.name,
+        }),
+      });
+    }
+    setPendingVoiceCapture(null);
+  }, [pendingVoiceCapture, presentPlayers, catalogByCode, triggerCapture, t]);
+
+  const handleVoiceCancelPending = useCallback(() => {
+    setPendingVoiceCapture(null);
+    setVoiceFeedback({
+      variant: 'info',
+      message: t('matches.capture.voiceCapture.cancelled'),
+    });
+  }, [t]);
 
   const togglePlayer = (playerId: number) => {
     const next = selectedPlayerId === playerId ? null : playerId;
@@ -385,8 +579,6 @@ export default function MatchCapturePanel({
       ? presentPlayers.find((p) => p.playerId === selectedPlayerId) ?? null
       : null;
 
-  const periodCount = match.effectivePeriods.periodsCount;
-
   if (loading) {
     return <p className="text-text-secondary">{t('common.loading')}</p>;
   }
@@ -444,80 +636,70 @@ export default function MatchCapturePanel({
     <div className="flex min-h-[70vh] max-h-[min(85dvh,920px)] flex-col">
       {/* Barra de contexto — compacta en móvil */}
       <div className="sticky top-0 z-30 -mx-4 shrink-0 border-b border-border bg-bg-surface/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:py-3">
-        <div className="flex flex-row items-end gap-2 sm:gap-3 md:flex-col md:items-stretch lg:flex-row lg:items-end">
-          <div className="min-w-0 flex-1">
-            <span className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs">
-              {t('matches.capture.period')}
-            </span>
-            <div className="flex gap-1" role="group" aria-label={t('matches.capture.period')}>
-              {Array.from({ length: periodCount }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  disabled={captureLocked}
-                  onClick={() => setPeriod(p)}
-                  className={cn(
-                    'min-h-10 min-w-10 flex-1 rounded-lg border text-sm font-semibold md:min-h-touch md:min-w-touch',
-                    period === p
-                      ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
-                      : 'border-border bg-bg-muted text-text-secondary',
-                    captureLocked && 'opacity-60',
-                  )}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="relative z-10 w-[8.75rem] shrink-0 sm:w-[10.75rem]">
-            <label
-              htmlFor="capture-minute"
-              className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs"
-            >
-              {t('matches.capture.minute')}
-            </label>
-            <div className="isolate grid grid-cols-[36px_minmax(2.5rem,1fr)_36px] items-center gap-0.5 md:grid-cols-[44px_minmax(3rem,1fr)_44px] md:gap-1">
-              <button
-                type="button"
-                disabled={captureLocked || minute <= 0}
-                aria-label={t('matches.capture.minuteDecrease')}
-                className="relative z-10 min-h-10 min-w-10 rounded-lg border border-border bg-bg-muted text-base font-bold md:min-h-touch md:min-w-touch md:text-lg"
-                onClick={() => bumpMinute(-1)}
-              >
-                −
-              </button>
-              <div className="relative min-w-0">
-                <input
-                  id="capture-minute"
-                  type="text"
-                  disabled={captureLocked}
-                  value={minuteInput}
-                  onChange={(e) => setMinuteInput(e.target.value.replace(/\D/g, ''))}
-                  onBlur={() => commitMinuteInput()}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  autoComplete="off"
-                  aria-label={t('matches.capture.minute')}
-                  className="h-9 w-full min-w-0 max-w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-1 text-center text-sm font-bold tabular-nums text-[var(--input-text)] focus:border-[var(--input-border-focus)] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)] disabled:cursor-not-allowed disabled:bg-bg-muted disabled:opacity-70 md:h-11 md:px-2 md:text-base"
-                />
+        {isLiveMode && match.clock ? (
+          <MatchClockBar
+            period={matchClock.period}
+            minute={matchClock.minute}
+            running={matchClock.running}
+            periodsCount={periodCount}
+            canAdvancePeriod={matchClock.canAdvancePeriod}
+            commandLoading={matchClock.commandLoading}
+            captureLocked={captureLocked}
+            onPause={matchClock.pause}
+            onResume={matchClock.resume}
+            onNextPeriod={matchClock.nextPeriod}
+            onAdjustMinute={matchClock.adjustMinute}
+          />
+        ) : isCorrectionMode ? (
+          <div className="flex flex-row items-end gap-2 sm:gap-3">
+            <div className="min-w-0 flex-1">
+              <span className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs">
+                {t('matches.capture.period')}
+              </span>
+              <div className="flex gap-1" role="group" aria-label={t('matches.capture.period')}>
+                {Array.from({ length: periodCount }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPeriod(p)}
+                    className={cn(
+                      'min-h-10 min-w-10 flex-1 rounded-lg border text-sm font-semibold md:min-h-touch md:min-w-touch',
+                      period === p
+                        ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
+                        : 'border-border bg-bg-muted text-text-secondary',
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
               </div>
-              <button
-                type="button"
-                disabled={captureLocked}
-                aria-label={t('matches.capture.minuteIncrease')}
-                className="relative z-10 min-h-10 min-w-10 rounded-lg border border-border bg-bg-muted text-base font-bold md:min-h-touch md:min-w-touch md:text-lg"
-                onClick={() => bumpMinute(1)}
+            </div>
+            <div className="relative z-10 w-[8.75rem] shrink-0 sm:w-[10.75rem]">
+              <label
+                htmlFor="capture-minute-correction"
+                className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs"
               >
-                +
-              </button>
+                {t('matches.capture.minute')}
+              </label>
+              <Input
+                id="capture-minute-correction"
+                type="text"
+                value={minuteInput}
+                onChange={(e) => setMinuteInput(e.target.value.replace(/\D/g, ''))}
+                onBlur={() => commitMinuteInput()}
+                inputMode="numeric"
+                className="h-9 text-center text-sm font-bold tabular-nums md:h-11 md:text-base"
+              />
             </div>
           </div>
-        </div>
+        ) : match.clock ? (
+          <p className="font-mono text-lg font-bold tabular-nums text-text-primary">
+            {t('matches.capture.clockDisplay', {
+              period: match.clock.currentPeriod,
+              minute: match.clock.minute,
+            })}
+          </p>
+        ) : null}
 
         {undoCandidate && (
           <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-feedback-warning/40 bg-feedback-warning/10 px-2 py-1.5 md:mt-2 md:px-3 md:py-2">
@@ -549,11 +731,31 @@ export default function MatchCapturePanel({
         </Alert>
       )}
 
-      {/* Cuerpo: jugadores dominantes; dock completo solo en md+ */}
-      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 md:flex-row md:overflow-hidden">
+      {isLiveMode && canEditActions && (
+        <VoiceCaptureExperiment
+          lang={voiceExperiment.lang}
+          supported={voiceExperiment.supported}
+          secureContext={voiceExperiment.secureContext}
+          status={voiceExperiment.status}
+          errorCode={voiceExperiment.errorCode}
+          isListening={voiceExperiment.isListening}
+          reducedMotion={reducedMotion}
+          onToggle={voiceExperiment.toggleListening}
+          hideMicButton={isDesktopCapture}
+          confirmBeforeRegister={voiceConfirmBeforeRegister}
+          onConfirmBeforeRegisterChange={handleVoiceConfirmBeforeRegisterChange}
+          pendingCapture={pendingVoiceCapture}
+          onConfirmPending={handleVoiceConfirmPending}
+          onCancelPending={handleVoiceCancelPending}
+          feedback={voiceFeedback}
+        />
+      )}
+
+      {/* Cuerpo: móvil columna; tablet apilado; lg+ dos columnas 50/50 */}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 lg:flex-row lg:overflow-hidden">
         {(canEditActions || presentPlayers.length > 0) && (
           <section
-            className="min-h-0 flex-1 overflow-y-auto md:flex-[1.15] md:pr-3"
+            className="min-h-0 flex-[1.35] overflow-y-auto md:flex-[1.4] lg:min-w-0 lg:flex-1 lg:basis-1/2 lg:overflow-y-auto lg:pr-2"
             aria-label={t('matches.capture.playersSection')}
           >
             {canEditActions && (
@@ -566,7 +768,7 @@ export default function MatchCapturePanel({
                 {t('matches.capture.playersSection')}
               </h3>
             )}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(6.25rem,1fr))]">
               {presentPlayers.map((player) => {
                 const isSelected = selectedPlayerId === player.playerId;
                 const isStarter = player.lineup === MatchLineupRole.STARTER;
@@ -578,7 +780,7 @@ export default function MatchCapturePanel({
                     aria-pressed={isSelected}
                     onClick={() => handlePlayerTap(player.playerId)}
                     className={cn(
-                      'flex min-h-[4.75rem] flex-col items-center justify-center rounded-xl border p-2 transition-transform',
+                      'flex min-h-[4.75rem] w-full min-w-0 flex-col items-center justify-center rounded-xl border p-2 transition-transform',
                       impactPlayerRingClasses(ringImpact, isSelected),
                       !reducedMotion && isSelected && 'scale-[1.02]',
                     )}
@@ -620,16 +822,19 @@ export default function MatchCapturePanel({
           </section>
         )}
 
-        {/* Dock desktop: acciones + historial siempre visible */}
+        {/* Dock md–lg: apilado; lg+: columna derecha 50% (acciones + historial) */}
         {(canEditActions || history.length > 0 || readOnlyHistory) && (
           <aside
             className={cn(
-              'hidden min-h-0 flex-col border-border bg-bg-surface md:flex',
-              'md:w-[min(100%,22rem)] md:shrink-0 md:border-l md:max-h-full',
+              'hidden min-h-0 flex-col border-border bg-bg-surface md:flex md:min-h-0 md:flex-1',
+              'md:w-full md:border-t md:border-l-0',
+              'lg:min-w-0 lg:flex-1 lg:basis-1/2 lg:overflow-hidden lg:border-l lg:border-t-0',
             )}
             aria-label={t('matches.capture.actionsSection')}
           >
-            {canEditActions && (
+            <div className="min-h-0 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden">
+              <div className="min-h-0 md:shrink-0 lg:flex-1 lg:overflow-y-auto">
+                {canEditActions && (
               <CaptureActionGrid
                 sortedCatalog={sortedCatalog}
                 selectedActionCode={selectedActionCode}
@@ -637,40 +842,53 @@ export default function MatchCapturePanel({
                 isCorrectionMode={isCorrectionMode}
                 showHeader
                 showHint
-                scrollable
+                layout="sidebar"
+                voiceMic={
+                  isLiveMode
+                    ? {
+                        isListening: voiceExperiment.isListening,
+                        supported: voiceExperiment.supported,
+                        reducedMotion,
+                        onToggle: voiceExperiment.toggleListening,
+                      }
+                    : undefined
+                }
               />
-            )}
+                )}
 
-            {isLiveMode && (
-              <div className="shrink-0 border-b border-border p-3">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="min-h-touch w-full"
-                  disabled={statusLoading}
-                  onClick={() => setFinishConfirmOpen(true)}
-                >
-                  {t('matches.capture.finishMatch')}
-                </Button>
+                {isLiveMode && (
+                  <div className="shrink-0 border-b border-border p-3">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="min-h-touch w-full"
+                      disabled={statusLoading}
+                      onClick={() => setFinishConfirmOpen(true)}
+                    >
+                      {t('matches.capture.finishMatch')}
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
 
-            <CaptureHistoryList
-              history={history}
-              tick={tick}
-              pulseClientId={pulseClientId}
-              reducedMotion={reducedMotion}
-              readOnly={readOnlyHistory}
-              isCorrectionMode={isCorrectionMode}
-              undoCandidateId={undoCandidate?.clientActionId}
-              onRetry={retryEntry}
-              onUndo={(id) => void handleImmediateUndo(id)}
-              onVoid={(entry) => {
-                setVoidTarget(entry);
-                setVoidReason('');
-              }}
-              expanded
-            />
+              <CaptureHistoryList
+                history={history}
+                tick={tick}
+                pulseClientId={pulseClientId}
+                reducedMotion={reducedMotion}
+                readOnly={readOnlyHistory}
+                isCorrectionMode={isCorrectionMode}
+                undoCandidateId={undoCandidate?.clientActionId}
+                onRetry={retryEntry}
+                onUndo={(id) => void handleImmediateUndo(id)}
+                onVoid={(entry) => {
+                  setVoidTarget(entry);
+                  setVoidReason('');
+                }}
+                expanded
+                className="min-h-0 md:max-h-[min(40dvh,18rem)] lg:max-h-[11rem] lg:shrink-0 lg:border-t lg:border-border"
+              />
+            </div>
           </aside>
         )}
       </div>
@@ -838,7 +1056,9 @@ function CaptureActionGrid({
   showHeader = false,
   showHint = false,
   scrollable = false,
+  layout = 'sheet',
   className,
+  voiceMic,
 }: {
   sortedCatalog: ActionCatalogDto[];
   selectedActionCode: number | null;
@@ -847,15 +1067,24 @@ function CaptureActionGrid({
   showHeader?: boolean;
   showHint?: boolean;
   scrollable?: boolean;
+  /** sheet = móvil (bottom-sheet); sidebar = panel derecho md+ */
+  layout?: 'sheet' | 'sidebar';
   className?: string;
+  voiceMic?: {
+    isListening: boolean;
+    supported: boolean;
+    reducedMotion: boolean;
+    onToggle: () => void;
+  };
 }) {
   const { t } = useTranslation();
+  const isSidebar = layout === 'sidebar';
 
   return (
     <section
       className={cn(
-        'shrink-0 bg-bg-surface',
-        scrollable && 'min-h-0 overflow-y-auto',
+        'bg-bg-surface shrink-0',
+        scrollable && !isSidebar && 'min-h-0 overflow-y-auto',
         showHeader || showHint ? 'border-b border-border' : '',
         className,
       )}
@@ -866,20 +1095,36 @@ function CaptureActionGrid({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             {t('matches.capture.actionsSection')}
           </h3>
-          <button
-            type="button"
-            disabled
-            title={t('matches.capture.voiceSoon')}
-            aria-label={t('matches.capture.voiceSoon')}
-            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-text-muted opacity-70"
-          >
-            <span aria-hidden="true" className="text-lg">
-              🎤
-            </span>
-          </button>
+          {voiceMic ? (
+            <VoiceMicButton
+              isListening={voiceMic.isListening}
+              supported={voiceMic.supported}
+              reducedMotion={voiceMic.reducedMotion}
+              onToggle={voiceMic.onToggle}
+            />
+          ) : (
+            <button
+              type="button"
+              disabled
+              title={t('matches.capture.voiceSoon')}
+              aria-label={t('matches.capture.voiceSoon')}
+              className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-text-muted opacity-70"
+            >
+              <span aria-hidden="true" className="text-lg">
+                🎤
+              </span>
+            </button>
+          )}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2 p-3 md:grid-cols-1">
+      <div
+        className={cn(
+          'grid gap-2 p-3',
+          isSidebar
+            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-2 lg:gap-2 md:gap-1.5 md:p-2.5'
+            : 'grid-cols-2',
+        )}
+      >
         {sortedCatalog.map((action) => {
           const isSelected = selectedActionCode === action.code;
           return (
@@ -889,14 +1134,24 @@ function CaptureActionGrid({
               aria-pressed={isSelected}
               onClick={() => onSelectAction(action.code)}
               className={cn(
-                'flex min-h-[4rem] flex-col justify-center rounded-xl border px-3 py-2.5 text-left transition-colors',
+                'flex flex-col justify-center rounded-xl border text-left transition-colors',
+                isSidebar
+                  ? 'min-h-[3.5rem] px-2.5 py-2 md:min-h-[3.25rem] lg:min-h-[3.5rem]'
+                  : 'min-h-[4rem] px-3 py-2.5',
                 impactChipClasses(action.impact),
                 isSelected &&
                   'ring-2 ring-section-matches-fg ring-offset-2 ring-offset-bg-surface',
               )}
             >
               <span className="font-mono text-xs opacity-70">{action.code}</span>
-              <span className="mt-0.5 text-sm font-semibold leading-snug">{action.name}</span>
+              <span
+                className={cn(
+                  'mt-0.5 font-semibold leading-snug',
+                  isSidebar ? 'text-xs lg:text-sm' : 'text-sm',
+                )}
+              >
+                {action.name}
+              </span>
             </button>
           );
         })}

@@ -1,5 +1,9 @@
 import type { MatchStatus } from './statuses.js';
 import type { MatchCorrectionWindowDto } from './match-correction.js';
+import type { MatchClockDto } from './match-clock.js';
+
+export type { MatchClockDto, MatchClockCommandBody } from './match-clock.js';
+export { MatchClockCommand } from './match-clock.js';
 
 export const MatchType = {
   LEAGUE: 'league',
@@ -46,6 +50,8 @@ export interface MatchDto {
   periodsCount: number | null;
   periodDurationMinutes: number | null;
   effectivePeriods: MatchPeriodsConfigDto;
+  /** Cronómetro del partido; null si scheduled/cancelled sin arrancar */
+  clock: MatchClockDto | null;
   createdBy: number;
   createdByEmail: string | null;
   createdAt: string;

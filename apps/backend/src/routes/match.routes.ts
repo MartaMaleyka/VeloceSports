@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserRole } from '@velocesport/shared';
 import { matchController } from '../controllers/match.controller.js';
+import { matchClockController } from '../controllers/match-clock.controller.js';
 import { matchAttendanceController } from '../controllers/match-attendance.controller.js';
 import { gameActionController } from '../controllers/game-action.controller.js';
 import { actionCatalogController } from '../controllers/action-catalog.controller.js';
@@ -15,6 +16,7 @@ import {
   updateMatchBodySchema,
   updateMatchStatusBodySchema,
 } from '../validators/match.validator.js';
+import { matchClockCommandBodySchema } from '../validators/match-clock.validator.js';
 import { saveMatchAttendanceBodySchema } from '../validators/match-attendance.validator.js';
 import {
   createGameActionBodySchema,
@@ -147,6 +149,13 @@ router.patch(
   validate(matchIdParamSchema, 'params'),
   validate(updateMatchStatusBodySchema),
   (req, res, next) => matchController.updateMatchStatus(req, res, next),
+);
+
+router.patch(
+  '/:matchId/clock',
+  validate(matchIdParamSchema, 'params'),
+  validate(matchClockCommandBodySchema),
+  (req, res, next) => matchClockController.applyCommand(req, res, next),
 );
 
 router.post(

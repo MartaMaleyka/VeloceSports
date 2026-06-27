@@ -1,11 +1,13 @@
 import rateLimit from 'express-rate-limit';
-import { env } from '../config/env.js';
+import { env, isDevelopment, isTest } from '../config/env.js';
 
 export const globalRateLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
+  /** Dev/test: captura en vivo y pruebas superan 100 req/15 min fácilmente. */
+  skip: () => isDevelopment() || isTest(),
   message: {
     success: false,
     message: 'Demasiadas solicitudes. Intenta de nuevo más tarde.',

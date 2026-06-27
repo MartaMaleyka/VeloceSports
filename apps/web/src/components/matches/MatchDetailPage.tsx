@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MatchDto } from '@velocesport/shared';
 import { MatchStatus } from '@velocesport/shared';
 import {
@@ -34,23 +34,46 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   const [devReopenLoading, setDevReopenLoading] = useState(false);
 
   const isDev = import.meta.env.DEV;
+  const matchRef = useRef<MatchDto | null>(null);
+  matchRef.current = match;
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (options?: { background?: boolean }) => {
+    const background = options?.background === true && matchRef.current != null;
+    if (!background) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const data = await matchesFetch<MatchDto>(String(matchId));
       setMatch(data);
     } catch (e) {
-      setError(e instanceof MatchesApiError ? e.message : t('matches.errors.generic'));
+      const apiError = e instanceof MatchesApiError ? e : null;
+      if (apiError?.status === 429 && matchRef.current) {
+        showToast({ variant: 'error', message: apiError.message });
+        return;
+      }
+      setError(apiError?.message ?? t('matches.errors.generic'));
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
-  }, [matchId, t]);
+  }, [matchId, t, showToast]);
+
+  const handleMatchUpdated = useCallback(
+    (updated?: MatchDto) => {
+      if (updated) {
+        setMatch(updated);
+        return;
+      }
+      void load({ background: true });
+    },
+    [load],
+  );
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [matchId, load]);
 
   useEffect(() => {
     if (
@@ -91,7 +114,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
         body: JSON.stringify({ status }),
       });
       showToast({ variant: 'success', message: t('matches.successStatus') });
-      await load();
+      await load({ background: true });
     } catch (e) {
       showToast({
         variant: 'error',
@@ -108,7 +131,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     try {
       await matchesFetch(`${match.id}/cancel`, { method: 'POST' });
       showToast({ variant: 'success', message: t('matches.successCancel') });
-      await load();
+      await load({ background: true });
     } catch (e) {
       showToast({
         variant: 'error',
@@ -125,7 +148,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     try {
       await matchesFetch(`${match.id}/dev/reopen`, { method: 'POST' });
       showToast({ variant: 'success', message: t('matches.capture.devReopenSuccess') });
-      await load();
+      await load({ background: true });
     } catch (e) {
       showToast({
         variant: 'error',
@@ -279,7 +302,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
             key={`${match.id}-${match.status}`}
             matchId={match.id}
             match={match}
-            onMatchUpdated={() => void load()}
+            onMatchUpdated={handleMatchUpdated}
           />
         )}
 

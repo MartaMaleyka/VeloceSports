@@ -14,6 +14,11 @@ export interface MatchRow extends RowDataPacket {
   match_type: MatchType;
   status: MatchStatus;
   finished_at: Date | null;
+  clock_current_period: number;
+  clock_elapsed_seconds: number;
+  clock_running: number;
+  clock_period_started_at: Date | null;
+  clock_paused_at: Date | null;
   notes: string | null;
   periods_count: number | null;
   period_duration_minutes: number | null;
@@ -102,7 +107,10 @@ export class MatchRepository extends TenantScopedRepository {
 
     const [rows] = await pool.execute<MatchWithCategoryRow[]>(
       `SELECT m.id, m.tenant_id, m.category_id, m.opponent, m.match_datetime, m.location,
-              m.match_type, m.status, m.finished_at, m.notes, m.periods_count, m.period_duration_minutes,
+              m.match_type, m.status, m.finished_at,
+              m.clock_current_period, m.clock_elapsed_seconds, m.clock_running,
+              m.clock_period_started_at, m.clock_paused_at,
+              m.notes, m.periods_count, m.period_duration_minutes,
               m.created_by, m.created_at, m.updated_at,
               c.name AS category_name, u.email AS created_by_email
        FROM matches m
@@ -120,7 +128,10 @@ export class MatchRepository extends TenantScopedRepository {
     const pool = getPool();
     const [rows] = await pool.execute<MatchWithCategoryRow[]>(
       `SELECT m.id, m.tenant_id, m.category_id, m.opponent, m.match_datetime, m.location,
-              m.match_type, m.status, m.finished_at, m.notes, m.periods_count, m.period_duration_minutes,
+              m.match_type, m.status, m.finished_at,
+              m.clock_current_period, m.clock_elapsed_seconds, m.clock_running,
+              m.clock_period_started_at, m.clock_paused_at,
+              m.notes, m.periods_count, m.period_duration_minutes,
               m.created_by, m.created_at, m.updated_at,
               c.name AS category_name, u.email AS created_by_email
        FROM matches m
@@ -274,14 +285,33 @@ export class MatchRepository extends TenantScopedRepository {
     const pool = getPool();
     if (status === 'finished') {
       await pool.execute(
-        'UPDATE matches SET status = ?, finished_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
+        `UPDATE matches SET
+           status = ?,
+           finished_at = CURRENT_TIMESTAMP,
+           clock_running = 0,
+           clock_elapsed_seconds = CASE
+             WHEN clock_running = 1 AND clock_period_started_at IS NOT NULL
+             THEN clock_elapsed_seconds + GREATEST(0, TIMESTAMPDIFF(SECOND, clock_period_started_at, UTC_TIMESTAMP()))
+             ELSE clock_elapsed_seconds
+           END,
+           clock_period_started_at = NULL,
+           clock_paused_at = UTC_TIMESTAMP()
+         WHERE id = ? AND tenant_id = ?`,
         [status, matchId, tenantId],
       );
       return;
     }
     if (status === 'in_progress') {
       await pool.execute(
-        'UPDATE matches SET status = ?, finished_at = NULL WHERE id = ? AND tenant_id = ?',
+        `UPDATE matches SET
+           status = ?,
+           finished_at = NULL,
+           clock_current_period = 1,
+           clock_elapsed_seconds = 0,
+           clock_running = 1,
+           clock_period_started_at = UTC_TIMESTAMP(),
+           clock_paused_at = NULL
+         WHERE id = ? AND tenant_id = ?`,
         [status, matchId, tenantId],
       );
       return;
@@ -291,6 +321,39 @@ export class MatchRepository extends TenantScopedRepository {
       matchId,
       tenantId,
     ]);
+  }
+
+  async updateClockState(
+    tenantId: number,
+    matchId: number,
+    input: {
+      currentPeriod: number;
+      elapsedSeconds: number;
+      running: boolean;
+      periodStartedAt: Date | null;
+      pausedAt: Date | null;
+    },
+  ): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE matches SET
+         clock_current_period = ?,
+         clock_elapsed_seconds = ?,
+         clock_running = ?,
+         clock_period_started_at = ?,
+         clock_paused_at = ?
+       WHERE id = ? AND tenant_id = ?`,
+      [
+        input.currentPeriod,
+        input.elapsedSeconds,
+        input.running ? 1 : 0,
+        input.periodStartedAt,
+        input.pausedAt,
+        matchId,
+        tenantId,
+      ],
+    );
   }
 
   /** Solo desarrollo: reabrir partido finished sin tocar acciones. */
