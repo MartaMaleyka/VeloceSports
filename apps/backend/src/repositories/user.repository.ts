@@ -348,6 +348,39 @@ export class UserRepository extends TenantScopedRepository {
     const pool = getPool();
     await pool.execute('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [userId]);
   }
+
+  async updatePassword(userId: number, passwordHash: string): Promise<void> {
+    const pool = getPool();
+    await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, userId]);
+  }
+
+  /** Actualiza perfil propio (sin cambiar rol). Solo el usuario indicado. */
+  async updateSelfProfile(
+    userId: number,
+    input: { email?: string; firstName?: string | null; lastName?: string | null },
+  ): Promise<void> {
+    const pool = getPool();
+    const fields: string[] = [];
+    const params: (string | number | null)[] = [];
+
+    if (input.email !== undefined) {
+      fields.push('email = ?');
+      params.push(input.email);
+    }
+    if (input.firstName !== undefined) {
+      fields.push('first_name = ?');
+      params.push(input.firstName);
+    }
+    if (input.lastName !== undefined) {
+      fields.push('last_name = ?');
+      params.push(input.lastName);
+    }
+
+    if (fields.length === 0) return;
+
+    params.push(userId);
+    await pool.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params);
+  }
 }
 
 export const userRepository = new UserRepository();

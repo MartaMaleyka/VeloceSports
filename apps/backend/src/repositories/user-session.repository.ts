@@ -83,6 +83,16 @@ export class UserSessionRepository {
     return result.affectedRows;
   }
 
+  async revokeAllForUserExcept(userId: number, exceptSessionId: number): Promise<number> {
+    const pool = getPool();
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE user_sessions SET revoked_at = ?
+       WHERE user_id = ? AND revoked_at IS NULL AND id != ?`,
+      [new Date(), userId, exceptSessionId],
+    );
+    return result.affectedRows;
+  }
+
   async revokeAllForTenant(tenantId: number): Promise<number> {
     const pool = getPool();
     const [result] = await pool.execute<ResultSetHeader>(

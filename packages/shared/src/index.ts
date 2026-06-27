@@ -1,6 +1,7 @@
 export * from './roles.js';
 export * from './statuses.js';
 export * from './auth.js';
+export * from './password.js';
 export * from './platform.js';
 export * from './billing.js';
 export * from './audit.js';

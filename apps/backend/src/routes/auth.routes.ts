@@ -3,7 +3,7 @@ import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { authLoginRateLimiter } from '../middlewares/rateLimit.js';
 import { validate } from '../middlewares/validate.js';
-import { loginSchema, registerSchema, refreshSchema, logoutSchema } from '../validators/auth.validator.js';
+import { loginSchema, registerSchema, refreshSchema, logoutSchema, updateProfileSchema, changePasswordSchema } from '../validators/auth.validator.js';
 
 const router = Router();
 
@@ -169,5 +169,19 @@ router.post(
  *         description: No autenticado
  */
 router.get('/me', authenticate, (req, res, next) => authController.me(req, res, next));
+
+router.patch(
+  '/me',
+  authenticate,
+  validate(updateProfileSchema),
+  (req, res, next) => authController.updateMe(req, res, next),
+);
+
+router.patch(
+  '/password',
+  authenticate,
+  validate(changePasswordSchema),
+  (req, res, next) => authController.changePassword(req, res, next),
+);
 
 export default router;

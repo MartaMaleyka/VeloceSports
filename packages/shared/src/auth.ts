@@ -9,6 +9,32 @@ export interface AuthUserDto {
   roles?: LoginRole[];
 }
 
+/** Perfil completo del usuario autenticado (GET/PATCH /auth/me). */
+export interface UserProfileDto {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: LoginRole;
+  roles: LoginRole[];
+  tenantId: number | null;
+  academyName: string | null;
+}
+
+export interface UpdateProfileRequestDto {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export interface ChangePasswordRequestDto {
+  currentPassword: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+  /** Refresh token de la sesión actual (para excluirla al revocar otras). */
+  refreshToken?: string;
+}
+
 export interface LoginResponseDto {
   accessToken: string;
   refreshToken: string;

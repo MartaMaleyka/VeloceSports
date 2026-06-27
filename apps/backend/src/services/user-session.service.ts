@@ -236,6 +236,36 @@ export class UserSessionService {
     return userSessionRepository.revokeAllForUser(userId);
   }
 
+  /** Revoca todas las sesiones del usuario excepto la indicada. */
+  async revokeAllSessionsForUserExcept(userId: number, exceptSessionId: number): Promise<number> {
+    return userSessionRepository.revokeAllForUserExcept(userId, exceptSessionId);
+  }
+
+  /**
+   * Resuelve la sesión actual a partir del refresh token (validado para el userId dado).
+   */
+  async resolveCurrentSessionId(
+    userId: number,
+    refreshToken?: string | null,
+  ): Promise<number | null> {
+    if (!refreshToken?.trim()) return null;
+
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      if (decoded.userId !== userId) return null;
+
+      const session = await userSessionRepository.findById(decoded.sessionId);
+      if (!session || session.revoked_at || session.user_id !== userId) return null;
+
+      const hashValid = await verifyRefreshTokenHash(refreshToken, session.refresh_token_hash);
+      if (!hashValid) return null;
+
+      return decoded.sessionId;
+    } catch {
+      return null;
+    }
+  }
+
   /** Revoca sesiones de todos los usuarios de una academia (por tenant_id en sesión). */
   async revokeAllSessionsForTenant(tenantId: number): Promise<number> {
     return userSessionRepository.revokeAllForTenant(tenantId);
