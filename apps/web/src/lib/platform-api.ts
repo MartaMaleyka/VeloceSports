@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export class PlatformApiError extends Error {
   constructor(
     message: string,
@@ -29,7 +31,7 @@ export async function platformFetch<T>(
 
   let response: Response;
   try {
-    response = await fetch(`/api/platform/${path}`, {
+    response = await fetch(appPath(`/api/platform/${path}`), {
       ...options,
       credentials: 'same-origin',
       headers,

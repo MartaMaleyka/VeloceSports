@@ -1,4 +1,5 @@
 import type { ReportExportFormat, TenantReportType } from '@velocesport/shared';
+import { appPath } from './app-path.js';
 
 export class ReportApiError extends Error {
   constructor(
@@ -21,7 +22,7 @@ export async function downloadTenantReport(
     if (value !== undefined && value !== '') search.set(key, value);
   }
 
-  const response = await fetch(`/api/tenant/reports/${reportType}/export?${search.toString()}`, {
+  const response = await fetch(appPath(`/api/tenant/reports/${reportType}/export?${search.toString()}`), {
     credentials: 'same-origin',
     headers: {
       'Accept-Language': locale === 'en' ? 'en-US' : 'es-PA',

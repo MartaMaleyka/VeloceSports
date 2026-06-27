@@ -14,6 +14,7 @@ import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { fetchParentMatchList, ParentApiError } from '../../lib/report-card-api';
 import { resolveNumericRouteId } from '../../lib/route-params';
+import { appPath } from '../../lib/app-path';
 
 export interface ParentChildMatchesPageProps {
   playerId?: number;
@@ -22,7 +23,7 @@ export interface ParentChildMatchesPageProps {
 
 function ParentChildMatchesContent({
   playerId: playerIdProp,
-  backPath = '/dashboard/parent/children',
+  backPath = appPath('/dashboard/parent/children'),
 }: ParentChildMatchesPageProps) {
   const playerId = resolveNumericRouteId(playerIdProp, /\/children\/(\d+)\/matches/);
   const { t, locale } = useTranslation();
@@ -60,7 +61,7 @@ function ParentChildMatchesContent({
     });
 
   const reportPath = (matchId: number) =>
-    `/dashboard/parent/children/${playerId}/matches/${matchId}`;
+    appPath(`/dashboard/parent/children/${playerId}/matches/${matchId}`);
 
   if (playerId <= 0) {
     return (

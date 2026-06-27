@@ -12,6 +12,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { PlatformApiError, platformFetch } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 
 interface PlanFormPageProps {
   planId?: number;
@@ -78,30 +79,19 @@ function PlanFormContent({ planId }: PlanFormPageProps) {
 
     try {
       if (isEdit && planId !== undefined) {
-        await fetch(`/api/platform/plans/${planId}`, {
+        await platformFetch(`plans/${planId}`, {
           method: 'PATCH',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        }).then(async (r) => {
-          const body = await r.json();
-          if (!r.ok) throw new PlatformApiError(body.message, r.status);
         });
         showToast({ variant: 'success', message: t('platform.plans.successUpdate') });
       } else {
-        await fetch('/api/platform/plans', {
+        await platformFetch('plans', {
           method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        }).then(async (r) => {
-          const body = await r.json();
-          if (!r.ok) throw new PlatformApiError(body.message, r.status);
-          return body.data as PlanDto;
         });
         showToast({ variant: 'success', message: t('platform.plans.successCreate') });
       }
-      window.location.href = '/dashboard/super-admin/plans';
+      window.location.href = appPath('/dashboard/super-admin/plans');
     } catch (err) {
       setFormError(err instanceof PlatformApiError ? err.message : t('platform.errors.generic'));
     } finally {
@@ -186,7 +176,7 @@ function PlanFormContent({ planId }: PlanFormPageProps) {
         <Button type="submit" loading={submitting}>
           {isEdit ? t('platform.plans.form.submitEdit') : t('platform.plans.form.submitCreate')}
         </Button>
-        <Button type="button" variant="secondary" onClick={() => { window.location.href = '/dashboard/super-admin/plans'; }}>
+        <Button type="button" variant="secondary" onClick={() => { window.location.href = appPath('/dashboard/super-admin/plans'); }}>
           {t('common.cancel')}
         </Button>
       </div>

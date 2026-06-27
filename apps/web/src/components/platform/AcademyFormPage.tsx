@@ -11,6 +11,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
+import { appPath } from '../../lib/app-path';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
 
 interface AcademyFormPageProps {
@@ -62,27 +63,20 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
 
     try {
       if (isEdit && academyId !== undefined) {
-        await fetch(`/api/platform/academies/${academyId}`, {
+        await platformFetch(`academies/${academyId}`, {
           method: 'PATCH',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: name.trim(),
             slug: slug.trim() || undefined,
             planId: Number(planId),
             billingAnchorDay: Number(billingAnchorDay),
           }),
-        }).then(async (r) => {
-          const body = await r.json();
-          if (!r.ok) throw new PlatformApiError(body.message, r.status);
         });
         showToast({ variant: 'success', message: t('platform.academies.successUpdate') });
-        window.location.href = `/dashboard/super-admin/academies/${academyId}`;
+        window.location.href = appPath(`/dashboard/super-admin/academies/${academyId}`);
       } else {
-        const res = await fetch('/api/platform/academies', {
+        const res = await platformFetch<CreateAcademyResponseDto>('academies', {
           method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: name.trim(),
             slug: slug.trim() || undefined,
@@ -90,10 +84,6 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
             billingAnchorDay: Number(billingAnchorDay),
             initialAdmin: { email: adminEmail.trim() },
           }),
-        }).then(async (r) => {
-          const body = await r.json();
-          if (!r.ok) throw new PlatformApiError(body.message, r.status);
-          return body.data as CreateAcademyResponseDto;
         });
         setTempCreds({
           email: res.initialAdmin.email,
@@ -159,7 +149,7 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
           <Button type="submit" loading={submitting}>
             {isEdit ? t('platform.academies.form.submitEdit') : t('platform.academies.form.submitCreate')}
           </Button>
-          <Button type="button" variant="secondary" onClick={() => { window.location.href = '/dashboard/super-admin/academies'; }}>
+          <Button type="button" variant="secondary" onClick={() => { window.location.href = appPath('/dashboard/super-admin/academies'); }}>
             {t('common.cancel')}
           </Button>
         </div>
@@ -168,7 +158,7 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
       {tempCreds && (
         <TemporaryPasswordModal
           open
-          onClose={() => { window.location.href = '/dashboard/super-admin/academies'; }}
+          onClose={() => { window.location.href = appPath('/dashboard/super-admin/academies'); }}
           email={tempCreds.email}
           password={tempCreds.password}
           titleKey="platform.academies.tempPassword.title"

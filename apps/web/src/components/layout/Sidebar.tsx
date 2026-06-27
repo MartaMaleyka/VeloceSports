@@ -3,6 +3,7 @@ import type { LoginRole } from '@velocesport/shared';
 import { useTranslation } from '@velocesport/i18n';
 import { cn, sectionNavActiveClasses, type SectionAccentId } from '@velocesport/design-system';
 import { getNavLayoutForRoles, getSessionSubtitle } from '../../lib/navigation';
+import { appPath } from '../../lib/app-path';
 
 export interface SidebarProps {
   roles: LoginRole[];
@@ -105,7 +106,7 @@ export default function Sidebar({ roles, primaryRole, activeNavId }: SidebarProp
       </nav>
 
       <div className="border-t border-border p-4">
-        <form method="POST" action="/api/auth/logout">
+        <form method="POST" action={appPath('/api/auth/logout')}>
           <button
             type="submit"
             className="flex min-h-touch w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-text-secondary transition-[background-color,color] duration-normal hover:bg-bg-muted hover:text-text-primary focus-visible:shadow-[var(--shadow-focus-ring)]"

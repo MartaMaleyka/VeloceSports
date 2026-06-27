@@ -12,6 +12,7 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { ParentApiError } from '../../lib/parent-api';
 import { fetchParentMatchCalendar } from '../../lib/parent-match-calendar-api';
+import { appPath } from '../../lib/app-path';
 
 function calendarDayKey(iso: string, timezone: string): string {
   return new Intl.DateTimeFormat('en-CA', {
@@ -64,7 +65,7 @@ function MatchCalendarCard({
     return t('parentCalendar.inDays', { count: days });
   }, [item.matchDatetime, item.status, timezone, t, variant]);
 
-  const reportPath = `/dashboard/parent/children/${item.playerId}/matches/${item.matchId}`;
+  const reportPath = appPath(`/dashboard/parent/children/${item.playerId}/matches/${item.matchId}`);
 
   return (
     <article

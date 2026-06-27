@@ -15,9 +15,10 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation, academyAdminHomeBillingStatusKey } from '@velocesport/i18n';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
+import { appPath } from '../../lib/app-path';
 import { AcademyDashboardChart } from './AcademyDashboardChart';
 
-const BASE = '/dashboard/academy-admin';
+const BASE = appPath('/dashboard/academy-admin');
 
 interface QuickLinkProps {
   href: string;

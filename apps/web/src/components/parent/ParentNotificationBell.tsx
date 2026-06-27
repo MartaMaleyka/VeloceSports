@@ -9,6 +9,7 @@ import {
   markParentNotificationRead,
 } from '../../lib/parent-notifications-api';
 import { ParentApiError } from '../../lib/parent-api';
+import { appPath } from '../../lib/app-path';
 
 function formatNotificationText(
   item: ParentNotificationDto,
@@ -110,7 +111,7 @@ export default function ParentNotificationBell() {
   };
 
   const reportPath = (item: ParentNotificationDto) =>
-    `/dashboard/parent/children/${item.playerId}/matches/${item.matchId}`;
+    appPath(`/dashboard/parent/children/${item.playerId}/matches/${item.matchId}`);
 
   return (
     <div className="relative" ref={panelRef}>
@@ -228,7 +229,7 @@ export default function ParentNotificationBell() {
 
           <div className="border-t border-border px-4 py-2">
             <a
-              href="/dashboard/parent/notifications"
+              href={appPath('/dashboard/parent/notifications')}
               className="text-sm font-medium text-section-audit-fg hover:underline"
             >
               {t('parentNotifications.managePreferences')}

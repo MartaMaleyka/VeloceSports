@@ -1,3 +1,5 @@
+import { appPath } from './app-path.js';
+
 export class ParentApiError extends Error {
   constructor(
     message: string,
@@ -22,7 +24,7 @@ export async function parentFetch<T>(path: string, options: RequestInit = {}): P
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`/api/parent/${path}`, {
+  const response = await fetch(appPath(`/api/parent/${path}`), {
     ...options,
     credentials: 'same-origin',
     headers,

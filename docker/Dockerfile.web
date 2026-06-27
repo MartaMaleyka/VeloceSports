@@ -11,7 +11,7 @@ ENV ASTRO_BASE=${ASTRO_BASE}
 ENV JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
 ENV JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
 ENV JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
-ENV NODE_ENV=production
+ENV CI=true
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages ./packages
@@ -24,13 +24,24 @@ RUN pnpm --filter @velocesport/shared build \
 RUN pnpm --filter @velocesport/web build
 
 FROM node:20-alpine AS runtime
+# Astro standalone embebe rutas absolutas al directorio de build (/app/apps/web/dist).
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
 
-COPY --from=build /app/apps/web/dist ./dist
+# React, jsonwebtoken y otras deps SSR quedan externalizadas en standalone.
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/packages ./packages
+COPY --from=build /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=build /app/apps/web/dist ./apps/web/dist
+COPY --from=build /app/apps/web/package.json ./apps/web/package.json
+
+WORKDIR /app/apps/web
+
+COPY docker/web-entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 4321
-CMD ["node", "./dist/server/entry.mjs"]
+ENTRYPOINT ["/entrypoint.sh"]
