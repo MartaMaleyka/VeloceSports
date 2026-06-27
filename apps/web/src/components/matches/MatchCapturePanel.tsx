@@ -12,6 +12,7 @@ import {
   ConfirmModal,
   Input,
   Modal,
+  cn,
   useToast,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
@@ -47,6 +48,34 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    setMatches(mq.matches);
+    const onChange = () => setMatches(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
+
+function useOverlaySheet(active: boolean, onClose: () => void) {
+  useEffect(() => {
+    if (!active) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [active, onClose]);
+}
+
 export default function MatchCapturePanel({
   matchId,
   match,
@@ -55,6 +84,7 @@ export default function MatchCapturePanel({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const reducedMotion = usePrefersReducedMotion();
+  const isDesktopCapture = useMediaQuery('(min-width: 768px)');
 
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
@@ -86,7 +116,8 @@ export default function MatchCapturePanel({
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [selectedActionCode, setSelectedActionCode] = useState<number | null>(null);
   const [pulseClientId, setPulseClientId] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historySheetOpen, setHistorySheetOpen] = useState(false);
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
   const [finishConfirmOpen, setFinishConfirmOpen] = useState(false);
   const [voidTarget, setVoidTarget] = useState<CaptureHistoryEntry | null>(null);
   const [voidReason, setVoidReason] = useState('');
@@ -112,6 +143,14 @@ export default function MatchCapturePanel({
     voidEntry,
     upsertFromServer,
   } = useCaptureQueue(matchId);
+
+  const closeActionSheet = useCallback(() => {
+    setActionSheetOpen(false);
+    setSelectedPlayerId(null);
+  }, []);
+
+  useOverlaySheet(historySheetOpen, () => setHistorySheetOpen(false));
+  useOverlaySheet(actionSheetOpen, closeActionSheet);
 
   const lastCaptureRef = useRef<string | null>(null);
 
@@ -215,6 +254,7 @@ export default function MatchCapturePanel({
       }
       setSelectedPlayerId(null);
       setSelectedActionCode(null);
+      setActionSheetOpen(false);
       showToast({
         variant: 'success',
         message: t('matches.capture.toastRecorded', {
@@ -244,6 +284,25 @@ export default function MatchCapturePanel({
     if (next != null && selectedActionCode != null) {
       tryCapture(next, selectedActionCode);
     }
+  };
+
+  const handlePlayerTap = (playerId: number) => {
+    if (captureLocked) return;
+    if (isDesktopCapture) {
+      togglePlayer(playerId);
+      return;
+    }
+    if (selectedPlayerId === playerId && actionSheetOpen) {
+      closeActionSheet();
+      return;
+    }
+    setSelectedPlayerId(playerId);
+    setActionSheetOpen(true);
+  };
+
+  const handleMobileActionSelect = (code: number) => {
+    if (selectedPlayerId == null) return;
+    tryCapture(selectedPlayerId, code);
   };
 
   const toggleAction = (code: number) => {
@@ -321,6 +380,11 @@ export default function MatchCapturePanel({
     }
   };
 
+  const selectedPlayer =
+    selectedPlayerId != null
+      ? presentPlayers.find((p) => p.playerId === selectedPlayerId) ?? null
+      : null;
+
   const periodCount = match.effectivePeriods.periodsCount;
 
   if (loading) {
@@ -377,12 +441,12 @@ export default function MatchCapturePanel({
   }
 
   return (
-    <div className="relative flex min-h-[70vh] flex-col pb-20">
-      {/* Barra de contexto fija */}
-      <div className="sticky top-0 z-30 -mx-4 border-b border-border bg-bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+    <div className="flex min-h-[70vh] max-h-[min(85dvh,920px)] flex-col">
+      {/* Barra de contexto — compacta en móvil */}
+      <div className="sticky top-0 z-30 -mx-4 shrink-0 border-b border-border bg-bg-surface/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:py-3">
+        <div className="flex flex-row items-end gap-2 sm:gap-3 md:flex-col md:items-stretch lg:flex-row lg:items-end">
           <div className="min-w-0 flex-1">
-            <span className="mb-1 block text-xs font-medium text-text-secondary">
+            <span className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs">
               {t('matches.capture.period')}
             </span>
             <div className="flex gap-1" role="group" aria-label={t('matches.capture.period')}>
@@ -392,27 +456,32 @@ export default function MatchCapturePanel({
                   type="button"
                   disabled={captureLocked}
                   onClick={() => setPeriod(p)}
-                  className={`min-h-touch min-w-touch flex-1 rounded-lg border text-sm font-semibold ${
+                  className={cn(
+                    'min-h-10 min-w-10 flex-1 rounded-lg border text-sm font-semibold md:min-h-touch md:min-w-touch',
                     period === p
                       ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
-                      : 'border-border bg-bg-muted text-text-secondary'
-                  } ${captureLocked ? 'opacity-60' : ''}`}
+                      : 'border-border bg-bg-muted text-text-secondary',
+                    captureLocked && 'opacity-60',
+                  )}
                 >
                   {p}
                 </button>
               ))}
             </div>
           </div>
-          <div className="relative z-10 w-full shrink-0 sm:w-[10.75rem]">
-            <label htmlFor="capture-minute" className="mb-1 block text-xs font-medium text-text-secondary">
+          <div className="relative z-10 w-[8.75rem] shrink-0 sm:w-[10.75rem]">
+            <label
+              htmlFor="capture-minute"
+              className="mb-0.5 block text-[0.65rem] font-medium text-text-secondary md:mb-1 md:text-xs"
+            >
               {t('matches.capture.minute')}
             </label>
-            <div className="isolate grid grid-cols-[44px_minmax(3rem,1fr)_44px] items-center gap-1">
+            <div className="isolate grid grid-cols-[36px_minmax(2.5rem,1fr)_36px] items-center gap-0.5 md:grid-cols-[44px_minmax(3rem,1fr)_44px] md:gap-1">
               <button
                 type="button"
                 disabled={captureLocked || minute <= 0}
                 aria-label={t('matches.capture.minuteDecrease')}
-                className="relative z-10 min-h-touch min-w-touch rounded-lg border border-border bg-bg-muted text-lg font-bold"
+                className="relative z-10 min-h-10 min-w-10 rounded-lg border border-border bg-bg-muted text-base font-bold md:min-h-touch md:min-w-touch md:text-lg"
                 onClick={() => bumpMinute(-1)}
               >
                 −
@@ -434,14 +503,14 @@ export default function MatchCapturePanel({
                   pattern="[0-9]*"
                   autoComplete="off"
                   aria-label={t('matches.capture.minute')}
-                  className="h-11 w-full min-w-0 max-w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 text-center text-base font-bold tabular-nums text-[var(--input-text)] focus:border-[var(--input-border-focus)] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)] disabled:cursor-not-allowed disabled:bg-bg-muted disabled:opacity-70"
+                  className="h-9 w-full min-w-0 max-w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-1 text-center text-sm font-bold tabular-nums text-[var(--input-text)] focus:border-[var(--input-border-focus)] focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)] disabled:cursor-not-allowed disabled:bg-bg-muted disabled:opacity-70 md:h-11 md:px-2 md:text-base"
                 />
               </div>
               <button
                 type="button"
                 disabled={captureLocked}
                 aria-label={t('matches.capture.minuteIncrease')}
-                className="relative z-10 min-h-touch min-w-touch rounded-lg border border-border bg-bg-muted text-lg font-bold"
+                className="relative z-10 min-h-10 min-w-10 rounded-lg border border-border bg-bg-muted text-base font-bold md:min-h-touch md:min-w-touch md:text-lg"
                 onClick={() => bumpMinute(1)}
               >
                 +
@@ -451,9 +520,15 @@ export default function MatchCapturePanel({
         </div>
 
         {undoCandidate && (
-          <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-feedback-warning/40 bg-feedback-warning/10 px-3 py-2">
-            <span className="text-sm text-text-primary">{t('matches.capture.undoBanner')}</span>
-            <Button type="button" size="md" variant="secondary" className="min-h-touch shrink-0" onClick={() => void handleImmediateUndo()}>
+          <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-feedback-warning/40 bg-feedback-warning/10 px-2 py-1.5 md:mt-2 md:px-3 md:py-2">
+            <span className="text-xs text-text-primary md:text-sm">{t('matches.capture.undoBanner')}</span>
+            <Button
+              type="button"
+              size="md"
+              variant="secondary"
+              className="min-h-9 shrink-0 px-3 text-xs md:min-h-touch md:text-sm"
+              onClick={() => void handleImmediateUndo()}
+            >
               {t('matches.capture.undo')}
             </Button>
           </div>
@@ -467,158 +542,258 @@ export default function MatchCapturePanel({
       )}
 
       {isCorrectionMode && (
-        <Alert variant="warning" className="mt-3" title={t('matches.capture.correctionModeTitle')}>
+        <Alert variant="warning" className="mt-3 shrink-0" title={t('matches.capture.correctionModeTitle')}>
           {t('matches.capture.correctionModeBanner', {
             days: match.correctionWindow?.daysRemaining ?? 0,
           })}
         </Alert>
       )}
 
-      {/* Grilla de jugadores */}
-      {canEditActions && (
-        <section className="mt-4 flex-1" aria-label={t('matches.capture.playersSection')}>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
-            {t('matches.capture.playersSection')}
-          </h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {presentPlayers.map((player) => {
-              const isSelected = selectedPlayerId === player.playerId;
-              const isStarter = player.lineup === MatchLineupRole.STARTER;
-              return (
-                <button
-                  key={player.playerId}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => togglePlayer(player.playerId)}
-                  className={`flex min-h-[4.75rem] flex-col items-center justify-center rounded-xl border p-2 transition-transform ${impactPlayerRingClasses(
-                    selectedAction?.impact ?? null,
-                    isSelected,
-                  )} ${!reducedMotion && isSelected ? 'scale-[1.02]' : ''}`}
-                >
-                  <span
-                    className={`text-3xl font-black tabular-nums leading-none ${
-                      isStarter ? 'text-section-matches-fg' : 'text-text-primary'
-                    }`}
-                  >
-                    {player.jerseyNumber}
-                  </span>
-                  <span className="mt-1 line-clamp-2 text-center text-[0.65rem] font-medium leading-tight text-text-secondary">
-                    {player.lastName}
-                  </span>
-                  {isStarter && (
-                    <span className="mt-0.5 text-[0.6rem] font-semibold uppercase text-section-matches-fg">
-                      {t('matches.attendance.starter')}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Acciones + voz */}
-      {canEditActions && (
-        <section className="mt-4" aria-label={t('matches.capture.actionsSection')}>
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-              {t('matches.capture.actionsSection')}
-            </h3>
-            <button
-              type="button"
-              disabled
-              title={t('matches.capture.voiceSoon')}
-              aria-label={t('matches.capture.voiceSoon')}
-              className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-text-muted opacity-70"
-            >
-              <span aria-hidden="true" className="text-lg">
-                🎤
-              </span>
-            </button>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {sortedCatalog.map((action) => {
-              const isSelected = selectedActionCode === action.code;
-              return (
-                <button
-                  key={action.code}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => toggleAction(action.code)}
-                  className={`min-h-touch shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${impactChipClasses(action.impact)} ${
-                    isSelected ? 'ring-2 ring-section-matches-fg ring-offset-2 ring-offset-bg-surface' : ''
-                  }`}
-                >
-                  <span className="mr-1 font-mono text-xs opacity-80">{action.code}</span>
-                  {action.name}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 text-xs text-text-muted">
-            {isCorrectionMode
-              ? t('matches.capture.correctionTwoTapHint')
-              : t('matches.capture.twoTapHint')}
-          </p>
-        </section>
-      )}
-
-      {/* Finalizar partido — solo captura en vivo */}
-      {isLiveMode && (
-        <div className="mt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-touch w-full"
-            disabled={statusLoading}
-            onClick={() => setFinishConfirmOpen(true)}
+      {/* Cuerpo: jugadores dominantes; dock completo solo en md+ */}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 md:flex-row md:overflow-hidden">
+        {(canEditActions || presentPlayers.length > 0) && (
+          <section
+            className="min-h-0 flex-1 overflow-y-auto md:flex-[1.15] md:pr-3"
+            aria-label={t('matches.capture.playersSection')}
           >
-            {t('matches.capture.finishMatch')}
-          </Button>
+            {canEditActions && (
+              <p className="mb-2 text-xs text-text-muted md:hidden">
+                {t('matches.capture.playerPickHint')}
+              </p>
+            )}
+            {canEditActions && (
+              <h3 className="mb-2 hidden text-xs font-semibold uppercase tracking-wide text-text-muted md:block">
+                {t('matches.capture.playersSection')}
+              </h3>
+            )}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
+              {presentPlayers.map((player) => {
+                const isSelected = selectedPlayerId === player.playerId;
+                const isStarter = player.lineup === MatchLineupRole.STARTER;
+                const ringImpact = isDesktopCapture ? (selectedAction?.impact ?? null) : null;
+                return (
+                  <button
+                    key={player.playerId}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => handlePlayerTap(player.playerId)}
+                    className={cn(
+                      'flex min-h-[4.75rem] flex-col items-center justify-center rounded-xl border p-2 transition-transform',
+                      impactPlayerRingClasses(ringImpact, isSelected),
+                      !reducedMotion && isSelected && 'scale-[1.02]',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'text-3xl font-black tabular-nums leading-none',
+                        isStarter ? 'text-section-matches-fg' : 'text-text-primary',
+                      )}
+                    >
+                      {player.jerseyNumber}
+                    </span>
+                    <span className="mt-1 line-clamp-2 text-center text-[0.65rem] font-medium leading-tight text-text-secondary">
+                      {player.lastName}
+                    </span>
+                    {isStarter && (
+                      <span className="mt-0.5 text-[0.6rem] font-semibold uppercase text-section-matches-fg">
+                        {t('matches.attendance.starter')}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isLiveMode && (
+              <div className="mt-4 pb-2 md:hidden">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-touch w-full"
+                  disabled={statusLoading}
+                  onClick={() => setFinishConfirmOpen(true)}
+                >
+                  {t('matches.capture.finishMatch')}
+                </Button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Dock desktop: acciones + historial siempre visible */}
+        {(canEditActions || history.length > 0 || readOnlyHistory) && (
+          <aside
+            className={cn(
+              'hidden min-h-0 flex-col border-border bg-bg-surface md:flex',
+              'md:w-[min(100%,22rem)] md:shrink-0 md:border-l md:max-h-full',
+            )}
+            aria-label={t('matches.capture.actionsSection')}
+          >
+            {canEditActions && (
+              <CaptureActionGrid
+                sortedCatalog={sortedCatalog}
+                selectedActionCode={selectedActionCode}
+                onSelectAction={toggleAction}
+                isCorrectionMode={isCorrectionMode}
+                showHeader
+                showHint
+                scrollable
+              />
+            )}
+
+            {isLiveMode && (
+              <div className="shrink-0 border-b border-border p-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-touch w-full"
+                  disabled={statusLoading}
+                  onClick={() => setFinishConfirmOpen(true)}
+                >
+                  {t('matches.capture.finishMatch')}
+                </Button>
+              </div>
+            )}
+
+            <CaptureHistoryList
+              history={history}
+              tick={tick}
+              pulseClientId={pulseClientId}
+              reducedMotion={reducedMotion}
+              readOnly={readOnlyHistory}
+              isCorrectionMode={isCorrectionMode}
+              undoCandidateId={undoCandidate?.clientActionId}
+              onRetry={retryEntry}
+              onUndo={(id) => void handleImmediateUndo(id)}
+              onVoid={(entry) => {
+                setVoidTarget(entry);
+                setVoidReason('');
+              }}
+              expanded
+            />
+          </aside>
+        )}
+      </div>
+
+      {/* Pie móvil: solo historial colapsado (acciones en bottom-sheet al tocar jugador) */}
+      {(canEditActions || history.length > 0 || readOnlyHistory) && (
+        <div
+          className={cn(
+            'shrink-0 border-t border-border bg-bg-surface md:hidden',
+            'shadow-[0_-4px_16px_rgba(0,0,0,0.06)]',
+          )}
+        >
+          <button
+            type="button"
+            className="flex min-h-touch w-full items-center justify-between px-4 py-2 text-left"
+            aria-expanded={historySheetOpen}
+            onClick={() => setHistorySheetOpen(true)}
+          >
+            <span className="text-sm font-semibold text-text-primary">
+              {t('matches.capture.history')} ({history.length})
+            </span>
+            <span className="text-xs text-text-muted">{t('matches.capture.historyOpen')}</span>
+          </button>
         </div>
       )}
 
-      {/* Historial colapsable */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg-surface shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
-        <button
-          type="button"
-          className="flex min-h-touch w-full items-center justify-between px-4 py-3 text-left"
-          aria-expanded={historyOpen}
-          onClick={() => setHistoryOpen((o) => !o)}
-        >
-          <span className="font-semibold text-text-primary">
-            {t('matches.capture.history')} ({history.length})
-          </span>
-          <span className="text-text-muted">{historyOpen ? '▾' : '▴'}</span>
-        </button>
-        {historyOpen && (
-          <ul className="max-h-[40vh] overflow-y-auto border-t border-border px-2 pb-3">
-            {history.length === 0 && (
-              <li className="px-2 py-4 text-center text-sm text-text-muted">
-                {t('matches.capture.historyEmpty')}
-              </li>
-            )}
-            {history.map((entry) => (
-              <HistoryRow
-                key={entry.clientActionId}
-                entry={entry}
-                tick={tick}
-                pulse={entry.clientActionId === pulseClientId}
-                reducedMotion={reducedMotion}
-                readOnly={readOnlyHistory}
-                isCorrectionMode={isCorrectionMode}
-                onRetry={() => retryEntry(entry.clientActionId)}
-                onUndo={() => void handleImmediateUndo(entry.clientActionId)}
-                onVoid={() => {
-                  setVoidTarget(entry);
-                  setVoidReason('');
-                }}
-                canUndo={undoCandidate?.clientActionId === entry.clientActionId}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* Bottom sheet acciones — solo móvil, tras elegir jugador */}
+      {actionSheetOpen && selectedPlayer && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-text-primary/30"
+            aria-label={t('common.close')}
+            onClick={closeActionSheet}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 flex max-h-[min(85dvh,640px)] flex-col rounded-t-xl border border-border bg-bg-surface shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('matches.capture.selectAction')}
+          >
+            <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+                  {t('matches.capture.selectAction')}
+                </p>
+                <p className="mt-0.5 text-base font-semibold text-text-primary">
+                  {t('matches.capture.recordingFor', {
+                    jersey: selectedPlayer.jerseyNumber,
+                    lastName: selectedPlayer.lastName,
+                  })}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeActionSheet}
+                className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-md text-sm font-medium text-text-secondary hover:bg-bg-muted"
+                aria-label={t('common.cancel')}
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+            <CaptureActionGrid
+              sortedCatalog={sortedCatalog}
+              selectedActionCode={null}
+              onSelectAction={handleMobileActionSelect}
+              isCorrectionMode={isCorrectionMode}
+              className="min-h-0 flex-1 overflow-y-auto border-b-0"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Bottom sheet historial — solo móvil */}
+      {historySheetOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-text-primary/30"
+            aria-label={t('common.close')}
+            onClick={() => setHistorySheetOpen(false)}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 flex max-h-[min(75dvh,520px)] flex-col rounded-t-xl border border-border bg-bg-surface shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('matches.capture.history')}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+              <h3 className="text-base font-semibold text-text-primary">
+                {t('matches.capture.history')}
+                <span className="ml-1.5 font-normal text-text-muted">({history.length})</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setHistorySheetOpen(false)}
+                className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md text-text-secondary hover:bg-bg-muted"
+                aria-label={t('common.close')}
+              >
+                ×
+              </button>
+            </div>
+            <CaptureHistoryList
+              history={history}
+              tick={tick}
+              pulseClientId={pulseClientId}
+              reducedMotion={reducedMotion}
+              readOnly={readOnlyHistory}
+              isCorrectionMode={isCorrectionMode}
+              undoCandidateId={undoCandidate?.clientActionId}
+              onRetry={retryEntry}
+              onUndo={(id) => void handleImmediateUndo(id)}
+              onVoid={(entry) => {
+                setVoidTarget(entry);
+                setVoidReason('');
+              }}
+              expanded
+              showHeader={false}
+              className="min-h-0 flex-1"
+            />
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={finishConfirmOpen}
@@ -655,6 +830,159 @@ export default function MatchCapturePanel({
   );
 }
 
+function CaptureActionGrid({
+  sortedCatalog,
+  selectedActionCode,
+  onSelectAction,
+  isCorrectionMode = false,
+  showHeader = false,
+  showHint = false,
+  scrollable = false,
+  className,
+}: {
+  sortedCatalog: ActionCatalogDto[];
+  selectedActionCode: number | null;
+  onSelectAction: (code: number) => void;
+  isCorrectionMode?: boolean;
+  showHeader?: boolean;
+  showHint?: boolean;
+  scrollable?: boolean;
+  className?: string;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <section
+      className={cn(
+        'shrink-0 bg-bg-surface',
+        scrollable && 'min-h-0 overflow-y-auto',
+        showHeader || showHint ? 'border-b border-border' : '',
+        className,
+      )}
+      aria-label={t('matches.capture.actionsSection')}
+    >
+      {showHeader && (
+        <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+            {t('matches.capture.actionsSection')}
+          </h3>
+          <button
+            type="button"
+            disabled
+            title={t('matches.capture.voiceSoon')}
+            aria-label={t('matches.capture.voiceSoon')}
+            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-text-muted opacity-70"
+          >
+            <span aria-hidden="true" className="text-lg">
+              🎤
+            </span>
+          </button>
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-2 p-3 md:grid-cols-1">
+        {sortedCatalog.map((action) => {
+          const isSelected = selectedActionCode === action.code;
+          return (
+            <button
+              key={action.code}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => onSelectAction(action.code)}
+              className={cn(
+                'flex min-h-[4rem] flex-col justify-center rounded-xl border px-3 py-2.5 text-left transition-colors',
+                impactChipClasses(action.impact),
+                isSelected &&
+                  'ring-2 ring-section-matches-fg ring-offset-2 ring-offset-bg-surface',
+              )}
+            >
+              <span className="font-mono text-xs opacity-70">{action.code}</span>
+              <span className="mt-0.5 text-sm font-semibold leading-snug">{action.name}</span>
+            </button>
+          );
+        })}
+      </div>
+      {showHint && (
+        <p className="px-3 pb-3 text-xs text-text-muted">
+          {isCorrectionMode
+            ? t('matches.capture.correctionTwoTapHint')
+            : t('matches.capture.twoTapHint')}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function CaptureHistoryList({
+  history,
+  tick,
+  pulseClientId,
+  reducedMotion,
+  readOnly,
+  isCorrectionMode,
+  undoCandidateId,
+  onRetry,
+  onUndo,
+  onVoid,
+  expanded = true,
+  showHeader = true,
+  className,
+}: {
+  history: CaptureHistoryEntry[];
+  tick: number;
+  pulseClientId: string | null;
+  reducedMotion: boolean;
+  readOnly: boolean;
+  isCorrectionMode: boolean;
+  undoCandidateId?: string;
+  onRetry: (clientActionId: string) => void;
+  onUndo: (clientActionId: string) => void;
+  onVoid: (entry: CaptureHistoryEntry) => void;
+  expanded?: boolean;
+  showHeader?: boolean;
+  className?: string;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <section
+      className={cn('flex flex-col', expanded && 'min-h-0 flex-1', className)}
+      aria-label={t('matches.capture.history')}
+    >
+      {showHeader && (
+        <div className="flex shrink-0 items-center justify-between border-b border-border bg-bg-muted/40 px-3 py-2">
+          <h3 className="text-sm font-semibold text-text-primary">
+            {t('matches.capture.history')}
+            <span className="ml-1.5 font-normal text-text-muted">({history.length})</span>
+          </h3>
+        </div>
+      )}
+      <ul className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
+        {history.length === 0 && (
+          <li className="px-2 py-6 text-center text-sm text-text-muted">
+            {t('matches.capture.historyEmpty')}
+          </li>
+        )}
+        {history.map((entry) => (
+          <HistoryRow
+            key={entry.clientActionId}
+            entry={entry}
+            tick={tick}
+            pulse={entry.clientActionId === pulseClientId}
+            reducedMotion={reducedMotion}
+            readOnly={readOnly}
+            isCorrectionMode={isCorrectionMode}
+            onRetry={() => onRetry(entry.clientActionId)}
+            onUndo={() => onUndo(entry.clientActionId)}
+            onVoid={() => onVoid(entry)}
+            canUndo={undoCandidateId === entry.clientActionId}
+            compact
+          />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function HistoryRow({
   entry,
   tick,
@@ -666,6 +994,7 @@ function HistoryRow({
   onUndo,
   onVoid,
   canUndo,
+  compact = false,
 }: {
   entry: CaptureHistoryEntry;
   tick: number;
@@ -677,6 +1006,7 @@ function HistoryRow({
   onUndo: () => void;
   onVoid: () => void;
   canUndo: boolean;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const playerLabel =
@@ -695,12 +1025,15 @@ function HistoryRow({
 
   return (
     <li
-      className={`flex flex-col gap-2 border-b border-border py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between ${
-        !reducedMotion && pulse ? 'animate-pulse bg-section-matches-bg/40' : ''
-      } ${voided ? 'opacity-60' : ''}`}
+      className={cn(
+        'flex flex-col gap-1.5 border-b border-border last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
+        compact ? 'py-2' : 'py-3',
+        !reducedMotion && pulse && 'animate-pulse bg-section-matches-bg/40',
+        voided && 'opacity-60',
+      )}
     >
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-text-primary">
+        <p className={cn('font-medium text-text-primary', compact && 'text-sm')}>
           <span className="font-mono font-bold">{entry.player.jerseyNumber}</span>
           {' · '}
           {entry.action.name}
