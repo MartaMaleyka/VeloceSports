@@ -17,16 +17,25 @@ export function Modal({ open, onClose, title, description, children, footer }: M
   const titleId = useId();
   const descId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
+  // Escape: callback estable vía ref — onClose inline del padre no debe re-suscribir el listener.
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', handleKey);
-    dialogRef.current?.focus();
     return () => document.removeEventListener('keydown', handleKey);
-  }, [open, onClose]);
+  }, [open]);
+
+  // Foco inicial solo al abrir (false → true), nunca en re-renders del formulario interno.
+  useEffect(() => {
+    if (open) {
+      dialogRef.current?.focus();
+    }
+  }, [open]);
 
   if (!open) return null;
 

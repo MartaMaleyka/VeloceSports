@@ -49,6 +49,9 @@ export default defineConfig({
     port: 4321,
   },
   vite: {
+    resolve: {
+      dedupe: ['react', 'react-dom', '@velocesport/i18n'],
+    },
     ssr: {
       noExternal: ['@velocesport/design-system', '@velocesport/i18n'],
     },
