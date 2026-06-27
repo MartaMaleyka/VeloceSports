@@ -8,9 +8,9 @@ import type {
 import { GameActionStatus, MatchLineupRole, MatchStatus } from '@velocesport/shared';
 import {
   VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE,
-  interpretVoiceCapture,
   isVoiceAffirmation,
   isVoiceCancellation,
+  parseVoicePhrase,
   type VoiceInterpretFailure,
 } from '@velocesport/shared';
 import {
@@ -45,8 +45,19 @@ import VoiceCaptureExperiment, {
 } from './capture/VoiceCaptureExperiment';
 import { useSpeechRecognitionExperiment } from './capture/useSpeechRecognitionExperiment';
 import {
+  playVoiceErrorFeedback,
+  playVoiceInfoFeedback,
+  playVoiceSuccessFeedback,
+} from './capture/voice-capture-feedback';
+import {
   getVoiceConfirmBeforeRegister,
+  getVoiceContinuousMode,
+  getVoiceSoundFeedback,
+  getVoiceVibrationFeedback,
   setVoiceConfirmBeforeRegister,
+  setVoiceContinuousMode,
+  setVoiceSoundFeedback,
+  setVoiceVibrationFeedback,
 } from './capture/voice-capture-preferences';
 
 interface MatchCapturePanelProps {
@@ -135,11 +146,17 @@ export default function MatchCapturePanel({
   const [statusLoading, setStatusLoading] = useState(false);
   const [tick, setTick] = useState(Date.now());
   const [voiceConfirmBeforeRegister, setVoiceConfirmBeforeRegisterState] = useState(true);
+  const [voiceContinuousMode, setVoiceContinuousModeState] = useState(false);
+  const [voiceSoundFeedback, setVoiceSoundFeedbackState] = useState(true);
+  const [voiceVibrationFeedback, setVoiceVibrationFeedbackState] = useState(true);
   const [pendingVoiceCapture, setPendingVoiceCapture] = useState<VoicePendingCapture | null>(null);
   const [voiceFeedback, setVoiceFeedback] = useState<VoiceFeedbackMessage | null>(null);
 
   useEffect(() => {
     setVoiceConfirmBeforeRegisterState(getVoiceConfirmBeforeRegister());
+    setVoiceContinuousModeState(getVoiceContinuousMode());
+    setVoiceSoundFeedbackState(getVoiceSoundFeedback());
+    setVoiceVibrationFeedbackState(getVoiceVibrationFeedback());
   }, []);
 
   const isLiveMode = match.status === MatchStatus.IN_PROGRESS;
@@ -319,6 +336,21 @@ export default function MatchCapturePanel({
     [catalog],
   );
 
+  const voiceFeedbackOpts = useMemo(
+    () => ({ sound: voiceSoundFeedback, vibration: voiceVibrationFeedback }),
+    [voiceSoundFeedback, voiceVibrationFeedback],
+  );
+
+  const emitVoiceOutcome = useCallback(
+    (variant: VoiceFeedbackMessage['variant'], message: string) => {
+      setVoiceFeedback({ variant, message });
+      if (variant === 'success') playVoiceSuccessFeedback(voiceFeedbackOpts);
+      else if (variant === 'error') playVoiceErrorFeedback(voiceFeedbackOpts);
+      else playVoiceInfoFeedback(voiceFeedbackOpts);
+    },
+    [voiceFeedbackOpts],
+  );
+
   const voiceErrorMessage = useCallback(
     (failure: VoiceInterpretFailure): string => {
       switch (failure.code) {
@@ -340,58 +372,203 @@ export default function MatchCapturePanel({
     [t],
   );
 
+  const registerVoiceCapture = useCallback(
+    (player: CapturePlayerRef, action: CaptureActionRef, heardText: string) => {
+      triggerCapture(player, action);
+      emitVoiceOutcome(
+        'success',
+        t('matches.capture.voiceCapture.registered', {
+          jersey: player.jerseyNumber,
+          action: action.name,
+        }),
+      );
+      void heardText;
+    },
+    [emitVoiceOutcome, t, triggerCapture],
+  );
+
+  const handleVoiceUndo = useCallback(async () => {
+    const clientId = lastCaptureRef.current;
+    if (!clientId) {
+      emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.noUndoTarget'));
+      return;
+    }
+    const entry = history.find((e) => e.clientActionId === clientId);
+    if (!entry || !canImmediateUndo(entry, Date.now())) {
+      emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoExpired'));
+      return;
+    }
+    const ok = await immediateUndo(clientId);
+    if (ok) {
+      emitVoiceOutcome('success', t('matches.capture.voiceCapture.undoSuccess'));
+    } else {
+      emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoFailed'));
+    }
+  }, [emitVoiceOutcome, history, immediateUndo, t]);
+
+  const handleVoiceCorrectJersey = useCallback(
+    async (
+      jerseyNumber: number,
+      ambiguous: boolean,
+      heardText: string,
+      actionOverride?: CaptureActionRef,
+    ) => {
+      const clientId = lastCaptureRef.current;
+      const lastEntry = clientId ? history.find((e) => e.clientActionId === clientId) : null;
+      if (!lastEntry) {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.noCorrectTarget'));
+        return;
+      }
+
+      const player = presentPlayers.find((p) => p.jerseyNumber === jerseyNumber);
+      if (!player) {
+        emitVoiceOutcome(
+          'error',
+          t('matches.capture.voiceCapture.errors.noPlayer', { jersey: jerseyNumber }),
+        );
+        return;
+      }
+
+      const action = actionOverride ?? {
+        code: lastEntry.action.code,
+        name: lastEntry.action.name,
+        impact: lastEntry.action.impact,
+      };
+
+      const needsConfirm =
+        voiceConfirmBeforeRegister || ambiguous || jerseyNumber !== lastEntry.player.jerseyNumber;
+
+      if (needsConfirm) {
+        setPendingVoiceCapture({
+          jerseyNumber: player.jerseyNumber,
+          playerLastName: player.lastName,
+          actionName: action.name,
+          actionCode: action.code,
+          heardText,
+          isCorrection: true,
+        });
+        setVoiceFeedback(null);
+        return;
+      }
+
+      if (!canImmediateUndo(lastEntry, Date.now())) {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoExpired'));
+        return;
+      }
+
+      const undone = await immediateUndo(clientId!);
+      if (!undone) {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoFailed'));
+        return;
+      }
+
+      registerVoiceCapture(player, action, heardText);
+    },
+    [
+      emitVoiceOutcome,
+      history,
+      immediateUndo,
+      presentPlayers,
+      registerVoiceCapture,
+      t,
+      voiceConfirmBeforeRegister,
+    ],
+  );
+
+  const handleVoiceConfirmPending = useCallback(async () => {
+    if (!pendingVoiceCapture) return;
+    const player = presentPlayers.find(
+      (p) => p.jerseyNumber === pendingVoiceCapture.jerseyNumber,
+    );
+    const action = catalogByCode.get(pendingVoiceCapture.actionCode);
+    if (!player || !action) return;
+
+    if (pendingVoiceCapture.isCorrection) {
+      const clientId = lastCaptureRef.current;
+      const lastEntry = clientId ? history.find((e) => e.clientActionId === clientId) : null;
+      if (!lastEntry || !canImmediateUndo(lastEntry, Date.now())) {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoExpired'));
+        setPendingVoiceCapture(null);
+        return;
+      }
+      const undone = await immediateUndo(clientId!);
+      if (!undone) {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.undoFailed'));
+        setPendingVoiceCapture(null);
+        return;
+      }
+    }
+
+    registerVoiceCapture(player, action, pendingVoiceCapture.heardText);
+    setPendingVoiceCapture(null);
+  }, [
+    pendingVoiceCapture,
+    presentPlayers,
+    catalogByCode,
+    history,
+    immediateUndo,
+    emitVoiceOutcome,
+    registerVoiceCapture,
+    t,
+  ]);
+
+  const handleVoiceCancelPending = useCallback(() => {
+    setPendingVoiceCapture(null);
+    emitVoiceOutcome('info', t('matches.capture.voiceCapture.cancelled'));
+  }, [emitVoiceOutcome, t]);
+
   const handleVoiceFinalPhrase = useCallback(
     (text: string) => {
       if (captureLocked) return;
 
       if (pendingVoiceCapture) {
         if (isVoiceAffirmation(text, locale)) {
-          const player = presentPlayers.find(
-            (p) => p.jerseyNumber === pendingVoiceCapture.jerseyNumber,
-          );
-          const action = catalogByCode.get(pendingVoiceCapture.actionCode);
-          if (player && action) {
-            triggerCapture(player, action);
-            setVoiceFeedback({
-              variant: 'success',
-              message: t('matches.capture.voiceCapture.registered', {
-                jersey: player.jerseyNumber,
-                action: action.name,
-              }),
-            });
-          }
-          setPendingVoiceCapture(null);
+          void handleVoiceConfirmPending();
           return;
         }
         if (isVoiceCancellation(text, locale)) {
           setPendingVoiceCapture(null);
-          setVoiceFeedback({
-            variant: 'info',
-            message: t('matches.capture.voiceCapture.cancelled'),
-          });
+          emitVoiceOutcome('info', t('matches.capture.voiceCapture.cancelled'));
           return;
         }
       }
 
-      const result = interpretVoiceCapture({
+      const parsed = parseVoicePhrase({
         text,
         locale,
         presentPlayers,
         catalog: voiceCatalog,
       });
 
+      if (parsed.type === 'empty') {
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.empty'));
+        return;
+      }
+
+      if (parsed.type === 'undo') {
+        void handleVoiceUndo();
+        return;
+      }
+
+      if (parsed.type === 'correct_jersey') {
+        void handleVoiceCorrectJersey(
+          parsed.command.jerseyNumber,
+          parsed.command.ambiguous,
+          text.trim(),
+        );
+        return;
+      }
+
+      const result = parsed.capture;
       if (!result.ok) {
-        setVoiceFeedback({ variant: 'error', message: voiceErrorMessage(result) });
+        emitVoiceOutcome('error', voiceErrorMessage(result));
         return;
       }
 
       const player = presentPlayers.find((p) => p.playerId === result.player.playerId);
       const action = catalogByCode.get(result.action.code);
       if (!player || !action) {
-        setVoiceFeedback({
-          variant: 'error',
-          message: t('matches.capture.voiceCapture.errors.generic'),
-        });
+        emitVoiceOutcome('error', t('matches.capture.voiceCapture.errors.generic'));
         return;
       }
 
@@ -412,25 +589,22 @@ export default function MatchCapturePanel({
         return;
       }
 
-      triggerCapture(player, action);
-      setVoiceFeedback({
-        variant: 'success',
-        message: t('matches.capture.voiceCapture.registered', {
-          jersey: player.jerseyNumber,
-          action: action.name,
-        }),
-      });
+      registerVoiceCapture(player, action, text.trim());
     },
     [
       captureLocked,
       pendingVoiceCapture,
       locale,
       presentPlayers,
-      catalogByCode,
       voiceCatalog,
+      catalogByCode,
       voiceErrorMessage,
       voiceConfirmBeforeRegister,
-      triggerCapture,
+      handleVoiceUndo,
+      handleVoiceCorrectJersey,
+      handleVoiceConfirmPending,
+      registerVoiceCapture,
+      emitVoiceOutcome,
       t,
     ],
   );
@@ -438,6 +612,7 @@ export default function MatchCapturePanel({
   const voiceExperiment = useSpeechRecognitionExperiment({
     locale,
     onFinalPhrase: handleVoiceFinalPhrase,
+    continuousMode: voiceContinuousMode,
   });
 
   const handleVoiceConfirmBeforeRegisterChange = useCallback((value: boolean) => {
@@ -445,32 +620,31 @@ export default function MatchCapturePanel({
     setVoiceConfirmBeforeRegister(value);
   }, []);
 
-  const handleVoiceConfirmPending = useCallback(() => {
-    if (!pendingVoiceCapture) return;
-    const player = presentPlayers.find(
-      (p) => p.jerseyNumber === pendingVoiceCapture.jerseyNumber,
-    );
-    const action = catalogByCode.get(pendingVoiceCapture.actionCode);
-    if (player && action) {
-      triggerCapture(player, action);
-      setVoiceFeedback({
-        variant: 'success',
-        message: t('matches.capture.voiceCapture.registered', {
-          jersey: player.jerseyNumber,
-          action: action.name,
-        }),
-      });
+  const handleVoiceContinuousModeChange = useCallback((value: boolean) => {
+    setVoiceContinuousModeState(value);
+    setVoiceContinuousMode(value);
+    if (!value) {
+      voiceExperiment.stopContinuousListening();
     }
-    setPendingVoiceCapture(null);
-  }, [pendingVoiceCapture, presentPlayers, catalogByCode, triggerCapture, t]);
+  }, [voiceExperiment]);
 
-  const handleVoiceCancelPending = useCallback(() => {
-    setPendingVoiceCapture(null);
-    setVoiceFeedback({
-      variant: 'info',
-      message: t('matches.capture.voiceCapture.cancelled'),
-    });
-  }, [t]);
+  const handleVoiceSoundFeedbackChange = useCallback((value: boolean) => {
+    setVoiceSoundFeedbackState(value);
+    setVoiceSoundFeedback(value);
+  }, []);
+
+  const handleVoiceVibrationFeedbackChange = useCallback((value: boolean) => {
+    setVoiceVibrationFeedbackState(value);
+    setVoiceVibrationFeedback(value);
+  }, []);
+
+  const handleVoiceMicToggle = useCallback(() => {
+    if (voiceContinuousMode) {
+      handleVoiceContinuousModeChange(false);
+      return;
+    }
+    voiceExperiment.toggleListening();
+  }, [handleVoiceContinuousModeChange, voiceContinuousMode, voiceExperiment]);
 
   const togglePlayer = (playerId: number) => {
     const next = selectedPlayerId === playerId ? null : playerId;
@@ -739,13 +913,20 @@ export default function MatchCapturePanel({
           status={voiceExperiment.status}
           errorCode={voiceExperiment.errorCode}
           isListening={voiceExperiment.isListening}
+          continuousActive={voiceExperiment.continuousActive}
           reducedMotion={reducedMotion}
-          onToggle={voiceExperiment.toggleListening}
+          onToggleMic={handleVoiceMicToggle}
           hideMicButton={isDesktopCapture}
+          continuousMode={voiceContinuousMode}
+          onContinuousModeChange={handleVoiceContinuousModeChange}
           confirmBeforeRegister={voiceConfirmBeforeRegister}
           onConfirmBeforeRegisterChange={handleVoiceConfirmBeforeRegisterChange}
+          soundFeedback={voiceSoundFeedback}
+          onSoundFeedbackChange={handleVoiceSoundFeedbackChange}
+          vibrationFeedback={voiceVibrationFeedback}
+          onVibrationFeedbackChange={handleVoiceVibrationFeedbackChange}
           pendingCapture={pendingVoiceCapture}
-          onConfirmPending={handleVoiceConfirmPending}
+          onConfirmPending={() => void handleVoiceConfirmPending()}
           onCancelPending={handleVoiceCancelPending}
           feedback={voiceFeedback}
         />
@@ -847,9 +1028,10 @@ export default function MatchCapturePanel({
                   isLiveMode
                     ? {
                         isListening: voiceExperiment.isListening,
+                        continuousActive: voiceExperiment.continuousActive,
                         supported: voiceExperiment.supported,
                         reducedMotion,
-                        onToggle: voiceExperiment.toggleListening,
+                        onToggle: handleVoiceMicToggle,
                       }
                     : undefined
                 }
@@ -1072,6 +1254,7 @@ function CaptureActionGrid({
   className?: string;
   voiceMic?: {
     isListening: boolean;
+    continuousActive?: boolean;
     supported: boolean;
     reducedMotion: boolean;
     onToggle: () => void;
@@ -1098,6 +1281,7 @@ function CaptureActionGrid({
           {voiceMic ? (
             <VoiceMicButton
               isListening={voiceMic.isListening}
+              continuousActive={voiceMic.continuousActive}
               supported={voiceMic.supported}
               reducedMotion={voiceMic.reducedMotion}
               onToggle={voiceMic.onToggle}

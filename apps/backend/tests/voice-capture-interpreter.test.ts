@@ -3,7 +3,11 @@ import {
   interpretVoiceCapture,
   isVoiceAffirmation,
   isVoiceCancellation,
+  parseVoiceCorrectionCommand,
+  parseVoicePhrase,
+  shouldSkipDuplicateVoicePhrase,
   VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE,
+  VOICE_PHRASE_DEDUPE_WINDOW_MS,
   type VoiceCapturePresentPlayer,
 } from '@velocesport/shared';
 
@@ -187,6 +191,103 @@ describe('interpretVoiceCapture', () => {
       expect(result.code).toBe('no_action');
       expect(result.jerseyNumber).toBe(14);
     }
+  });
+
+  it('parses natural ES variants with inverted order and verbs', () => {
+    const cases = [
+      { text: 'gol del siete', jersey: 7, code: 1 },
+      { text: 'el siete marcó', jersey: 7, code: 1 },
+      { text: 'siete anotó', jersey: 7, code: 1 },
+      { text: 'recuperó el diez', jersey: 10, code: 13 },
+    ];
+    for (const c of cases) {
+      const result = interpretVoiceCapture({
+        text: c.text,
+        locale: 'es',
+        presentPlayers,
+        catalog: catalogEs(),
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.jerseyNumber).toBe(c.jersey);
+        expect(result.action.code).toBe(c.code);
+      }
+    }
+  });
+
+  it('parses natural EN variants', () => {
+    for (const text of ['goal by seven', 'seven scored']) {
+      const result = interpretVoiceCapture({
+        text,
+        locale: 'en',
+        presentPlayers,
+        catalog: catalogEn(),
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.jerseyNumber).toBe(7);
+        expect(result.action.code).toBe(1);
+      }
+    }
+  });
+});
+
+describe('parseVoiceCorrectionCommand', () => {
+  it('detects undo commands in ES and EN', () => {
+    expect(parseVoiceCorrectionCommand('deshacer', 'es', presentPlayers)?.kind).toBe('undo');
+    expect(parseVoiceCorrectionCommand('undo', 'en', presentPlayers)?.kind).toBe('undo');
+  });
+
+  it('detects jersey correction commands', () => {
+    const es = parseVoiceCorrectionCommand('no era el ocho', 'es', presentPlayers);
+    expect(es?.kind).toBe('correct_jersey');
+    if (es?.kind === 'correct_jersey') {
+      expect(es.jerseyNumber).toBe(8);
+    }
+
+    const en = parseVoiceCorrectionCommand('no it was eight', 'en', presentPlayers);
+    expect(en?.kind).toBe('correct_jersey');
+    if (en?.kind === 'correct_jersey') {
+      expect(en.jerseyNumber).toBe(8);
+    }
+  });
+
+  it('does not treat normal capture as correction', () => {
+    expect(parseVoiceCorrectionCommand('siete gol', 'es', presentPlayers)).toBeNull();
+  });
+});
+
+describe('parseVoicePhrase routing', () => {
+  it('routes undo before capture interpretation', () => {
+    const parsed = parseVoicePhrase({
+      text: 'deshacer',
+      locale: 'es',
+      presentPlayers,
+      catalog: catalogEs(),
+    });
+    expect(parsed.type).toBe('undo');
+  });
+
+  it('routes capture phrases to interpreter', () => {
+    const parsed = parseVoicePhrase({
+      text: 'siete gol',
+      locale: 'es',
+      presentPlayers,
+      catalog: catalogEs(),
+    });
+    expect(parsed.type).toBe('capture');
+    if (parsed.type === 'capture') {
+      expect(parsed.capture.ok).toBe(true);
+    }
+  });
+});
+
+describe('voice phrase deduplication', () => {
+  it('skips duplicate phrases within window', () => {
+    const now = 10_000;
+    const last = { text: 'siete gol', at: now - 500 };
+    expect(shouldSkipDuplicateVoicePhrase('siete gol', last, now)).toBe(true);
+    expect(shouldSkipDuplicateVoicePhrase('siete gol', last, now + VOICE_PHRASE_DEDUPE_WINDOW_MS + 1)).toBe(false);
   });
 });
 

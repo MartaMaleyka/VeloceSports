@@ -8,6 +8,7 @@ export interface VoicePendingCapture {
   actionName: string;
   actionCode: number;
   heardText: string;
+  isCorrection?: boolean;
 }
 
 export interface VoiceFeedbackMessage {
@@ -22,18 +23,31 @@ interface VoiceCaptureExperimentProps {
   status: VoiceRecognitionStatus;
   errorCode: string | null;
   isListening: boolean;
+  continuousActive: boolean;
   reducedMotion: boolean;
-  onToggle: () => void;
+  onToggleMic: () => void;
   hideMicButton?: boolean;
+  continuousMode: boolean;
+  onContinuousModeChange: (value: boolean) => void;
   confirmBeforeRegister: boolean;
   onConfirmBeforeRegisterChange: (value: boolean) => void;
+  soundFeedback: boolean;
+  onSoundFeedbackChange: (value: boolean) => void;
+  vibrationFeedback: boolean;
+  onVibrationFeedbackChange: (value: boolean) => void;
   pendingCapture: VoicePendingCapture | null;
   onConfirmPending: () => void;
   onCancelPending: () => void;
   feedback: VoiceFeedbackMessage | null;
 }
 
-function statusLabelKey(status: VoiceRecognitionStatus): string {
+function statusLabelKey(
+  status: VoiceRecognitionStatus,
+  continuousActive: boolean,
+): string {
+  if (continuousActive && status === 'listening') {
+    return 'matches.capture.voiceCapture.listeningContinuous';
+  }
   switch (status) {
     case 'listening':
       return 'matches.capture.voiceCapture.listening';
@@ -50,35 +64,39 @@ function statusLabelKey(status: VoiceRecognitionStatus): string {
 
 export function VoiceMicButton({
   isListening,
+  continuousActive,
   supported,
   reducedMotion,
   onToggle,
   className,
 }: {
   isListening: boolean;
+  continuousActive?: boolean;
   supported: boolean;
   reducedMotion: boolean;
   onToggle: () => void;
   className?: string;
 }) {
   const { t } = useTranslation();
+  const active = isListening || continuousActive;
 
   return (
     <button
       type="button"
       onClick={onToggle}
       disabled={!supported}
-      aria-pressed={isListening}
+      aria-pressed={active}
       aria-label={
-        isListening
+        active
           ? t('matches.capture.voiceCapture.stopListening')
           : t('matches.capture.voiceCapture.startListening')
       }
       className={cn(
         'relative flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-full border transition-colors',
-        isListening
+        active
           ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
           : 'border-border bg-bg-muted text-text-secondary hover:bg-bg-surface',
+        continuousActive && 'ring-2 ring-section-matches-fg/40',
         !supported && 'cursor-not-allowed opacity-60',
         className,
       )}
@@ -86,9 +104,12 @@ export function VoiceMicButton({
       <span aria-hidden="true" className="text-lg">
         🎤
       </span>
-      {isListening && !reducedMotion && (
+      {active && !reducedMotion && (
         <span
-          className="absolute inset-0 rounded-full border-2 border-section-matches-fg/50 animate-ping"
+          className={cn(
+            'absolute inset-0 rounded-full border-2 border-section-matches-fg/50',
+            continuousActive ? 'animate-pulse' : 'animate-ping',
+          )}
           aria-hidden="true"
         />
       )}
@@ -103,18 +124,24 @@ export default function VoiceCaptureExperiment({
   status,
   errorCode,
   isListening,
+  continuousActive,
   reducedMotion,
-  onToggle,
+  onToggleMic,
   hideMicButton = false,
+  continuousMode,
+  onContinuousModeChange,
   confirmBeforeRegister,
   onConfirmBeforeRegisterChange,
+  soundFeedback,
+  onSoundFeedbackChange,
+  vibrationFeedback,
+  onVibrationFeedbackChange,
   pendingCapture,
   onConfirmPending,
   onCancelPending,
   feedback,
 }: VoiceCaptureExperimentProps) {
   const { t } = useTranslation();
-
   const showSecureWarning = supported && !secureContext;
 
   return (
@@ -126,9 +153,10 @@ export default function VoiceCaptureExperiment({
         {!hideMicButton && (
           <VoiceMicButton
             isListening={isListening}
+            continuousActive={continuousActive}
             supported={supported}
             reducedMotion={reducedMotion}
-            onToggle={onToggle}
+            onToggle={onToggleMic}
           />
         )}
 
@@ -140,14 +168,15 @@ export default function VoiceCaptureExperiment({
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                status === 'listening' && 'bg-section-matches-bg text-section-matches-fg',
-                status === 'idle' && 'bg-bg-muted text-text-secondary',
+                (status === 'listening' || continuousActive) &&
+                  'bg-section-matches-bg text-section-matches-fg',
+                status === 'idle' && !continuousActive && 'bg-bg-muted text-text-secondary',
                 (status === 'error' || status === 'permission_denied') &&
                   'bg-feedback-error/10 text-feedback-error',
                 status === 'unsupported' && 'bg-feedback-warning/10 text-feedback-warning',
               )}
             >
-              {t(statusLabelKey(status))}
+              {t(statusLabelKey(status, continuousActive))}
             </span>
             <span className="text-xs text-text-muted">
               {t('matches.capture.voiceCapture.lang', { lang })}
@@ -156,17 +185,62 @@ export default function VoiceCaptureExperiment({
 
           <p className="mt-1 text-xs text-text-muted">{t('matches.capture.voiceCapture.hint')}</p>
 
-          <label className="mt-2 flex min-h-touch cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              checked={confirmBeforeRegister}
-              onChange={(e) => onConfirmBeforeRegisterChange(e.target.checked)}
-              className="h-4 w-4 rounded border-border text-section-matches-fg focus:ring-section-matches-fg"
-            />
-            <span className="text-sm text-text-primary">
-              {t('matches.capture.voiceCapture.confirmBeforeRegister')}
-            </span>
-          </label>
+          <div className="mt-2 space-y-2">
+            <label className="flex min-h-touch cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={continuousMode}
+                onChange={(e) => onContinuousModeChange(e.target.checked)}
+                className="h-4 w-4 rounded border-border text-section-matches-fg focus:ring-section-matches-fg"
+              />
+              <span className="text-sm text-text-primary">
+                {t('matches.capture.voiceCapture.continuousMode')}
+              </span>
+            </label>
+
+            <label className="flex min-h-touch cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={confirmBeforeRegister}
+                onChange={(e) => onConfirmBeforeRegisterChange(e.target.checked)}
+                className="h-4 w-4 rounded border-border text-section-matches-fg focus:ring-section-matches-fg"
+              />
+              <span className="text-sm text-text-primary">
+                {t('matches.capture.voiceCapture.confirmBeforeRegister')}
+              </span>
+            </label>
+
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <label className="flex min-h-touch cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={soundFeedback}
+                  onChange={(e) => onSoundFeedbackChange(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-section-matches-fg focus:ring-section-matches-fg"
+                />
+                <span className="text-sm text-text-primary">
+                  {t('matches.capture.voiceCapture.soundFeedback')}
+                </span>
+              </label>
+              <label className="flex min-h-touch cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={vibrationFeedback}
+                  onChange={(e) => onVibrationFeedbackChange(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-section-matches-fg focus:ring-section-matches-fg"
+                />
+                <span className="text-sm text-text-primary">
+                  {t('matches.capture.voiceCapture.vibrationFeedback')}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {continuousActive && (
+            <p className="mt-2 text-xs font-medium text-section-matches-fg">
+              {t('matches.capture.voiceCapture.continuousActiveHint')}
+            </p>
+          )}
 
           {status === 'unsupported' && (
             <p className="mt-2 text-sm text-feedback-warning">
@@ -198,11 +272,17 @@ export default function VoiceCaptureExperiment({
               role="status"
             >
               <p className="text-sm font-medium text-text-primary">
-                {t('matches.capture.voiceCapture.confirmPrompt', {
-                  jersey: pendingCapture.jerseyNumber,
-                  lastName: pendingCapture.playerLastName,
-                  action: pendingCapture.actionName,
-                })}
+                {pendingCapture.isCorrection
+                  ? t('matches.capture.voiceCapture.correctPrompt', {
+                      jersey: pendingCapture.jerseyNumber,
+                      lastName: pendingCapture.playerLastName,
+                      action: pendingCapture.actionName,
+                    })
+                  : t('matches.capture.voiceCapture.confirmPrompt', {
+                      jersey: pendingCapture.jerseyNumber,
+                      lastName: pendingCapture.playerLastName,
+                      action: pendingCapture.actionName,
+                    })}
               </p>
               <p className="mt-1 text-xs text-text-muted">
                 {t('matches.capture.voiceCapture.confirmHeard', { text: pendingCapture.heardText })}

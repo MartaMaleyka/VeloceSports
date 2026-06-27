@@ -100,6 +100,7 @@ const FILLER_WORDS: Record<VoiceCaptureLocale, readonly string[]> = {
     'num',
     'jersey',
     'player',
+    'by',
   ],
 };
 
@@ -183,24 +184,24 @@ const EN_UNIT_SUFFIX: Record<string, number> = {
 /** Palabras de voz ES/EN que ayudan a emparejar acciones por código semántico (catálogo personalizable). */
 const VOICE_SEMANTIC_KEYWORDS: Record<VoiceCaptureLocale, Record<number, readonly string[]>> = {
   es: {
-    1: ['gol', 'goles', 'anoto', 'anotacion'],
-    2: ['asist', 'asistencia'],
-    3: ['pase', 'paseo', 'completado'],
-    4: ['pase', 'errado', 'fallido'],
-    5: ['tiro', 'arco', 'disparo'],
+    1: ['gol', 'goles', 'anoto', 'anotacion', 'marco', 'marco', 'convirtio', 'emboco'],
+    2: ['asist', 'asistencia', 'asistio', 'asistió'],
+    3: ['pase', 'paseo', 'completado', 'paso'],
+    4: ['pase', 'errado', 'fallido', 'fallo'],
+    5: ['tiro', 'arco', 'disparo', 'disparó', 'disparo'],
     6: ['tiro', 'desviado', 'fuera'],
-    7: ['falta', 'cometida'],
-    8: ['falta', 'recibida'],
-    9: ['perdida', 'perdio', 'balon'],
-    10: ['intercep', 'corte'],
-    11: ['quite', 'entrada', 'tackle'],
-    12: ['despej', 'clear'],
-    13: ['recuper', 'recuperacion', 'recupera'],
-    14: ['atajad', 'parada', 'porter'],
+    7: ['falta', 'cometida', 'cometio', 'cometió'],
+    8: ['falta', 'recibida', 'recibio', 'recibió'],
+    9: ['perdida', 'perdio', 'perdió', 'balon'],
+    10: ['intercep', 'corte', 'intercepto', 'interceptó'],
+    11: ['quite', 'entrada', 'tackle', 'quito', 'quitó'],
+    12: ['despej', 'clear', 'despejo', 'despejó'],
+    13: ['recuper', 'recuperacion', 'recupera', 'recupero', 'recuperó'],
+    14: ['atajad', 'parada', 'porter', 'atajo', 'atajó'],
     15: ['salida', 'incorrecta'],
   },
   en: {
-    1: ['goal', 'score', 'scored'],
+    1: ['goal', 'score', 'scored', 'scores'],
     2: ['assist'],
     3: ['pass', 'completed'],
     4: ['pass', 'wrong', 'failed'],
@@ -212,7 +213,7 @@ const VOICE_SEMANTIC_KEYWORDS: Record<VoiceCaptureLocale, Record<number, readonl
     10: ['intercept'],
     11: ['tackle', 'won'],
     12: ['clear', 'clearance'],
-    13: ['recover', 'recovery', 'ball'],
+    13: ['recover', 'recovery', 'recovered', 'recovers'],
     14: ['save', 'keeper', 'goalkeeper'],
     15: ['clearance', 'wrong', 'distribution'],
   },
@@ -364,6 +365,17 @@ function scoreActionMatch(
     }
   }
 
+  const tokens = remainder.split(' ').filter((t) => t.length >= 3);
+  for (const token of tokens) {
+    for (const keyword of keywords) {
+      const kw = normalizeVoiceText(keyword);
+      if (kw.length < 4) continue;
+      if (token.startsWith(kw.slice(0, Math.min(kw.length, 5))) || kw.startsWith(token.slice(0, 4))) {
+        score += 30;
+      }
+    }
+  }
+
   return score;
 }
 
@@ -391,6 +403,17 @@ export interface InterpretVoiceCaptureInput {
   locale: VoiceCaptureLocale;
   presentPlayers: VoiceCapturePresentPlayer[];
   catalog: VoiceCaptureCatalogAction[];
+}
+
+function mergeActionRankings(a: ActionScore[], b: ActionScore[]): ActionScore[] {
+  const map = new Map<number, ActionScore>();
+  for (const item of [...a, ...b]) {
+    const existing = map.get(item.action.code);
+    if (!existing || item.score > existing.score) {
+      map.set(item.action.code, item);
+    }
+  }
+  return [...map.values()].sort((x, y) => y.score - x.score);
 }
 
 export function interpretVoiceCapture(input: InterpretVoiceCaptureInput): VoiceInterpretResult {
@@ -425,8 +448,12 @@ export function interpretVoiceCapture(input: InterpretVoiceCaptureInput): VoiceI
     stripNumberTokens(normalized, numberTokens),
     input.locale,
   );
+  const fullWithoutFillers = removeFillerWords(normalized, input.locale);
 
-  const ranked = rankActions(remainder, input.catalog, input.locale);
+  const ranked = mergeActionRankings(
+    rankActions(remainder, input.catalog, input.locale),
+    rankActions(fullWithoutFillers, input.catalog, input.locale),
+  );
   if (ranked.length === 0) {
     return { ok: false, code: 'no_action', confidence: 30, jerseyNumber, action: undefined };
   }
@@ -483,4 +510,117 @@ export function isVoiceCancellation(text: string, locale: VoiceCaptureLocale): b
   const tokens = normalized.split(' ');
   const set = locale === 'en' ? NEGATIVE_EN : NEGATIVE_ES;
   return tokens.some((t) => set.has(t));
+}
+
+/** Ventana para ignorar frases duplicadas tras reinicio del reconocimiento continuo. */
+export const VOICE_PHRASE_DEDUPE_WINDOW_MS = 2_500;
+
+export function shouldSkipDuplicateVoicePhrase(
+  normalizedPhrase: string,
+  lastProcessed: { text: string; at: number } | null,
+  nowMs: number,
+): boolean {
+  if (!lastProcessed || !normalizedPhrase) return false;
+  if (nowMs - lastProcessed.at > VOICE_PHRASE_DEDUPE_WINDOW_MS) return false;
+  return normalizedPhrase === lastProcessed.text;
+}
+
+export interface VoiceUndoCommand {
+  kind: 'undo';
+  confidence: number;
+}
+
+export interface VoiceCorrectJerseyCommand {
+  kind: 'correct_jersey';
+  jerseyNumber: number;
+  confidence: number;
+  ambiguous: boolean;
+}
+
+export type VoiceCommandParse = VoiceUndoCommand | VoiceCorrectJerseyCommand;
+
+export type VoicePhraseParseResult =
+  | { type: 'empty' }
+  | { type: 'undo'; command: VoiceUndoCommand }
+  | { type: 'correct_jersey'; command: VoiceCorrectJerseyCommand }
+  | { type: 'capture'; capture: VoiceInterpretResult };
+
+const UNDO_TRIGGERS: Record<VoiceCaptureLocale, readonly string[]> = {
+  es: ['deshacer', 'deshaz', 'deshace', 'cancela ultima', 'quita ultima', 'borra ultima', 'anula ultima'],
+  en: ['undo', 'revert', 'cancel last', 'remove last', 'delete last'],
+};
+
+const CORRECT_PREFIX_ES =
+  /^(?:no\s*(?:era|es|fue)|corregir|corrijo|era)\s+(?:el|la|al|a|numero|dorsal)?\s*/;
+const CORRECT_PREFIX_EN =
+  /^(?:no\s*(?:it\s+was|was)|correct(?:\s+to)?|correction)\s+(?:number|jersey|player)?\s*/;
+
+function tryParseUndo(normalized: string, locale: VoiceCaptureLocale): VoiceUndoCommand | null {
+  const triggers = UNDO_TRIGGERS[locale];
+  for (const trigger of triggers) {
+    if (normalized === trigger || normalized.startsWith(`${trigger} `)) {
+      return { kind: 'undo', confidence: 95 };
+    }
+  }
+  return null;
+}
+
+function tryParseCorrectJersey(
+  normalized: string,
+  locale: VoiceCaptureLocale,
+  presentPlayers: VoiceCapturePresentPlayer[],
+): VoiceCorrectJerseyCommand | null {
+  const prefix = locale === 'en' ? CORRECT_PREFIX_EN : CORRECT_PREFIX_ES;
+  if (!prefix.test(normalized)) return null;
+
+  const rest = normalizeVoiceText(normalized.replace(prefix, ''));
+  if (!rest) return null;
+
+  const numberTokens = parseNumberTokens(rest, locale);
+  if (numberTokens.length === 0) return null;
+
+  const values = numberTokens.map((t) => t.value);
+  const jerseyNumber = pickJerseyNumber(values);
+  if (jerseyNumber == null) return null;
+
+  const present = presentPlayers.some((p) => p.jerseyNumber === jerseyNumber);
+  const ambiguous = numberTokens.length > 1 && !values.every((v) => v === values[0]);
+
+  return {
+    kind: 'correct_jersey',
+    jerseyNumber,
+    confidence: ambiguous ? 55 : present ? 90 : 70,
+    ambiguous,
+  };
+}
+
+export function parseVoiceCorrectionCommand(
+  text: string,
+  locale: VoiceCaptureLocale,
+  presentPlayers: VoiceCapturePresentPlayer[],
+): VoiceCommandParse | null {
+  const normalized = normalizeVoiceText(text);
+  if (!normalized) return null;
+
+  const undo = tryParseUndo(normalized, locale);
+  if (undo) return undo;
+
+  return tryParseCorrectJersey(normalized, locale, presentPlayers);
+}
+
+export function parseVoicePhrase(input: InterpretVoiceCaptureInput): VoicePhraseParseResult {
+  const normalized = normalizeVoiceText(input.text);
+  if (!normalized) {
+    return { type: 'empty' };
+  }
+
+  const command = parseVoiceCorrectionCommand(input.text, input.locale, input.presentPlayers);
+  if (command?.kind === 'undo') {
+    return { type: 'undo', command };
+  }
+  if (command?.kind === 'correct_jersey') {
+    return { type: 'correct_jersey', command };
+  }
+
+  return { type: 'capture', capture: interpretVoiceCapture(input) };
 }
