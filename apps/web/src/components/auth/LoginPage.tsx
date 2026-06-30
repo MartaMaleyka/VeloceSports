@@ -2,6 +2,7 @@ import { I18nProvider, useTranslation } from '@velocesport/i18n';
 import type { Locale } from '@velocesport/i18n';
 import LoginForm from './LoginForm';
 import PreferenceToggles from '../layout/PreferenceToggles';
+import LoginHeroBrandMark from './LoginHeroBrandMark';
 import LoginHeroDecor, { LoginPanelDecor } from './LoginHeroDecor';
 
 interface LoginPageContentProps {
@@ -21,27 +22,23 @@ function LoginPageContent({ apiUrl, redirectPath }: LoginPageContentProps) {
   return (
     <div className="ds-brand-page">
       <div className="ds-brand-page__shell md:grid-cols-2">
-        <aside className="ds-brand-page__hero" aria-label={t('common.appName')}>
+        <aside className="ds-brand-page__hero ds-brand-page__hero--asymmetric" aria-label={t('common.appName')}>
           <LoginHeroDecor />
 
-          <div className="ds-brand-page__hero-content ds-stagger-enter">
-            <div className="ds-stagger-item">
-              <div className="ds-brand-logo-stage">
-                <span className="ds-brand-logo-ring" aria-hidden="true" />
-                <span className="ds-brand-logo-ring ds-brand-logo-ring--delayed" aria-hidden="true" />
-                <div className="ds-brand-logo ds-brand-logo--hero ds-brand-logo--live" aria-hidden="true">
-                  R
-                </div>
-              </div>
-              <div className="ds-brand-accent-bar ds-brand-accent-bar--hero" aria-hidden="true" />
-              <h1 className="ds-brand-title ds-brand-title--hero">{t('common.appName')}</h1>
-              <p className="ds-brand-tagline">{t('auth.login.tagline')}</p>
+          <div className="ds-brand-page__hero-content ds-brand-page__hero-content--asymmetric ds-stagger-enter">
+            <div className="ds-stagger-item ds-brand-page__hero-brand">
+              <LoginHeroBrandMark />
+            </div>
+
+            <div className="ds-stagger-item ds-brand-page__hero-copy">
+              <div className="ds-brand-page__hero-accent" aria-hidden="true" />
+              <h1 className="sr-only">{t('common.appName')}</h1>
               <span className="ds-brand-tagline ds-brand-tagline--compact">
                 {t('auth.login.prompt')}
               </span>
             </div>
 
-            <ul className="ds-brand-page__features ds-brand-page__features--flow ds-stagger-item">
+            <ul className="ds-brand-page__features ds-brand-page__features--flow ds-brand-page__features--asymmetric ds-stagger-item">
               {heroFeatures.map((feature, index) => (
                 <li
                   key={feature}

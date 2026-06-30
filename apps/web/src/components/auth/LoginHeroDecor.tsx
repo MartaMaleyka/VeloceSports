@@ -7,6 +7,8 @@ export default function LoginHeroDecor() {
         <div className="ds-brand-page__orb ds-brand-page__orb--1" />
         <div className="ds-brand-page__orb ds-brand-page__orb--2" />
         <div className="ds-brand-page__orb ds-brand-page__orb--3" />
+        <div className="ds-brand-page__orb ds-brand-page__orb--logo-blue" />
+        <div className="ds-brand-page__orb ds-brand-page__orb--logo-orange" />
       </div>
       <div className="ds-brand-page__hero-pattern" aria-hidden="true" />
       <div className="ds-brand-page__hero-glow" aria-hidden="true" />

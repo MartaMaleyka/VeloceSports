@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LoginFormIsland from '../components/auth/LoginFormIsland';
+import LoginHeroBrandMark from '../components/auth/LoginHeroBrandMark.astro';
 import LoginHeroDecor from '../components/auth/LoginHeroDecor.astro';
 import LoginPanelDecor from '../components/auth/LoginPanelDecor.astro';
 import { resolveLocale, t } from '@velocesport/i18n';
@@ -26,27 +27,23 @@ const heroFeatures = [
 >
   <div class="ds-brand-page">
     <div class="ds-brand-page__shell md:grid-cols-2">
-      <aside class="ds-brand-page__hero" aria-label={t('common.appName', locale)}>
+      <aside class="ds-brand-page__hero ds-brand-page__hero--asymmetric" aria-label={t('common.appName', locale)}>
         <LoginHeroDecor />
 
-        <div class="ds-brand-page__hero-content ds-stagger-enter">
-          <div class="ds-stagger-item">
-            <div class="ds-brand-logo-stage">
-              <span class="ds-brand-logo-ring" aria-hidden="true"></span>
-              <span class="ds-brand-logo-ring ds-brand-logo-ring--delayed" aria-hidden="true"></span>
-              <div class="ds-brand-logo ds-brand-logo--hero ds-brand-logo--live" aria-hidden="true">
-                R
-              </div>
-            </div>
-            <div class="ds-brand-accent-bar ds-brand-accent-bar--hero" aria-hidden="true"></div>
-            <h1 class="ds-brand-title ds-brand-title--hero">{t('common.appName', locale)}</h1>
-            <p class="ds-brand-tagline">{t('auth.login.tagline', locale)}</p>
+        <div class="ds-brand-page__hero-content ds-brand-page__hero-content--asymmetric ds-stagger-enter">
+          <div class="ds-stagger-item ds-brand-page__hero-brand">
+            <LoginHeroBrandMark />
+          </div>
+
+          <div class="ds-stagger-item ds-brand-page__hero-copy">
+            <div class="ds-brand-page__hero-accent" aria-hidden="true"></div>
+            <h1 class="sr-only">{t('common.appName', locale)}</h1>
             <span class="ds-brand-tagline ds-brand-tagline--compact">
               {t('auth.login.prompt', locale)}
             </span>
           </div>
 
-          <ul class="ds-brand-page__features ds-brand-page__features--flow ds-stagger-item">
+          <ul class="ds-brand-page__features ds-brand-page__features--flow ds-brand-page__features--asymmetric ds-stagger-item">
             {
               heroFeatures.map((feature, index) => (
                 <li class="ds-brand-page__feature" style={`--feature-index: ${index}`}>
