@@ -57,5 +57,5 @@
 <rect x="0" y="0" width="46" height="5" rx="2.5" fill="#FFB830"/>
 <rect x="52" y="0" width="188" height="5" rx="2.5" fill="#FDE68A" opacity="0.55"/>
 </g>
-<text x="254" y="196" font-family="'Segoe UI',Arial,sans-serif" font-size="22" font-weight="500" letter-spacing="0.3" fill="#FFFFFF" opacity="0">Donde el talento crece<animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="1.9s" fill="freeze"/></text>
+<text x="254" y="196" font-family="'Segoe UI',Arial,sans-serif" font-size="22" font-weight="500" letter-spacing="0.3" fill="#FFFFFF" opacity="0">Desde aquí nace el futuro<animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="1.9s" fill="freeze"/></text>
 </svg>
