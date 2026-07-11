@@ -18,6 +18,7 @@ export interface PlayerRow extends RowDataPacket {
   photo_object_key: string | null;
   photo_uploaded_at: Date | null;
   photo_uploaded_by: number | null;
+  deactivated_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -50,7 +51,7 @@ export class PlayerRepository extends TenantScopedRepository {
   private static readonly PLAYER_SELECT = `p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
               p.position, p.category_id, p.status, p.rejection_reason,
               p.photo_object_key, p.photo_uploaded_at, p.photo_uploaded_by,
-              p.created_at, p.updated_at`;
+              p.deactivated_at, p.created_at, p.updated_at`;
 
   async findByTenantId(
     tenantId: number,
@@ -227,6 +228,91 @@ export class PlayerRepository extends TenantScopedRepository {
     ]);
   }
 
+  /** Baja administrativa: inactive + fecha de baja (limpia rechazo pendiente). */
+  async deactivate(tenantId: number, playerId: number): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE players
+       SET status = 'inactive', deactivated_at = NOW(), rejection_reason = NULL
+       WHERE id = ? AND tenant_id = ?`,
+      [playerId, tenantId],
+    );
+  }
+
+  /** Reactivar: active + limpia fecha de baja y rechazo. */
+  async activate(tenantId: number, playerId: number): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE players
+       SET status = 'active', deactivated_at = NULL, rejection_reason = NULL
+       WHERE id = ? AND tenant_id = ?`,
+      [playerId, tenantId],
+    );
+  }
+
+  async hasMatchHistory(tenantId: number, playerId: number): Promise<boolean> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT EXISTS(
+         SELECT 1 FROM game_actions WHERE tenant_id = ? AND player_id = ? LIMIT 1
+       ) OR EXISTS(
+         SELECT 1 FROM match_attendance WHERE tenant_id = ? AND player_id = ? LIMIT 1
+       ) AS has_history`,
+      [tenantId, playerId, tenantId, playerId],
+    );
+    return Boolean(rows[0]?.has_history);
+  }
+
+  /** Ids de jugadores (del tenant) que tienen al menos una acción o asistencia. */
+  async findPlayerIdsWithMatchHistory(
+    tenantId: number,
+    playerIds: number[],
+  ): Promise<Set<number>> {
+    this.assertTenantId(tenantId);
+    const result = new Set<number>();
+    if (playerIds.length === 0) return result;
+
+    const pool = getPool();
+    const placeholders = playerIds.map(() => '?').join(', ');
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT player_id FROM game_actions
+       WHERE tenant_id = ? AND player_id IN (${placeholders})
+       UNION
+       SELECT player_id FROM match_attendance
+       WHERE tenant_id = ? AND player_id IN (${placeholders})`,
+      [tenantId, ...playerIds, tenantId, ...playerIds],
+    );
+    for (const row of rows) {
+      result.add(Number(row.player_id));
+    }
+    return result;
+  }
+
+  async delete(tenantId: number, playerId: number, conn?: DbConnection): Promise<void> {
+    this.assertTenantId(tenantId);
+    const executor = conn ?? getPool();
+    await executor.execute('DELETE FROM players WHERE id = ? AND tenant_id = ?', [
+      playerId,
+      tenantId,
+    ]);
+  }
+
+  async deleteParentLinks(
+    tenantId: number,
+    playerId: number,
+    conn?: DbConnection,
+  ): Promise<void> {
+    this.assertTenantId(tenantId);
+    const executor = conn ?? getPool();
+    await executor.execute(
+      'DELETE FROM parent_players WHERE player_id = ? AND tenant_id = ?',
+      [playerId, tenantId],
+    );
+  }
+
   async setRejectionReason(
     tenantId: number,
     playerId: number,
@@ -247,7 +333,7 @@ export class PlayerRepository extends TenantScopedRepository {
   ): Promise<void> {
     this.assertTenantId(tenantId);
     const pool = getPool();
-    const fields = ["status = 'active'", 'rejection_reason = NULL'];
+    const fields = ["status = 'active'", 'rejection_reason = NULL', 'deactivated_at = NULL'];
     const params: (string | number | null)[] = [];
 
     if (input.categoryId !== undefined) {

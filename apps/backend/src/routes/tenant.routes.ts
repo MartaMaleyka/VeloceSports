@@ -249,6 +249,12 @@ router.patch(
   (req, res, next) => tenantController.updatePlayerStatus(req, res, next),
 );
 
+router.delete(
+  '/players/:playerId',
+  validate(playerIdParamSchema, 'params'),
+  (req, res, next) => tenantController.deletePlayer(req, res, next),
+);
+
 router.post(
   '/players/:playerId/approve',
   validate(playerIdParamSchema, 'params'),

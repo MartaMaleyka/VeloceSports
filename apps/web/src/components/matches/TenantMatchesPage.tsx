@@ -31,6 +31,7 @@ import { Calendar, CheckCircle2, CircleDot, Plus } from 'lucide-react';
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
+import { appPath } from '../../lib/app-path';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 
@@ -297,7 +298,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         id: 'view',
         label: t('matches.viewDetail'),
         onClick: () => {
-          window.location.href = `${basePath}/${match.id}`;
+          window.location.href = appPath(`${basePath}/${match.id}`);
         },
       },
     ];

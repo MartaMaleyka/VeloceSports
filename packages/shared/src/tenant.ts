@@ -156,6 +156,10 @@ export interface PlayerDto {
   rejectionReason: string | null;
   /** URL firmada temporal (MinIO). null si no hay foto. */
   photoUrl: string | null;
+  /** Baja administrativa (distincta de rechazo pending). */
+  deactivatedAt: string | null;
+  /** true si tiene game_actions o match_attendance — no se puede eliminar. */
+  hasMatchHistory: boolean;
   parents: PlayerParentDto[];
   createdAt: string;
   updatedAt: string;

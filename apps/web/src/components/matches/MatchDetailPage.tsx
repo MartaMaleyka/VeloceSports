@@ -11,6 +11,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
+import { appPath } from '../../lib/app-path';
 import MatchAttendancePanel from './MatchAttendancePanel';
 import MatchCapturePanel from './MatchCapturePanel';
 import { MatchObservationsTab } from './MatchObservationsTab';
@@ -52,7 +53,11 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
         showToast({ variant: 'error', message: apiError.message });
         return;
       }
-      setError(apiError?.message ?? t('matches.errors.generic'));
+      if (apiError?.status === 404) {
+        setError(t('matches.errors.notFound'));
+      } else {
+        setError(apiError?.message ?? t('matches.errors.generic'));
+      }
     } finally {
       if (!background) {
         setLoading(false);
@@ -163,11 +168,18 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     return <p className="text-text-secondary">{t('common.loading')}</p>;
   }
 
+  const resolvedListPath = appPath(listPath);
+
   if (error || !match) {
     return (
-      <Alert variant="error" title={t('matches.errors.title')}>
-        {error ?? t('matches.errors.notFound')}
-      </Alert>
+      <div className="space-y-4">
+        <Alert variant="error" title={t('matches.errors.title')}>
+          {error ?? t('matches.errors.notFound')}
+        </Alert>
+        <Button type="button" variant="secondary" onClick={() => { window.location.href = resolvedListPath; }}>
+          ← {t('matches.backToList')}
+        </Button>
+      </div>
     );
   }
 
@@ -188,7 +200,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="secondary" onClick={() => { window.location.href = listPath; }}>
+        <Button type="button" variant="secondary" onClick={() => { window.location.href = resolvedListPath; }}>
           ← {t('matches.backToList')}
         </Button>
         <div className="flex flex-wrap gap-2">

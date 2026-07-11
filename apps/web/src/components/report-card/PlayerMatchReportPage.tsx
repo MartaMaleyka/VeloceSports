@@ -31,7 +31,7 @@ function PlayerMatchReportContent({
     resolveNumericRouteId(playerIdProp, /\/players\/(\d+)\/report-card/);
   const matchId =
     resolveNumericRouteId(matchIdProp, /\/matches\/(\d+)/);
-  const backPath = backPathProp ?? appPath('/dashboard/parent/children');
+  const backPath = appPath(backPathProp ?? '/dashboard/parent/children');
   const { t } = useTranslation();
   const [data, setData] = useState<PlayerMatchReportCardDto | null>(null);
   const [loading, setLoading] = useState(true);

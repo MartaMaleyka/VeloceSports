@@ -299,6 +299,16 @@ export class TenantController {
     }
   }
 
+  async deletePlayer(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { actorUserId, tenantId } = getTenantContext(req);
+      await playerService.deletePlayer(actorUserId, tenantId, Number(req.params.playerId));
+      res.status(200).json({ success: true, data: { deleted: true } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async approvePlayer(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { actorUserId, tenantId } = getTenantContext(req);

@@ -23,9 +23,10 @@ export interface ParentChildMatchesPageProps {
 
 function ParentChildMatchesContent({
   playerId: playerIdProp,
-  backPath = appPath('/dashboard/parent/children'),
+  backPath: backPathProp,
 }: ParentChildMatchesPageProps) {
   const playerId = resolveNumericRouteId(playerIdProp, /\/children\/(\d+)\/matches/);
+  const backPath = appPath(backPathProp ?? '/dashboard/parent/children');
   const { t, locale } = useTranslation();
   const { viewMode, setViewMode } = useDataViewPreference();
   const [matches, setMatches] = useState<PlayerMatchReportListItemDto[]>([]);

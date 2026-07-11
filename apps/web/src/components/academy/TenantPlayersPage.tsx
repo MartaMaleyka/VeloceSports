@@ -10,6 +10,7 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmModal,
   DataCard,
   DataCardFooter,
   DataView,
@@ -68,19 +69,34 @@ const emptyForm: PlayerFormState = {
   linkedParents: [],
 };
 
-function PlayerStatusBadge({ status }: { status: PlayerStatus }) {
-  const { t } = useTranslation();
+function PlayerStatusBadge({ player }: { player: PlayerDto }) {
+  const { t, locale } = useTranslation();
   const variant =
-    status === PlayerStatus.ACTIVE
+    player.status === PlayerStatus.ACTIVE
       ? 'success'
-      : status === PlayerStatus.PENDING
+      : player.status === PlayerStatus.PENDING
         ? 'warning'
         : 'default';
+  let label = t(tenantPlayerStatusKey(player.status));
+  if (player.status === PlayerStatus.INACTIVE) {
+    if (player.deactivatedAt) {
+      const date = new Date(player.deactivatedAt).toLocaleDateString(
+        locale === 'es' ? 'es-PA' : 'en-US',
+        { dateStyle: 'medium' },
+      );
+      label = t('tenant.players.deactivatedOn', { date });
+    } else if (player.rejectionReason) {
+      label = t('tenant.players.rejectedWithReason', { reason: player.rejectionReason });
+    } else {
+      label = t('tenant.players.rejectedNoReason');
+    }
+  }
+
   return (
     <Badge
       variant={variant}
       icon={
-        status === PlayerStatus.ACTIVE ? (
+        player.status === PlayerStatus.ACTIVE ? (
           <span
             className="inline-block h-1.5 w-1.5 rounded-full bg-feedback-success ds-pulse-dot"
             aria-hidden="true"
@@ -88,10 +104,12 @@ function PlayerStatusBadge({ status }: { status: PlayerStatus }) {
         ) : undefined
       }
     >
-      {t(tenantPlayerStatusKey(status))}
+      {label}
     </Badge>
   );
 }
+
+type PlayerConfirmAction = 'deactivate' | 'reactivate' | 'delete';
 
 function TenantPlayersContent() {
   const { t } = useTranslation();
@@ -104,7 +122,9 @@ function TenantPlayersContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState(() => readUrlSearchParam('status'));
+  const [statusFilter, setStatusFilter] = useState(
+    () => readUrlSearchParam('status') || PlayerStatus.ACTIVE,
+  );
   const [categoryFilter, setCategoryFilter] = useState('');
   const [page, setPage] = useState(1);
 
@@ -115,6 +135,10 @@ function TenantPlayersContent() {
   const [submitting, setSubmitting] = useState(false);
   const [approveTarget, setApproveTarget] = useState<PlayerDto | null>(null);
   const [rejectTarget, setRejectTarget] = useState<PlayerDto | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{
+    player: PlayerDto;
+    action: PlayerConfirmAction;
+  } | null>(null);
   const [approveJersey, setApproveJersey] = useState('');
   const [approveCategoryId, setApproveCategoryId] = useState('');
   const [rejectReason, setRejectReason] = useState('');
@@ -272,6 +296,39 @@ function TenantPlayersContent() {
     }
   };
 
+  const submitLifecycleAction = async () => {
+    if (!confirmTarget) return;
+    const { player, action } = confirmTarget;
+    setActionLoading(true);
+    try {
+      if (action === 'delete') {
+        await tenantFetch(`players/${player.id}`, { method: 'DELETE' });
+        showToast({ variant: 'success', message: t('tenant.players.successDelete') });
+      } else if (action === 'deactivate') {
+        await tenantFetch(`players/${player.id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: PlayerStatus.INACTIVE }),
+        });
+        showToast({ variant: 'success', message: t('tenant.players.successDeactivate') });
+      } else {
+        await tenantFetch(`players/${player.id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: PlayerStatus.ACTIVE }),
+        });
+        showToast({ variant: 'success', message: t('tenant.players.successReactivate') });
+      }
+      setConfirmTarget(null);
+      await load();
+    } catch (e) {
+      showToast({
+        variant: 'error',
+        message: e instanceof TenantApiError ? e.message : t('tenant.errors.generic'),
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const playerName = (p: PlayerDto) => `${p.firstName} ${p.lastName}`;
 
   const statusOptions = PLAYER_STATUSES.map((s) => ({
@@ -279,8 +336,17 @@ function TenantPlayersContent() {
     label: t(tenantPlayerStatusKey(s)),
   }));
 
+  const isDeactivated = (player: PlayerDto) =>
+    player.status === PlayerStatus.INACTIVE && Boolean(player.deactivatedAt);
+
   const playerActions = (player: PlayerDto) => {
-    const actions = [{ id: 'edit', label: t('common.edit'), onClick: () => openEdit(player) }];
+    const actions: Array<{
+      id: string;
+      label: string;
+      onClick: () => void;
+      destructive?: boolean;
+    }> = [{ id: 'edit', label: t('common.edit'), onClick: () => openEdit(player) }];
+
     if (player.status === PlayerStatus.PENDING) {
       actions.push(
         {
@@ -295,6 +361,32 @@ function TenantPlayersContent() {
         },
       );
     }
+
+    if (player.status === PlayerStatus.ACTIVE) {
+      actions.push({
+        id: 'deactivate',
+        label: t('tenant.players.deactivate'),
+        onClick: () => setConfirmTarget({ player, action: 'deactivate' }),
+      });
+    }
+
+    if (isDeactivated(player)) {
+      actions.push({
+        id: 'reactivate',
+        label: t('tenant.players.reactivate'),
+        onClick: () => setConfirmTarget({ player, action: 'reactivate' }),
+      });
+    }
+
+    if (!player.hasMatchHistory) {
+      actions.push({
+        id: 'delete',
+        label: t('tenant.players.remove'),
+        destructive: true,
+        onClick: () => setConfirmTarget({ player, action: 'delete' }),
+      });
+    }
+
     return { primaryActions: actions };
   };
 
@@ -399,7 +491,7 @@ function TenantPlayersContent() {
                   <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
                     {playerName(player)}
                   </h3>
-                  <PlayerStatusBadge status={player.status} />
+                  <PlayerStatusBadge player={player} />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="ds-club-pill">
@@ -458,7 +550,7 @@ function TenantPlayersContent() {
                   <TableCell>#{player.jerseyNumber}</TableCell>
                   <TableCell>{player.categoryName ?? t('tenant.players.noCategory')}</TableCell>
                   <TableCell>
-                    <PlayerStatusBadge status={player.status} />
+                    <PlayerStatusBadge player={player} />
                   </TableCell>
                   <TableCell>
                     <RowActionsMenu {...playerActions(player)} />
@@ -649,6 +741,43 @@ function TenantPlayersContent() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmModal
+        open={!!confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+        onConfirm={() => void submitLifecycleAction()}
+        title={
+          confirmTarget?.action === 'deactivate'
+            ? t('tenant.players.deactivateConfirmTitle', {
+                name: playerName(confirmTarget.player),
+              })
+            : confirmTarget?.action === 'reactivate'
+              ? t('tenant.players.reactivateConfirmTitle', {
+                  name: playerName(confirmTarget.player),
+                })
+              : confirmTarget
+                ? t('tenant.players.deleteConfirmTitle', {
+                    name: playerName(confirmTarget.player),
+                  })
+                : t('common.confirm')
+        }
+        description={
+          confirmTarget?.action === 'deactivate'
+            ? t('tenant.players.deactivateConfirmDescription')
+            : confirmTarget?.action === 'reactivate'
+              ? t('tenant.players.reactivateConfirmDescription')
+              : t('tenant.players.deleteConfirmDescription')
+        }
+        confirmLabel={
+          confirmTarget?.action === 'deactivate'
+            ? t('tenant.players.deactivate')
+            : confirmTarget?.action === 'reactivate'
+              ? t('tenant.players.reactivate')
+              : t('tenant.players.remove')
+        }
+        cancelLabel={t('common.cancel')}
+        loading={actionLoading}
+      />
     </>
   );
 }

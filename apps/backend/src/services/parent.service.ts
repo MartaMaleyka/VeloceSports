@@ -50,6 +50,12 @@ async function toPlayerDto(
     status: row.status,
     rejectionReason: row.rejection_reason,
     photoUrl,
+    deactivatedAt: row.deactivated_at
+      ? row.deactivated_at instanceof Date
+        ? row.deactivated_at.toISOString()
+        : String(row.deactivated_at)
+      : null,
+    hasMatchHistory: await playerRepository.hasMatchHistory(tenantId, row.id),
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),

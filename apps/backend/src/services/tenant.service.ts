@@ -466,6 +466,7 @@ async function toPlayerDto(
   tenantId: number,
   row: PlayerWithCategoryRow,
   parentsMap?: Map<number, Array<{ id: number; email: string }>>,
+  historyIds?: Set<number>,
 ): Promise<PlayerDto> {
   let parents = parentsMap?.get(row.id);
   if (!parents) {
@@ -473,6 +474,12 @@ async function toPlayerDto(
     parents = map.get(row.id) ?? [];
   }
   const photoUrl = await playerPhotoService.resolveSignedUrl(row.photo_object_key);
+  let hasMatchHistory: boolean;
+  if (historyIds) {
+    hasMatchHistory = historyIds.has(row.id);
+  } else {
+    hasMatchHistory = await playerRepository.hasMatchHistory(tenantId, row.id);
+  }
   return {
     id: row.id,
     firstName: row.first_name,
@@ -485,6 +492,8 @@ async function toPlayerDto(
     status: row.status,
     rejectionReason: row.rejection_reason,
     photoUrl,
+    deactivatedAt: toIso(row.deactivated_at),
+    hasMatchHistory,
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
@@ -511,11 +520,12 @@ export class PlayerService extends CategoryService {
     filters?: { search?: string; status?: PlayerDto['status']; categoryId?: number },
   ): Promise<PlayerDto[]> {
     const rows = await playerRepository.findByTenantId(tenantId, filters);
-    const parentsMap = await playerRepository.findParentsForPlayers(
-      tenantId,
-      rows.map((r) => r.id),
-    );
-    return Promise.all(rows.map((r) => toPlayerDto(tenantId, r, parentsMap)));
+    const playerIds = rows.map((r) => r.id);
+    const [parentsMap, historyIds] = await Promise.all([
+      playerRepository.findParentsForPlayers(tenantId, playerIds),
+      playerRepository.findPlayerIdsWithMatchHistory(tenantId, playerIds),
+    ]);
+    return Promise.all(rows.map((r) => toPlayerDto(tenantId, r, parentsMap, historyIds)));
   }
 
   async getPlayersKpis(tenantId: number): Promise<PlayersKpisDto> {
@@ -605,12 +615,7 @@ export class PlayerService extends CategoryService {
     }
 
     if (input.status !== undefined && input.status !== before.status) {
-      const activating =
-        before.status !== PlayerStatus.ACTIVE && input.status === PlayerStatus.ACTIVE;
-      if (activating) {
-        await planLimitService.assertMaxActivePlayers(ctx, tenantId, playerId);
-      }
-      await playerRepository.updateStatus(tenantId, playerId, input.status);
+      await this.applyPlayerStatusChange(ctx, tenantId, playerId, before.status, input.status);
     }
 
     await playerRepository.update(tenantId, playerId, {
@@ -640,6 +645,33 @@ export class PlayerService extends CategoryService {
     return after;
   }
 
+  /**
+   * Aplica cambio de status con reglas de baja/reactivación.
+   * - active → limpia deactivated_at
+   * - inactive (vía admin) → deactivated_at = NOW()
+   * - otros estados → solo cambia status (no toca deactivated_at)
+   */
+  private async applyPlayerStatusChange(
+    ctx: { userId: number; tenantId: number },
+    tenantId: number,
+    playerId: number,
+    beforeStatus: PlayerDto['status'],
+    status: PlayerDto['status'],
+  ): Promise<void> {
+    if (status === PlayerStatus.ACTIVE) {
+      await planLimitService.assertMaxActivePlayers(ctx, tenantId, playerId);
+      await playerRepository.activate(tenantId, playerId);
+      return;
+    }
+    if (status === PlayerStatus.INACTIVE) {
+      await playerRepository.deactivate(tenantId, playerId);
+      return;
+    }
+    if (beforeStatus !== status) {
+      await playerRepository.updateStatus(tenantId, playerId, status);
+    }
+  }
+
   async updatePlayerStatus(
     actorUserId: number,
     tenantId: number,
@@ -650,24 +682,64 @@ export class PlayerService extends CategoryService {
     const before = await playerRepository.findById(tenantId, playerId);
     if (!before) throw new NotFoundError('Jugador no encontrado');
 
-    const activating =
-      before.status !== PlayerStatus.ACTIVE && status === PlayerStatus.ACTIVE;
-    if (activating) {
-      await planLimitService.assertMaxActivePlayers(ctx, tenantId, playerId);
+    if (before.status !== status) {
+      await this.applyPlayerStatusChange(ctx, tenantId, playerId, before.status, status);
+      await auditService.log(
+        ctx,
+        'player',
+        playerId,
+        'status_change',
+        { status: before.status, deactivatedAt: toIso(before.deactivated_at) },
+        { status },
+      );
     }
 
-    await playerRepository.updateStatus(tenantId, playerId, status);
+    return this.getPlayer(tenantId, playerId);
+  }
+
+  async deletePlayer(
+    actorUserId: number,
+    tenantId: number,
+    playerId: number,
+  ): Promise<void> {
+    const ctx = { userId: actorUserId, tenantId };
+    const before = await playerRepository.findById(tenantId, playerId);
+    if (!before) throw new NotFoundError('Jugador no encontrado');
+
+    const hasHistory = await playerRepository.hasMatchHistory(tenantId, playerId);
+    if (hasHistory) {
+      throw new ValidationError(
+        'No se puede eliminar este jugador porque ya tiene historial de partidos (acciones o asistencias). Dale de baja para que deje de contar en la factura y de aparecer en partidos nuevos; su historial se conserva.',
+        'PLAYER_HAS_HISTORY',
+      );
+    }
+
+    const conn = await getPool().getConnection();
+    try {
+      await conn.beginTransaction();
+      await playerRepository.deleteParentLinks(tenantId, playerId, conn);
+      await playerRepository.delete(tenantId, playerId, conn);
+      await conn.commit();
+    } catch (error) {
+      await conn.rollback();
+      throw error;
+    } finally {
+      conn.release();
+    }
 
     await auditService.log(
       ctx,
       'player',
       playerId,
-      'status_change',
-      { status: before.status },
-      { status },
+      'delete',
+      {
+        firstName: before.first_name,
+        lastName: before.last_name,
+        status: before.status,
+        jerseyNumber: before.jersey_number,
+      },
+      null,
     );
-
-    return this.getPlayer(tenantId, playerId);
   }
 
   async searchPlayers(

@@ -12,6 +12,7 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 import { PlayerAvatar } from '../players/PlayerAvatar';
+import { appPath } from '../../lib/app-path';
 
 interface MatchAttendancePanelProps {
   matchId: number;
@@ -334,7 +335,9 @@ export default function MatchAttendancePanel({
                     variant="secondary"
                     className="min-h-touch w-full sm:w-auto"
                     onClick={() => {
-                      window.location.href = `${reportCardListPath}/${matchId}/players/${entry.playerId}/report-card`;
+                      window.location.href = appPath(
+                        `${reportCardListPath}/${matchId}/players/${entry.playerId}/report-card`,
+                      );
                     }}
                   >
                     {t('matches.attendance.viewReportCard')}
