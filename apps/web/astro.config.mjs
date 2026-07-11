@@ -4,6 +4,8 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 const astroBase = process.env.ASTRO_BASE ?? '/';
+/** Origen público (detrás de nginx). Obliga a checkOrigin a confiar en el dominio real, no en 127.0.0.1:9082. */
+const publicSiteUrl = process.env.PUBLIC_SITE_URL || 'https://aby.litomalone.dev';
 
 /**
  * Sin allowedDomains, el adapter Node de Astro cae a hostname "localhost" e ignora
@@ -31,7 +33,7 @@ function parseAllowedDomains(raw) {
     });
 }
 
-const astroSite = process.env.ASTRO_SITE ?? 'http://127.0.0.1:9082';
+const astroSite = process.env.ASTRO_SITE || publicSiteUrl;
 const allowedOriginsRaw =
   process.env.ASTRO_ALLOWED_ORIGINS ??
   process.env.CORS_ORIGINS ??
@@ -43,8 +45,9 @@ export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   security: {
+    // CSRF activo: site público + allowlist (Host del proxy y orígenes extra).
     checkOrigin: true,
-    allowedDomains: parseAllowedDomains(allowedOriginsRaw),
+    allowedDomains: parseAllowedDomains(`${allowedOriginsRaw},${publicSiteUrl}`),
   },
   integrations: [
     react(),
