@@ -1,6 +1,6 @@
 export const en = {
   common: {
-    appName: 'REGITEC',
+    appName: 'SquadVeloce',
     home: 'Home',
     logout: 'Sign out',
     required: 'required',
@@ -1398,6 +1398,8 @@ export const en = {
     notifications: 'Notifications',
     openNav: 'Open navigation menu',
     closeNav: 'Close menu',
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar',
   },
   meta: {
     appDescription: 'Platform for youth football academies',

@@ -66,6 +66,7 @@ function DashboardShellInner({
 }: DashboardShellInnerProps) {
   const { t, locale } = useTranslation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [desktopNavCollapsed, setDesktopNavCollapsed] = useState(false);
   const Page = resolveDashboardPage(contentKey, pageId);
 
   const prefix = getDashboardTranslationPrefix(contentKey);
@@ -90,8 +91,15 @@ function DashboardShellInner({
 
   return (
     <div className="flex min-h-screen bg-bg-app">
-      <div className="hidden w-64 shrink-0 md:block">
-        <Sidebar roles={roles} primaryRole={primaryRole} activeNavId={activeNavId} />
+      <div
+        className={desktopNavCollapsed ? 'hidden md:block md:w-0 md:overflow-hidden' : 'hidden w-64 shrink-0 md:block'}
+      >
+        <Sidebar
+          roles={roles}
+          primaryRole={primaryRole}
+          activeNavId={activeNavId}
+          onCollapse={() => setDesktopNavCollapsed(true)}
+        />
       </div>
 
       {mobileNavOpen && (
@@ -131,8 +139,21 @@ function DashboardShellInner({
           description={description}
           sectionAccent={sectionAccent}
           actions={
-            <div className="hidden md:block">
-              {headerActions}
+            <div className="hidden md:flex md:items-center md:gap-2">
+              {desktopNavCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setDesktopNavCollapsed(false)}
+                  className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md border border-border bg-bg-surface px-3 text-sm font-medium text-text-primary transition-colors hover:bg-bg-muted focus-visible:shadow-[var(--shadow-focus-ring)]"
+                  aria-label={t('a11y.expandSidebar')}
+                  title={t('a11y.expandSidebar')}
+                >
+                  <span aria-hidden="true">→</span>
+                </button>
+              )}
+              <div className="hidden md:block">
+                {headerActions}
+              </div>
             </div>
           }
         />

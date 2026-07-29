@@ -10,6 +10,7 @@ export interface SidebarProps {
   /** Rol principal (JWT users.role) — destino del Inicio unificado. */
   primaryRole: LoginRole;
   activeNavId: string;
+  onCollapse?: () => void;
 }
 
 function renderNavLink(
@@ -40,7 +41,7 @@ function renderNavLink(
   );
 }
 
-export default function Sidebar({ roles, primaryRole, activeNavId }: SidebarProps) {
+export default function Sidebar({ roles, primaryRole, activeNavId, onCollapse }: SidebarProps) {
   const { t, locale } = useTranslation();
   const { homeItem, sections } = getNavLayoutForRoles(roles, locale, primaryRole);
   const subtitle = getSessionSubtitle(roles, locale);
@@ -58,7 +59,8 @@ export default function Sidebar({ roles, primaryRole, activeNavId }: SidebarProp
       aria-label={t('nav.main')}
     >
       <div className="border-b border-border px-4 py-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-gradient text-sm font-bold text-text-on-primary shadow-brand"
             aria-hidden="true"
@@ -71,6 +73,18 @@ export default function Sidebar({ roles, primaryRole, activeNavId }: SidebarProp
               {subtitle}
             </p>
           </div>
+          </div>
+          {onCollapse && (
+            <button
+              type="button"
+              onClick={onCollapse}
+              className="hidden min-h-touch min-w-touch items-center justify-center rounded-md border border-border text-text-primary transition-colors hover:bg-bg-muted focus-visible:shadow-[var(--shadow-focus-ring)] md:inline-flex"
+              aria-label={t('a11y.collapseSidebar')}
+              title={t('a11y.collapseSidebar')}
+            >
+              <span aria-hidden="true">←</span>
+            </button>
+          )}
         </div>
       </div>
 

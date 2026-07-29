@@ -4,7 +4,8 @@ services:
     container_name: velocesport-mysql
     restart: unless-stopped
     ports:
-      - '3306:3306'
+      # 3306 suele estar ocupado por MySQL nativo en la máquina
+      - '3307:3306'
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: velocesport

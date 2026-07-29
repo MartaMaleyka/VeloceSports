@@ -798,11 +798,11 @@ export default function MatchCapturePanel({
         </Alert>
       )}
 
-      {/* Cuerpo: móvil columna; tablet apilado; lg+ dos columnas 50/50 */}
-      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 lg:flex-row lg:overflow-hidden">
+      {/* Cuerpo: móvil columna; md+ dos columnas lado a lado */}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 md:flex-row md:overflow-hidden">
         {(canEditActions || presentPlayers.length > 0) && (
           <section
-            className="min-h-0 flex-[1.35] overflow-y-auto md:flex-[1.4] lg:min-w-0 lg:flex-1 lg:basis-1/2 lg:overflow-y-auto lg:pr-2"
+            className="min-h-0 flex-1 overflow-y-auto md:min-w-0 md:basis-1/2 md:pr-2"
             aria-label={t('matches.capture.playersSection')}
           >
             {canEditActions && (
@@ -811,11 +811,13 @@ export default function MatchCapturePanel({
               </p>
             )}
             {canEditActions && (
-              <h3 className="mb-2 hidden text-xs font-semibold uppercase tracking-wide text-text-muted md:block">
-                {t('matches.capture.playersSection')}
-              </h3>
+              <div className="mb-2 hidden h-7 items-center md:flex">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  {t('matches.capture.playersSection')}
+                </h3>
+              </div>
             )}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(6.25rem,1fr))]">
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))]">
               {presentPlayers.map((player) => {
                 const isSelected = selectedPlayerId === player.playerId;
                 const isStarter = player.lineup === MatchLineupRole.STARTER;
@@ -827,24 +829,24 @@ export default function MatchCapturePanel({
                     aria-pressed={isSelected}
                     onClick={() => handlePlayerTap(player.playerId)}
                     className={cn(
-                      'flex min-h-[4.75rem] w-full min-w-0 flex-col items-center justify-center rounded-xl border p-2 transition-transform',
+                      'flex min-h-[3.25rem] w-full min-w-0 flex-col items-center justify-center rounded-lg border px-1.5 py-1.5 transition-transform',
                       impactPlayerRingClasses(ringImpact, isSelected),
                       !reducedMotion && isSelected && 'scale-[1.02]',
                     )}
                   >
                     <span
                       className={cn(
-                        'text-3xl font-black tabular-nums leading-none',
+                        'text-xl font-black tabular-nums leading-none',
                         isStarter ? 'text-section-matches-fg' : 'text-text-primary',
                       )}
                     >
                       {player.jerseyNumber}
                     </span>
-                    <span className="mt-1 line-clamp-2 text-center text-[0.65rem] font-medium leading-tight text-text-secondary">
+                    <span className="mt-0.5 line-clamp-1 text-center text-[0.6rem] font-medium leading-tight text-text-secondary">
                       {player.lastName}
                     </span>
                     {isStarter && (
-                      <span className="mt-0.5 text-[0.6rem] font-semibold uppercase text-section-matches-fg">
+                      <span className="mt-0.5 text-[0.55rem] font-semibold uppercase leading-none text-section-matches-fg">
                         {t('matches.attendance.starter')}
                       </span>
                     )}
@@ -869,42 +871,24 @@ export default function MatchCapturePanel({
           </section>
         )}
 
-        {/* Dock md–lg: apilado; lg+: columna derecha (acciones) */}
         {canEditActions && (
           <aside
             className={cn(
-              'hidden min-h-0 flex-col border-border bg-bg-surface md:flex md:min-h-0 md:flex-1',
-              'md:w-full md:border-t md:border-l-0',
-              'lg:min-w-0 lg:flex-1 lg:basis-1/2 lg:overflow-hidden lg:border-l lg:border-t-0',
+              'hidden min-h-0 border-border bg-bg-surface',
+              'md:flex md:min-h-0 md:min-w-0 md:basis-1/2 md:flex-col md:overflow-y-auto md:border-l md:pl-2',
             )}
             aria-label={t('matches.capture.actionsSection')}
           >
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <CaptureActionGrid
-                sortedCatalog={sortedCatalog}
-                selectedActionCode={selectedActionCode}
-                onSelectAction={toggleAction}
-                isCorrectionMode={isCorrectionMode}
-                showHeader
-                showHint
-                layout="sidebar"
-                voiceMic={voiceMicProps}
-              />
-
-              {isLiveMode && (
-                <div className="shrink-0 border-b border-border p-3">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="min-h-touch w-full"
-                    disabled={statusLoading}
-                    onClick={() => setFinishConfirmOpen(true)}
-                  >
-                    {t('matches.capture.finishMatch')}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <CaptureActionGrid
+              sortedCatalog={sortedCatalog}
+              selectedActionCode={selectedActionCode}
+              onSelectAction={toggleAction}
+              isCorrectionMode={isCorrectionMode}
+              showHeader
+              showHint={false}
+              layout="sidebar"
+              voiceMic={voiceMicProps}
+            />
           </aside>
         )}
       </div>
@@ -1123,15 +1107,21 @@ function CaptureActionGrid({
   return (
     <section
       className={cn(
-        'bg-bg-surface shrink-0',
+        'bg-bg-surface',
+        isSidebar ? 'min-h-0 flex-1' : 'shrink-0',
         scrollable && !isSidebar && 'min-h-0 overflow-y-auto',
-        showHeader || showHint ? 'border-b border-border' : '',
+        !isSidebar && (showHeader || showHint) ? 'border-b border-border' : '',
         className,
       )}
       aria-label={t('matches.capture.actionsSection')}
     >
       {showHeader && (
-        <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
+        <div
+          className={cn(
+            'flex h-7 items-center justify-between gap-2',
+            isSidebar ? 'mb-2' : 'mb-2 px-3 pt-2.5',
+          )}
+        >
           <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             {t('matches.capture.actionsSection')}
           </h3>
@@ -1142,6 +1132,7 @@ function CaptureActionGrid({
               supported={voiceMic.supported}
               reducedMotion={voiceMic.reducedMotion}
               onToggle={voiceMic.onToggle}
+              className="!min-h-7 !min-w-7 h-7 w-7 text-sm"
             />
           ) : (
             <button
@@ -1149,21 +1140,19 @@ function CaptureActionGrid({
               disabled
               title={t('matches.capture.voiceSoon')}
               aria-label={t('matches.capture.voiceSoon')}
-              className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-text-muted opacity-70"
+              className="flex h-7 w-7 min-h-7 min-w-7 items-center justify-center rounded-full border border-dashed border-border bg-bg-muted text-sm text-text-muted opacity-70"
             >
-              <span aria-hidden="true" className="text-lg">
-                🎤
-              </span>
+              <span aria-hidden="true">🎤</span>
             </button>
           )}
         </div>
       )}
       <div
         className={cn(
-          'grid gap-2 p-3',
+          'grid gap-1.5',
           isSidebar
-            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-2 lg:gap-2 md:gap-1.5 md:p-2.5'
-            : 'grid-cols-2',
+            ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(5.25rem,1fr))]'
+            : 'grid-cols-2 p-2',
         )}
       >
         {sortedCatalog.map((action) => {
@@ -1175,22 +1164,14 @@ function CaptureActionGrid({
               aria-pressed={isSelected}
               onClick={() => onSelectAction(action.code)}
               className={cn(
-                'flex flex-col justify-center rounded-xl border text-left transition-colors',
-                isSidebar
-                  ? 'min-h-[3.5rem] px-2.5 py-2 md:min-h-[3.25rem] lg:min-h-[3.5rem]'
-                  : 'min-h-[4rem] px-3 py-2.5',
+                'flex min-h-[3.75rem] w-full min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 text-center transition-colors',
                 impactChipClasses(action.impact),
                 isSelected &&
                   'ring-2 ring-section-matches-fg ring-offset-2 ring-offset-bg-surface',
               )}
             >
-              <span className="font-mono text-xs opacity-70">{action.code}</span>
-              <span
-                className={cn(
-                  'mt-0.5 font-semibold leading-snug',
-                  isSidebar ? 'text-xs lg:text-sm' : 'text-sm',
-                )}
-              >
+              <span className="font-mono text-xs leading-none opacity-70">{action.code}</span>
+              <span className="mt-0.5 line-clamp-2 text-[0.65rem] font-semibold leading-tight">
                 {action.name}
               </span>
             </button>

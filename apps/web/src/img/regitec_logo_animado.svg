@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" height="240" viewBox="0 80 680 160" role="img">
-<title>REGITEC logo animado</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="240" viewBox="0 80 820 160" role="img">
+<title>SquadVeloce logo animado</title>
 <desc>Logo deportivo dorado animado.</desc>
 <defs>
 <linearGradient id="mkA" x1="0" y1="0" x2="1" y2="1">
@@ -50,12 +50,12 @@
 </g>
 <g transform="translate(252,134)" opacity="0">
 <animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="1.4s" fill="freeze"/>
-<text x="0" y="0" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="64" font-weight="bold" font-style="italic" letter-spacing="-1.5" fill="#FFFFFF">REGI<tspan fill="#FFB830">TEC</tspan></text>
+<text x="0" y="0" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="52" font-weight="bold" font-style="italic" letter-spacing="-1.5" fill="#FFFFFF">Squad<tspan fill="#FFB830">Veloce</tspan></text>
 </g>
 <g transform="translate(254,156)" opacity="0">
 <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.7s" fill="freeze"/>
 <rect x="0" y="0" width="46" height="5" rx="2.5" fill="#FFB830"/>
-<rect x="52" y="0" width="188" height="5" rx="2.5" fill="#FDE68A" opacity="0.55"/>
+<rect x="52" y="0" width="280" height="5" rx="2.5" fill="#FDE68A" opacity="0.55"/>
 </g>
 <text x="254" y="196" font-family="'Segoe UI',Arial,sans-serif" font-size="22" font-weight="500" letter-spacing="0.3" fill="#FFFFFF" opacity="0">Desde aquí nace el futuro<animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="1.9s" fill="freeze"/></text>
 </svg>
