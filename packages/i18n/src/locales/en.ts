@@ -1156,6 +1156,9 @@ export const en = {
       clockAdjustConfirm: 'Apply',
       playersSection: 'Present players',
       actionsSection: 'Actions',
+      boardFullscreenLabel: 'Capture board',
+      enterBoardFullscreen: 'View board fullscreen',
+      exitBoardFullscreen: 'Exit fullscreen',
       twoTapHint: 'Tap a player and an action in any order to record instantly.',
       voiceSoon: 'Voice capture — coming soon',
       voiceCapture: {

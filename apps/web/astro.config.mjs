@@ -46,7 +46,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 4321,
+    port: 8065,
   },
   vite: {
     resolve: {

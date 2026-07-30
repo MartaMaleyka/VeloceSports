@@ -130,6 +130,7 @@ export default function MatchCapturePanel({
   const [historySheetOpen, setHistorySheetOpen] = useState(false);
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
   const [finishConfirmOpen, setFinishConfirmOpen] = useState(false);
+  const [boardFullscreen, setBoardFullscreen] = useState(false);
   const [voidTarget, setVoidTarget] = useState<CaptureHistoryEntry | null>(null);
   const [voidReason, setVoidReason] = useState('');
   const [statusLoading, setStatusLoading] = useState(false);
@@ -143,6 +144,24 @@ export default function MatchCapturePanel({
     setVoiceSoundFeedbackState(getVoiceSoundFeedback());
     setVoiceVibrationFeedbackState(getVoiceVibrationFeedback());
   }, []);
+
+  useEffect(() => {
+    if (!boardFullscreen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setBoardFullscreen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [boardFullscreen]);
+
+  useEffect(() => {
+    if (!boardFullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [boardFullscreen]);
 
   const isLiveMode = match.status === MatchStatus.IN_PROGRESS;
   const isCorrectionMode =
@@ -799,98 +818,159 @@ export default function MatchCapturePanel({
       )}
 
       {/* Cuerpo: móvil columna; md+ dos columnas lado a lado */}
-      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3 md:flex-row md:overflow-hidden">
-        {(canEditActions || presentPlayers.length > 0) && (
-          <section
-            className="min-h-0 flex-1 overflow-y-auto md:min-w-0 md:basis-1/2 md:pr-2"
-            aria-label={t('matches.capture.playersSection')}
-          >
-            {canEditActions && (
-              <p className="mb-2 text-xs text-text-muted md:hidden">
-                {t('matches.capture.playerPickHint')}
-              </p>
+      <div
+        className={cn(
+          boardFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col bg-bg-surface p-3 sm:p-4'
+            : 'mt-2 flex min-h-0 flex-1 flex-col md:mt-3',
+        )}
+        aria-modal={boardFullscreen || undefined}
+        role={boardFullscreen ? 'dialog' : undefined}
+        aria-label={boardFullscreen ? t('matches.capture.boardFullscreenLabel') : undefined}
+      >
+        <div className="mb-2 flex h-7 shrink-0 items-center justify-between gap-2">
+          <h3
+            className={cn(
+              'text-xs font-semibold uppercase tracking-wide text-text-muted',
+              !boardFullscreen && 'sr-only',
             )}
-            {canEditActions && (
-              <div className="mb-2 hidden h-7 items-center md:flex">
+          >
+            {t('matches.capture.boardFullscreenLabel')}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setBoardFullscreen((open) => !open)}
+            className="ml-auto inline-flex h-7 min-w-7 items-center justify-center rounded-md border border-border px-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-muted hover:text-text-primary focus-visible:shadow-[var(--shadow-focus-ring)]"
+            aria-pressed={boardFullscreen}
+            aria-label={
+              boardFullscreen
+                ? t('matches.capture.exitBoardFullscreen')
+                : t('matches.capture.enterBoardFullscreen')
+            }
+            title={
+              boardFullscreen
+                ? t('matches.capture.exitBoardFullscreen')
+                : t('matches.capture.enterBoardFullscreen')
+            }
+          >
+            <span aria-hidden="true">{boardFullscreen ? '↙' : '↗'}</span>
+          </button>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row md:overflow-hidden">
+          {(canEditActions || presentPlayers.length > 0) && (
+            <section
+              className="min-h-0 flex-1 overflow-y-auto md:min-w-0 md:basis-1/2 md:pr-2"
+              aria-label={t('matches.capture.playersSection')}
+            >
+              {canEditActions && !boardFullscreen && (
+                <p className="mb-2 text-xs text-text-muted md:hidden">
+                  {t('matches.capture.playerPickHint')}
+                </p>
+              )}
+              <div className="mb-2 flex h-7 items-center">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
                   {t('matches.capture.playersSection')}
                 </h3>
               </div>
-            )}
-            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))]">
-              {presentPlayers.map((player) => {
-                const isSelected = selectedPlayerId === player.playerId;
-                const isStarter = player.lineup === MatchLineupRole.STARTER;
-                const ringImpact = isDesktopCapture ? (selectedAction?.impact ?? null) : null;
-                return (
-                  <button
-                    key={player.playerId}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => handlePlayerTap(player.playerId)}
-                    className={cn(
-                      'flex min-h-[3.25rem] w-full min-w-0 flex-col items-center justify-center rounded-lg border px-1.5 py-1.5 transition-transform',
-                      impactPlayerRingClasses(ringImpact, isSelected),
-                      !reducedMotion && isSelected && 'scale-[1.02]',
-                    )}
-                  >
-                    <span
+              <div
+                className={cn(
+                  'grid gap-1.5',
+                  boardFullscreen
+                    ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(6rem,1fr))]'
+                    : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))]',
+                )}
+              >
+                {presentPlayers.map((player) => {
+                  const isSelected = selectedPlayerId === player.playerId;
+                  const isStarter = player.lineup === MatchLineupRole.STARTER;
+                  const ringImpact = isDesktopCapture ? (selectedAction?.impact ?? null) : null;
+                  return (
+                    <button
+                      key={player.playerId}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => handlePlayerTap(player.playerId)}
                       className={cn(
-                        'text-xl font-black tabular-nums leading-none',
-                        isStarter ? 'text-section-matches-fg' : 'text-text-primary',
+                        'flex w-full min-w-0 flex-col items-center justify-center rounded-lg border transition-transform',
+                        boardFullscreen
+                          ? 'min-h-[4rem] px-2 py-2'
+                          : 'min-h-[3.25rem] px-1.5 py-1.5',
+                        impactPlayerRingClasses(ringImpact, isSelected),
+                        !reducedMotion && isSelected && 'scale-[1.02]',
                       )}
                     >
-                      {player.jerseyNumber}
-                    </span>
-                    <span className="mt-0.5 line-clamp-1 text-center text-[0.6rem] font-medium leading-tight text-text-secondary">
-                      {player.lastName}
-                    </span>
-                    {isStarter && (
-                      <span className="mt-0.5 text-[0.55rem] font-semibold uppercase leading-none text-section-matches-fg">
-                        {t('matches.attendance.starter')}
+                      <span
+                        className={cn(
+                          'font-black tabular-nums leading-none',
+                          boardFullscreen ? 'text-2xl' : 'text-xl',
+                          isStarter ? 'text-section-matches-fg' : 'text-text-primary',
+                        )}
+                      >
+                        {player.jerseyNumber}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {isLiveMode && (
-              <div className="mt-4 pb-2 md:hidden">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="min-h-touch w-full"
-                  disabled={statusLoading}
-                  onClick={() => setFinishConfirmOpen(true)}
-                >
-                  {t('matches.capture.finishMatch')}
-                </Button>
+                      <span
+                        className={cn(
+                          'mt-0.5 line-clamp-1 text-center font-medium leading-tight text-text-secondary',
+                          boardFullscreen ? 'text-[0.65rem]' : 'text-[0.6rem]',
+                        )}
+                      >
+                        {player.lastName}
+                      </span>
+                      {isStarter && (
+                        <span
+                          className={cn(
+                            'mt-0.5 font-semibold uppercase leading-none text-section-matches-fg',
+                            boardFullscreen ? 'text-[0.6rem]' : 'text-[0.55rem]',
+                          )}
+                        >
+                          {t('matches.attendance.starter')}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </section>
-        )}
 
-        {canEditActions && (
-          <aside
-            className={cn(
-              'hidden min-h-0 border-border bg-bg-surface',
-              'md:flex md:min-h-0 md:min-w-0 md:basis-1/2 md:flex-col md:overflow-y-auto md:border-l md:pl-2',
-            )}
-            aria-label={t('matches.capture.actionsSection')}
-          >
-            <CaptureActionGrid
-              sortedCatalog={sortedCatalog}
-              selectedActionCode={selectedActionCode}
-              onSelectAction={toggleAction}
-              isCorrectionMode={isCorrectionMode}
-              showHeader
-              showHint={false}
-              layout="sidebar"
-              voiceMic={voiceMicProps}
-            />
-          </aside>
-        )}
+              {isLiveMode && !boardFullscreen && (
+                <div className="mt-4 pb-2 md:hidden">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-touch w-full"
+                    disabled={statusLoading}
+                    onClick={() => setFinishConfirmOpen(true)}
+                  >
+                    {t('matches.capture.finishMatch')}
+                  </Button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {canEditActions && (
+            <aside
+              className={cn(
+                'min-h-0 border-border bg-bg-surface',
+                boardFullscreen
+                  ? 'mt-3 flex flex-1 flex-col overflow-y-auto border-t pt-3 md:mt-0 md:min-w-0 md:basis-1/2 md:border-l md:border-t-0 md:pl-2 md:pt-0'
+                  : 'hidden md:flex md:min-h-0 md:min-w-0 md:basis-1/2 md:flex-col md:overflow-y-auto md:border-l md:pl-2',
+              )}
+              aria-label={t('matches.capture.actionsSection')}
+            >
+              <CaptureActionGrid
+                sortedCatalog={sortedCatalog}
+                selectedActionCode={selectedActionCode}
+                onSelectAction={toggleAction}
+                isCorrectionMode={isCorrectionMode}
+                showHeader
+                showHint={false}
+                layout="sidebar"
+                voiceMic={voiceMicProps}
+              />
+            </aside>
+          )}
+        </div>
       </div>
 
       {/* Historial desktop: debajo del bloque jugadores + acciones */}
