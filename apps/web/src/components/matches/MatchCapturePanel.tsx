@@ -842,20 +842,13 @@ export default function MatchCapturePanel({
           <button
             type="button"
             onClick={() => setBoardFullscreen((open) => !open)}
-            className="ml-auto inline-flex h-7 min-w-7 items-center justify-center rounded-md border border-border px-2 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-muted hover:text-text-primary focus-visible:shadow-[var(--shadow-focus-ring)]"
+            className="ml-auto inline-flex h-7 items-center justify-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-muted hover:text-text-primary focus-visible:shadow-[var(--shadow-focus-ring)]"
             aria-pressed={boardFullscreen}
-            aria-label={
-              boardFullscreen
-                ? t('matches.capture.exitBoardFullscreen')
-                : t('matches.capture.enterBoardFullscreen')
-            }
-            title={
-              boardFullscreen
-                ? t('matches.capture.exitBoardFullscreen')
-                : t('matches.capture.enterBoardFullscreen')
-            }
           >
             <span aria-hidden="true">{boardFullscreen ? '↙' : '↗'}</span>
+            {boardFullscreen
+              ? t('matches.capture.exitBoardFullscreen')
+              : t('matches.capture.enterBoardFullscreen')}
           </button>
         </div>
 

@@ -1394,7 +1394,7 @@ export const es = {
       playersSection: 'Jugadores presentes',
       actionsSection: 'Acciones',
       boardFullscreenLabel: 'Tablero de captura',
-      enterBoardFullscreen: 'Ver tablero a pantalla completa',
+      enterBoardFullscreen: 'Ver en pantalla completa',
       exitBoardFullscreen: 'Salir de pantalla completa',
       twoTapHint: 'Toca un jugador y una acción en cualquier orden para registrar al instante.',
       voiceSoon: 'Captura por voz — próximamente',

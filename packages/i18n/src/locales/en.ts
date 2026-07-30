@@ -1392,7 +1392,7 @@ export const en = {
       playersSection: 'Present players',
       actionsSection: 'Actions',
       boardFullscreenLabel: 'Capture board',
-      enterBoardFullscreen: 'View board fullscreen',
+      enterBoardFullscreen: 'View fullscreen',
       exitBoardFullscreen: 'Exit fullscreen',
       twoTapHint: 'Tap a player and an action in any order to record instantly.',
       voiceSoon: 'Voice capture — coming soon',
