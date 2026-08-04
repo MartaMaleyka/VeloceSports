@@ -1,13 +1,23 @@
-import regitecLogoSvg from '../../img/regitec_logo_animado.svg?raw';
-
 export default function LoginHeroBrandMark() {
+  const base =
+    typeof import.meta.env.BASE_URL === 'string'
+      ? import.meta.env.BASE_URL.replace(/\/?$/, '/')
+      : '/';
+  const logoSrc = `${base}brand/logo-dark.png`;
+
   return (
     <div className="ds-brand-hero-logo">
-      <div
-        className="ds-brand-hero-logo__content"
-        aria-hidden="true"
-        dangerouslySetInnerHTML={{ __html: regitecLogoSvg }}
-      />
+      <div className="ds-brand-hero-logo__content">
+        <img
+          src={logoSrc}
+          alt=""
+          width={640}
+          height={640}
+          className="ds-brand-hero-logo__img ds-brand-hero-logo__img--dark"
+          decoding="async"
+          fetchPriority="high"
+        />
+      </div>
     </div>
   );
 }

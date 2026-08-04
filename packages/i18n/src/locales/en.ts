@@ -1,7 +1,7 @@
 export const en = {
   common: {
     appName: 'SquadVeloce',
-    brandSlogan: 'From here talent is born',
+    brandSlogan: 'Where talent is born',
     home: 'Home',
     logout: 'Sign out',
     required: 'required',

@@ -4,6 +4,7 @@ import LoginForm from './LoginForm';
 import PreferenceToggles from '../layout/PreferenceToggles';
 import LoginHeroBrandMark from './LoginHeroBrandMark';
 import LoginHeroDecor, { LoginPanelDecor } from './LoginHeroDecor';
+import LoginPanelBrandMark from './LoginPanelBrandMark';
 
 interface LoginPageContentProps {
   apiUrl: string;
@@ -34,7 +35,7 @@ function LoginPageContent({ apiUrl, redirectPath }: LoginPageContentProps) {
               <div className="ds-brand-page__hero-accent" aria-hidden="true" />
               <h1 className="sr-only">{t('common.appName')}</h1>
               <span className="ds-brand-tagline ds-brand-tagline--compact">
-                {t('auth.login.prompt')}
+                {t('common.brandSlogan')}
               </span>
             </div>
 
@@ -63,6 +64,7 @@ function LoginPageContent({ apiUrl, redirectPath }: LoginPageContentProps) {
             </div>
 
             <div className="ds-stagger-item ds-brand-card ds-brand-card--login ds-brand-card--login-flow p-6 sm:p-8">
+              <LoginPanelBrandMark />
               <div className="ds-brand-card__head">
                 <h2 className="ds-brand-card__title">{t('auth.login.formTitle')}</h2>
                 <p className="ds-brand-card__subtitle">{t('auth.login.formSubtitle')}</p>
