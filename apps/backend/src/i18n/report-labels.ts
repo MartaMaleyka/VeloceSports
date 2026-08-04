@@ -10,7 +10,7 @@ const labels = {
       generatedAt: 'Generado el',
       page: 'Página',
       of: 'de',
-      footer: 'VeloceSport — Reporte confidencial de la academia',
+      footer: 'SquadVeloce — Reporte confidencial de la academia',
     },
     players: {
       name: 'Nombre',
@@ -77,7 +77,7 @@ const labels = {
       generatedAt: 'Generated on',
       page: 'Page',
       of: 'of',
-      footer: 'VeloceSport — Confidential academy report',
+      footer: 'SquadVeloce — Confidential academy report',
     },
     players: {
       name: 'Name',

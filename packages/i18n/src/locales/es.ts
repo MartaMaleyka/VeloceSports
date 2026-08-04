@@ -1,6 +1,7 @@
 export const es = {
   common: {
     appName: 'SquadVeloce',
+    brandSlogan: 'Desde aquí nace el talento',
     home: 'Inicio',
     logout: 'Cerrar sesión',
     required: 'obligatorio',
@@ -1335,7 +1336,7 @@ export const es = {
     playersLimit: 'Jugadores activos',
     categoriesLimit: 'Categorías',
     usageSummary: '{players} jugadores · {categories} categorías · {users} usuarios',
-    platformManagedHint: 'Plan, facturación y estado los gestiona la plataforma VeloceSport.',
+    platformManagedHint: 'Plan, facturación y estado los gestiona la plataforma SquadVeloce.',
     contactProvider: 'Para cambiar de plan o reactivar la academia, contacta al proveedor del servicio.',
     billingAlertTitle: 'Facturación',
     billingAlertOverdue: 'Tienes una factura vencida.',
@@ -1405,6 +1406,6 @@ export const es = {
   },
   meta: {
     appDescription: 'Plataforma para academias de fútbol formativo',
-    loginTitle: 'Iniciar sesión — VeloceSport',
+    loginTitle: 'Iniciar sesión — SquadVeloce',
   },
 } as const;

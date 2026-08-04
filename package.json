@@ -1,8 +1,8 @@
 {
-  "name": "velocesport-regitec",
+  "name": "squadveloce",
   "private": true,
   "version": "0.1.0",
-  "description": "Plataforma SaaS multi-tenant para academias de fútbol formativo",
+  "description": "SquadVeloce — plataforma SaaS multi-tenant para academias de fútbol formativo",
   "scripts": {
     "dev:backend": "pnpm --filter @velocesport/backend dev",
     "build:backend": "pnpm --filter @velocesport/backend build",

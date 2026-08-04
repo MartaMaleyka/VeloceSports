@@ -450,9 +450,11 @@ describe('Game actions capture API', () => {
 
     const actionId = createRes.body.data.id as number;
     const pool = getPool();
+    // Usar Date JS (mismo reloj que el service) evita flakiness por TZ de MySQL DATETIME
+    const expiredAt = new Date(Date.now() - 60_000);
     await pool.execute(
-      'UPDATE game_actions SET created_at = DATE_SUB(NOW(), INTERVAL 30 SECOND) WHERE tenant_id = ? AND id = ?',
-      [seed.academyAId, actionId],
+      'UPDATE game_actions SET created_at = ? WHERE tenant_id = ? AND id = ?',
+      [expiredAt, seed.academyAId, actionId],
     );
 
     const res = await request(app)

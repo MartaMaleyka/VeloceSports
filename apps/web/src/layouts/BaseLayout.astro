@@ -16,6 +16,9 @@ const {
 } = Astro.props;
 
 const pageTitle = title ?? t('common.appName', locale);
+const pageDescription = description ?? t('meta.appDescription', locale);
+const brandSlogan = t('common.brandSlogan', locale);
+const origin = Astro.url.origin;
 ---
 
 <!doctype html>
@@ -23,12 +26,26 @@ const pageTitle = title ?? t('common.appName', locale);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={pageDescription} />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#A3E635" />
+    <link rel="icon" href="/brand/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/brand/favicon.png" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={`${pageDescription} — ${brandSlogan}`} />
+    <meta property="og:image" content={`${origin}/brand/og-image.png`} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    />
     <script is:inline set:html={preferencesInit} />
     <title>{pageTitle}</title>
   </head>
-  <body class="min-h-full">
+  <body class="min-h-full font-body">
     <slot />
   </body>
 </html>

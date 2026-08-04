@@ -29,7 +29,7 @@ function pdfLabelsFromRequest(req: Request): InvoicePdfLabels {
       annualFeeLine: 'Annual plan fee',
       status: 'Status',
       notes: 'Notes',
-      footer: 'VeloceSport — Youth football academies platform',
+      footer: 'SquadVeloce — Youth football academies platform',
     };
   }
 
@@ -49,7 +49,7 @@ function pdfLabelsFromRequest(req: Request): InvoicePdfLabels {
     annualFeeLine: 'Anualidad del plan',
     status: 'Estado',
     notes: 'Notas',
-    footer: 'VeloceSport — Plataforma para academias de fútbol formativo',
+    footer: 'SquadVeloce — Plataforma para academias de fútbol formativo',
   };
 }
 

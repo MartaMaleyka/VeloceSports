@@ -41,7 +41,7 @@ export function generateInvoicePdf(invoice: InvoiceDto, labels: InvoicePdfLabels
         : labels.invoiceTypeMonthly;
 
     doc.rect(0, 0, doc.page.width, 80).fill(brandBlue);
-    doc.fillColor('#FFFFFF').fontSize(22).font('Helvetica-Bold').text('VeloceSport', 50, 30);
+    doc.fillColor('#FFFFFF').fontSize(22).font('Helvetica-Bold').text('SquadVeloce', 50, 30);
     doc.fontSize(11).font('Helvetica').text(`${labels.title} — ${typeLabel}`, 50, 55);
 
     doc.fillColor('#111827').fontSize(10).font('Helvetica');

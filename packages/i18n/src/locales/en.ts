@@ -1,6 +1,7 @@
 export const en = {
   common: {
     appName: 'SquadVeloce',
+    brandSlogan: 'From here talent is born',
     home: 'Home',
     logout: 'Sign out',
     required: 'required',
@@ -1336,7 +1337,7 @@ export const en = {
     playersLimit: 'Active players',
     categoriesLimit: 'Categories',
     usageSummary: '{players} players · {categories} categories · {users} users',
-    platformManagedHint: 'Plan, billing, and status are managed by the VeloceSport platform.',
+    platformManagedHint: 'Plan, billing, and status are managed by the SquadVeloce platform.',
     contactProvider: 'To change plans or reactivate the academy, contact your service provider.',
     billingAlertTitle: 'Billing',
     billingAlertOverdue: 'You have an overdue invoice.',
@@ -1406,6 +1407,6 @@ export const en = {
   },
   meta: {
     appDescription: 'Platform for youth football academies',
-    loginTitle: 'Sign in — VeloceSport',
+    loginTitle: 'Sign in — SquadVeloce',
   },
 } as const;

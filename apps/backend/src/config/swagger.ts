@@ -5,7 +5,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.3',
     info: {
-      title: 'VeloceSport Regitec API',
+      title: 'SquadVeloce API',
       version: '0.1.0',
       description: 'API SaaS multi-tenant para academias de fútbol formativo',
     },

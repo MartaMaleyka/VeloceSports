@@ -3,12 +3,20 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: {
+          DEFAULT: 'var(--color-brand)',
+          hover: 'var(--color-brand-hover)',
+          subtle: 'var(--color-brand-subtle)',
+          dark: 'var(--color-brand-dark)',
+          ink: 'var(--color-brand-ink)',
+        },
         bg: {
           app: 'var(--color-bg-app)',
           surface: 'var(--color-bg-surface)',
           elevated: 'var(--color-bg-surface-elevated)',
           muted: 'var(--color-bg-surface-muted)',
           'accent-subtle': 'var(--color-bg-accent-subtle)',
+          'brand-dark': 'var(--color-bg-brand-dark)',
         },
         action: {
           primary: 'var(--color-action-primary)',
@@ -96,6 +104,11 @@ export default {
             muted: 'var(--color-section-matches-muted)',
           },
         },
+      },
+      fontFamily: {
+        display: ['var(--font-display)'],
+        body: ['var(--font-body)'],
+        sans: ['var(--font-body)'],
       },
       spacing: {
         1: 'var(--space-1)',
