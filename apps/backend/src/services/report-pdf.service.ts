@@ -6,6 +6,8 @@ export interface ReportPdfMeta {
   academyName: string;
   logoUrl: string | null;
   reportType: string;
+  /** Si se define, reemplaza el título derivado de reportType. */
+  title?: string;
   locale: ReportLocale;
   generatedAt: Date;
 }
@@ -52,7 +54,7 @@ function drawPageFooter(doc: InstanceType<typeof PDFDocument>, pageNumber: numbe
 export async function generateReportPdf(meta: ReportPdfMeta, table: ReportPdfTable): Promise<Buffer> {
   const logoBuffer = await fetchLogoBuffer(meta.logoUrl);
   const L = getReportLabels(meta.locale);
-  const title = reportTitle(meta.locale, meta.reportType);
+  const title = meta.title?.trim() || reportTitle(meta.locale, meta.reportType);
   const generatedLabel = `${L.reports.generatedAt}: ${meta.generatedAt.toLocaleString(
     meta.locale === 'es' ? 'es-PA' : 'en-US',
     { dateStyle: 'long', timeStyle: 'short' },

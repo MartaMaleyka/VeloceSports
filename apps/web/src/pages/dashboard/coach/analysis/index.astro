@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../lib/session';
+import { redirectUnlessRole } from '../../../../lib/page-access';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+const accessDenied = redirectUnlessRole(session, 'coach');
+if (accessDenied) return Astro.redirect(accessDenied);
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('dashboard.coach.analysis.title', locale)} — ${t('common.appName', locale)}`}
+>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    roles={session.roles}
+    activeNavId="analysis"
+    contentKey="coach"
+    pageTitle={t('dashboard.coach.analysis.title', locale)}
+    pageDescription={t('dashboard.coach.analysis.description', locale)}
+    hideWelcome
+    pageId="analysis"
+    headerSectionAccent="brand"
+  />
+</BaseLayout>

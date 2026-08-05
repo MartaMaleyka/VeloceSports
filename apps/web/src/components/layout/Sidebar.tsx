@@ -50,6 +50,7 @@ const NAV_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   academies: Building2,
   audit: ScrollText,
   analytics: BarChart3,
+  analysis: BarChart3,
   'super-admins': ShieldCheck,
 };
 

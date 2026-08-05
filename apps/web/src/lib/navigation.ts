@@ -121,6 +121,12 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
         label: t('nav.matches', locale),
         sectionAccent: 'matches',
       },
+      {
+        id: 'analysis',
+        href: appPath('/dashboard/coach/analysis'),
+        label: t('nav.analysis', locale),
+        sectionAccent: 'brand',
+      },
     ];
   }
 

@@ -7,6 +7,7 @@ import tenantRoutes from './tenant.routes.js';
 import parentRoutes from './parent.routes.js';
 import matchRoutes from './match.routes.js';
 import actionCatalogRoutes from './action-catalog.routes.js';
+import coachAnalysisRoutes from './coach-analysis.routes.js';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/api/tenant/matches', matchRoutes);
 router.use('/api/tenant/action-catalog', actionCatalogRoutes);
 router.use('/api/tenant', tenantRoutes);
 router.use('/api/parent', parentRoutes);
+router.use('/api/coach/analysis', coachAnalysisRoutes);
 
 export default router;

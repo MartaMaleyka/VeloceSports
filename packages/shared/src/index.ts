@@ -26,4 +26,5 @@ export * from './plan-pricing.js';
 export * from './academy-dashboard.js';
 export * from './academy-settings.js';
 export * from './tenant-reports.js';
+export * from './coach-player-analysis.js';
 export * from './user-role.js';
