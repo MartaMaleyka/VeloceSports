@@ -7,11 +7,9 @@ import {
   Button,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
-  LabeledValue,
   Modal,
   Select,
   StatCard,
@@ -25,6 +23,7 @@ import {
   useToast,
   type BadgeVariant,
 } from '@velocesport/design-system';
+import { Activity, Bell, ListChecks, Minus, Plus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
@@ -57,8 +56,16 @@ function impactVariant(impact: ActionImpact): BadgeVariant {
 
 function ImpactBadge({ impact }: { impact: ActionImpact }) {
   const { t } = useTranslation();
+  const icon =
+    impact === ActionImpact.POSITIVE ? (
+      <TrendingUp className="h-3.5 w-3.5" />
+    ) : impact === ActionImpact.NEGATIVE ? (
+      <TrendingDown className="h-3.5 w-3.5" />
+    ) : (
+      <Minus className="h-3.5 w-3.5" />
+    );
   return (
-    <Badge variant={impactVariant(impact)}>
+    <Badge variant={impactVariant(impact)} icon={icon}>
       {t(`tenant.actionCatalog.impact.${impact}`)}
     </Badge>
   );
@@ -263,23 +270,21 @@ function ActionCatalogContent() {
   const kpiHeader = kpis ? (
     <StatCardGrid>
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">#</span>}
+        icon={<ListChecks className="h-5 w-5" />}
         label={t('tenant.actionCatalog.kpis.active')}
-        value={String(kpis.activeCount)}
+        value={kpis.activeCount}
       />
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">🔔</span>}
+        icon={<Bell className="h-5 w-5" />}
         label={t('tenant.actionCatalog.kpis.notifiable')}
-        value={String(kpis.notifiableCount)}
+        value={kpis.notifiableCount}
       />
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">±</span>}
+        icon={<Activity className="h-5 w-5" />}
         label={t('tenant.actionCatalog.kpis.byImpact')}
         value={`${kpis.positiveCount} / ${kpis.negativeCount} / ${kpis.neutralCount}`}
         delta={t('tenant.actionCatalog.kpis.byImpactHint')}
+        animateValue={false}
       />
     </StatCardGrid>
   ) : null;
@@ -318,26 +323,30 @@ function ActionCatalogContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate}>
+          <Button type="button" onClick={openCreate} className="gap-1.5">
+            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.actionCatalog.create')}
           </Button>
         }
         renderCard={(action) => (
           <DataCard>
-            <DataCardHeader
-              title={`${action.code} — ${action.name}`}
-              badge={<StatusBadge type="user" status={action.status} />}
-            />
-            <LabeledValue
-              label={t('tenant.actionCatalog.impactLabel')}
-              value={<ImpactBadge impact={action.impact} />}
-            />
-            <LabeledValue
-              label={t('tenant.actionCatalog.notifiableLabel')}
-              value={<NotifiableBadge notifiable={action.notifiable} />}
-            />
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0 space-y-1">
+                <p className="font-mono text-sm font-semibold tabular-nums text-action-primary">
+                  {action.code}
+                </p>
+                <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+                  {action.name}
+                </h3>
+              </div>
+              <StatusBadge type="user" status={action.status} />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ImpactBadge impact={action.impact} />
+              <NotifiableBadge notifiable={action.notifiable} />
+            </div>
             {action.isUsed && (
-              <p className="text-xs text-text-secondary">{t('tenant.actionCatalog.usedHint')}</p>
+              <p className="mt-2 text-xs text-text-secondary">{t('tenant.actionCatalog.usedHint')}</p>
             )}
             <DataCardFooter>
               <RowActionsMenu {...actionRowActions(action)} />

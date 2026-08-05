@@ -229,19 +229,31 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
       <div className="rounded-lg border border-border bg-bg-surface p-4 sm:p-6">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">{match.opponent}</h2>
-            <p className="text-sm text-text-secondary">{match.categoryName}</p>
+            <h2 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">
+              {match.opponent}
+            </h2>
+            <p className="mt-2">
+              <span className="ds-club-pill">{match.categoryName}</span>
+            </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="default">{t(matchTypeKey(match.matchType))}</Badge>
-            <Badge variant={match.status === MatchStatus.IN_PROGRESS ? 'success' : 'info'}>
-              {t(matchStatusKey(match.status))}
-            </Badge>
+            <span className="inline-flex items-center gap-1.5">
+              {match.status === MatchStatus.IN_PROGRESS && (
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-action-primary ds-pulse-dot"
+                  aria-hidden="true"
+                />
+              )}
+              <Badge variant={match.status === MatchStatus.IN_PROGRESS ? 'success' : 'info'}>
+                {t(matchStatusKey(match.status))}
+              </Badge>
+            </span>
           </div>
         </div>
 
         <nav
-          className="mb-6 flex gap-1 overflow-x-auto border-b border-border"
+          className="mb-6 flex gap-1 overflow-x-auto rounded-full border border-border bg-bg-muted/50 p-1"
           aria-label={t('matches.tabs.label')}
         >
           {tabs.map((tab) => (
@@ -250,9 +262,9 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
               type="button"
               disabled={tab.disabled}
               onClick={() => !tab.disabled && setActiveTab(tab.id)}
-              className={`min-h-touch shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
+              className={`min-h-touch shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'border-b-2 border-section-matches-fg text-section-matches-fg'
+                  ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
                   : 'text-text-secondary hover:text-text-primary'
               } ${tab.disabled ? 'cursor-not-allowed opacity-50' : ''}`}
             >
@@ -266,22 +278,30 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
 
         {activeTab === 'overview' && (
           <div className="grid gap-4 sm:grid-cols-2">
-            <LabeledValue label={t('matches.datetime')} value={formatDatetime(match.matchDatetime)} />
-            <LabeledValue label={t('matches.location')} value={match.location ?? t('matches.noLocation')} />
-            <LabeledValue
-              label={t('matches.periods')}
-              value={t('matches.periodsSummary', {
-                count: match.effectivePeriods.periodsCount,
-                minutes: match.effectivePeriods.periodDurationMinutes,
-                source:
-                  match.effectivePeriods.source === 'academy'
-                    ? t('matches.periodsFromAcademy')
-                    : t('matches.periodsCustom'),
-              })}
-            />
-            <LabeledValue label={t('matches.createdBy')} value={match.createdByEmail ?? '—'} />
+            <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
+              <LabeledValue label={t('matches.datetime')} value={formatDatetime(match.matchDatetime)} />
+            </div>
+            <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
+              <LabeledValue label={t('matches.location')} value={match.location ?? t('matches.noLocation')} />
+            </div>
+            <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
+              <LabeledValue
+                label={t('matches.periods')}
+                value={t('matches.periodsSummary', {
+                  count: match.effectivePeriods.periodsCount,
+                  minutes: match.effectivePeriods.periodDurationMinutes,
+                  source:
+                    match.effectivePeriods.source === 'academy'
+                      ? t('matches.periodsFromAcademy')
+                      : t('matches.periodsCustom'),
+                })}
+              />
+            </div>
+            <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
+              <LabeledValue label={t('matches.createdBy')} value={match.createdByEmail ?? '—'} />
+            </div>
             {match.notes && (
-              <div className="sm:col-span-2">
+              <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4 sm:col-span-2">
                 <LabeledValue label={t('matches.notes')} value={match.notes} />
               </div>
             )}

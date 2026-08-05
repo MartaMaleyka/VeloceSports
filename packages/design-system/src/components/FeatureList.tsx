@@ -18,7 +18,7 @@ export function FeatureList({ items, className }: FeatureListProps) {
         <li key={index} className="flex items-center gap-2.5 text-sm text-text-secondary">
           {item.icon && (
             <span
-              className="flex h-5 w-5 shrink-0 items-center justify-center text-text-muted"
+              className="flex h-5 w-5 shrink-0 items-center justify-center text-action-primary"
               aria-hidden="true"
             >
               {item.icon}

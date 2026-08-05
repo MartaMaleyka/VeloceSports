@@ -15,7 +15,6 @@ import {
   Button,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
@@ -32,6 +31,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
+import { ClipboardList, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useTranslation, roleKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
@@ -326,15 +326,26 @@ function TenantUsersContent() {
   const kpiHeader = kpis ? (
     <StatCardGrid columns={4}>
       <StatCard
-        accent="users"
-        icon={<span aria-hidden="true">👤</span>}
+        icon={<Users className="h-5 w-5" />}
         label={t('tenant.users.kpis.total')}
         value={String(kpis.totalUsers)}
         delta={t('tenant.users.kpis.limit', { limit: kpis.planLimit })}
       />
-      <StatCard accent="users" icon={<span aria-hidden="true">A</span>} label={t('roles.academy_admin')} value={String(kpis.byRole.academy_admin)} />
-      <StatCard accent="users" icon={<span aria-hidden="true">C</span>} label={t('roles.coach')} value={String(kpis.byRole.coach)} />
-      <StatCard accent="users" icon={<span aria-hidden="true">P</span>} label={t('roles.parent')} value={String(kpis.byRole.parent)} />
+      <StatCard
+        icon={<ShieldCheck className="h-5 w-5" />}
+        label={t('roles.academy_admin')}
+        value={String(kpis.byRole.academy_admin)}
+      />
+      <StatCard
+        icon={<ClipboardList className="h-5 w-5" />}
+        label={t('roles.coach')}
+        value={String(kpis.byRole.coach)}
+      />
+      <StatCard
+        icon={<Users className="h-5 w-5" />}
+        label={t('roles.parent')}
+        value={String(kpis.byRole.parent)}
+      />
     </StatCardGrid>
   ) : null;
 
@@ -380,21 +391,26 @@ function TenantUsersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate}>
+          <Button type="button" onClick={openCreate} className="gap-1.5">
+            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.users.createSubmit')}
           </Button>
         }
         renderCard={(user) => (
           <DataCard>
-            <DataCardHeader
-              title={userDisplayName(user)}
-              badge={<StatusBadge type="user" status={user.status} />}
-            />
-            <LabeledValue label={t('tenant.users.email')} value={user.email} />
-            <LabeledValue label={t('tenant.users.role')}>
-              <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
-            </LabeledValue>
-            <LabeledValue label={t('tenant.users.lastLogin')} value={formatLastLogin(user.lastLoginAt)} />
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+                {userDisplayName(user)}
+              </h3>
+              <StatusBadge type="user" status={user.status} />
+            </div>
+            <p className="mt-1 truncate text-sm text-text-secondary">{user.email}</p>
+            <div className="mt-3 space-y-3">
+              <LabeledValue label={t('tenant.users.role')}>
+                <RoleBadgesList roles={user.roles ?? [user.role]} primaryRole={user.role} />
+              </LabeledValue>
+              <LabeledValue label={t('tenant.users.lastLogin')} value={formatLastLogin(user.lastLoginAt)} />
+            </div>
             <DataCardFooter>
               <RowActionsMenu {...userActions(user)} />
             </DataCardFooter>

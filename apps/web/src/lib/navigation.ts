@@ -104,6 +104,18 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
     return [
       { id: 'home', href: appPath('/dashboard/coach'), label: t('nav.home', locale), sectionAccent: 'brand' },
       {
+        id: 'categories',
+        href: appPath('/dashboard/coach/categories'),
+        label: t('nav.categories', locale),
+        sectionAccent: 'brand',
+      },
+      {
+        id: 'players',
+        href: appPath('/dashboard/coach/players'),
+        label: t('nav.players', locale),
+        sectionAccent: 'brand',
+      },
+      {
         id: 'matches',
         href: appPath('/dashboard/coach/matches'),
         label: t('nav.matches', locale),
@@ -119,19 +131,19 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
         id: 'calendar',
         href: appPath('/dashboard/parent/calendar'),
         label: t('nav.parentCalendar', locale),
-        sectionAccent: 'matches',
+        sectionAccent: 'brand',
       },
       {
         id: 'notifications',
         href: appPath('/dashboard/parent/notifications'),
         label: t('nav.parentNotifications', locale),
-        sectionAccent: 'audit',
+        sectionAccent: 'brand',
       },
       {
         id: 'children',
         href: appPath('/dashboard/parent/children'),
         label: t('nav.children', locale),
-        sectionAccent: 'users',
+        sectionAccent: 'brand',
       },
     ];
   }

@@ -20,6 +20,7 @@ import {
   academySettingsStatusKey,
   academySettingsBillingStatusKey,
 } from '@velocesport/i18n';
+import { Building2, CreditCard } from 'lucide-react';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
 import { appPath } from '../../lib/app-path';
 
@@ -47,6 +48,9 @@ const TIMEZONE_OPTIONS = [
   'America/New_York',
   'UTC',
 ] as const;
+
+const labelClass = 'font-semibold';
+const iconClass = 'h-5 w-5';
 
 function LogoPreview({ url }: { url: string }) {
   const { t } = useTranslation();
@@ -158,6 +162,13 @@ function AcademySettingsContent() {
     });
   }, [settings, t]);
 
+  const handleCancel = () => {
+    if (!settings) return;
+    setForm(toForm(settings));
+    setFieldErrors({});
+    setFormError(null);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form) return;
@@ -223,21 +234,25 @@ function AcademySettingsContent() {
   const ro = settings.readOnly;
 
   return (
-    <div className="space-y-8">
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-8" noValidate>
+    <div className="space-y-10">
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-10" noValidate>
         {formError && (
           <Alert variant="error" title={t('tenant.errors.title')}>
             {formError}
           </Alert>
         )}
 
-        <section className="rounded-lg border border-border bg-bg-surface p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-text-primary">{t('academySettings.sections.profile')}</h2>
+        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+          <h2 className="font-display text-lg font-semibold text-text-primary">
+            {t('academySettings.sections.profile')}
+          </h2>
           <p className="mt-1 text-sm text-text-secondary">{t('academySettings.sections.profileHint')}</p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label htmlFor="as-name">{t('academySettings.name')}</Label>
+              <Label htmlFor="as-name" className={labelClass}>
+                {t('academySettings.name')}
+              </Label>
               <Input
                 id="as-name"
                 value={form.name}
@@ -246,7 +261,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div className="sm:col-span-2">
-              <Label htmlFor="as-logo">{t('academySettings.logoUrl')}</Label>
+              <Label htmlFor="as-logo" className={labelClass}>
+                {t('academySettings.logoUrl')}
+              </Label>
               <Input
                 id="as-logo"
                 type="url"
@@ -258,7 +275,9 @@ function AcademySettingsContent() {
               <LogoPreview url={form.logoUrl} />
             </div>
             <div>
-              <Label htmlFor="as-email">{t('academySettings.contactEmail')}</Label>
+              <Label htmlFor="as-email" className={labelClass}>
+                {t('academySettings.contactEmail')}
+              </Label>
               <Input
                 id="as-email"
                 type="email"
@@ -267,7 +286,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div>
-              <Label htmlFor="as-phone">{t('academySettings.contactPhone')}</Label>
+              <Label htmlFor="as-phone" className={labelClass}>
+                {t('academySettings.contactPhone')}
+              </Label>
               <Input
                 id="as-phone"
                 type="tel"
@@ -276,7 +297,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div className="sm:col-span-2">
-              <Label htmlFor="as-address">{t('academySettings.address')}</Label>
+              <Label htmlFor="as-address" className={labelClass}>
+                {t('academySettings.address')}
+              </Label>
               <Input
                 id="as-address"
                 value={form.address}
@@ -286,11 +309,15 @@ function AcademySettingsContent() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-border bg-bg-surface p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-text-primary">{t('academySettings.sections.regional')}</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+          <h2 className="font-display text-lg font-semibold text-text-primary">
+            {t('academySettings.sections.regional')}
+          </h2>
+          <div className="mt-8 grid gap-5 sm:grid-cols-3">
             <div>
-              <Label htmlFor="as-tz">{t('academySettings.timezone')}</Label>
+              <Label htmlFor="as-tz" className={labelClass}>
+                {t('academySettings.timezone')}
+              </Label>
               <Select
                 id="as-tz"
                 value={form.timezone}
@@ -299,7 +326,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div>
-              <Label htmlFor="as-locale">{t('academySettings.locale')}</Label>
+              <Label htmlFor="as-locale" className={labelClass}>
+                {t('academySettings.locale')}
+              </Label>
               <Select
                 id="as-locale"
                 value={form.locale}
@@ -311,7 +340,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div>
-              <Label htmlFor="as-currency">{t('academySettings.currency')}</Label>
+              <Label htmlFor="as-currency" className={labelClass}>
+                {t('academySettings.currency')}
+              </Label>
               <Select
                 id="as-currency"
                 value={form.currency}
@@ -325,35 +356,39 @@ function AcademySettingsContent() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-section-audit-border bg-section-audit-subtle/30 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-text-primary">
+        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+          <h2 className="font-display text-lg font-semibold text-text-primary">
             {t('academySettings.sections.notifications')}
           </h2>
           <p className="mt-1 text-sm text-text-secondary">
             {t('academySettings.notificationsHint')}
           </p>
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-6 flex items-center gap-3">
             <input
               id="as-notifications-enabled"
               type="checkbox"
-              className="h-5 w-5 rounded border-border text-section-audit-fg"
+              className="h-5 w-5 rounded border-border text-action-primary"
               checked={form.notificationsEnabled}
               onChange={(e) =>
                 setForm((f) => f && { ...f, notificationsEnabled: e.target.checked })
               }
             />
-            <Label htmlFor="as-notifications-enabled">
+            <Label htmlFor="as-notifications-enabled" className={labelClass}>
               {t('academySettings.notificationsEnabled')}
             </Label>
           </div>
         </section>
 
-        <section className="rounded-lg border border-section-matches-border bg-section-matches-subtle/40 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-text-primary">{t('academySettings.sections.gameConfig')}</h2>
+        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+          <h2 className="font-display text-lg font-semibold text-text-primary">
+            {t('academySettings.sections.gameConfig')}
+          </h2>
           <p className="mt-1 text-sm text-text-secondary">{t('academySettings.periodsHint')}</p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2">
             <div>
-              <Label htmlFor="as-periods">{t('academySettings.defaultPeriodsCount')}</Label>
+              <Label htmlFor="as-periods" className={labelClass}>
+                {t('academySettings.defaultPeriodsCount')}
+              </Label>
               <Input
                 id="as-periods"
                 type="number"
@@ -365,7 +400,9 @@ function AcademySettingsContent() {
               />
             </div>
             <div>
-              <Label htmlFor="as-duration">{t('academySettings.defaultPeriodDuration')}</Label>
+              <Label htmlFor="as-duration" className={labelClass}>
+                {t('academySettings.defaultPeriodDuration')}
+              </Label>
               <Input
                 id="as-duration"
                 type="number"
@@ -381,7 +418,10 @@ function AcademySettingsContent() {
           </div>
         </section>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+          <Button type="button" variant="secondary" disabled={submitting} onClick={handleCancel}>
+            {t('common.cancel')}
+          </Button>
           <Button type="submit" disabled={submitting}>
             {submitting ? t('common.loading') : t('common.save')}
           </Button>
@@ -389,11 +429,14 @@ function AcademySettingsContent() {
       </form>
 
       <section
-        className="rounded-lg border border-dashed border-border bg-bg-muted/50 p-4 sm:p-6"
+        className="rounded-lg border border-dashed border-border bg-bg-muted/40 p-5 sm:p-8"
         aria-labelledby="readonly-settings-heading"
       >
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <h2 id="readonly-settings-heading" className="text-lg font-semibold text-text-primary">
+          <h2
+            id="readonly-settings-heading"
+            className="font-display text-lg font-semibold text-text-primary"
+          >
             {t('academySettings.sections.platformManaged')}
           </h2>
           <Badge variant="default">{t('academySettings.readOnlyBadge')}</Badge>
@@ -401,15 +444,15 @@ function AcademySettingsContent() {
         <p className="text-sm text-text-secondary">{t('academySettings.platformManagedHint')}</p>
         <p className="mt-2 text-sm text-text-muted">{t('academySettings.contactProvider')}</p>
 
-        <StatCardGrid className="mt-6">
+        <StatCardGrid className="mt-8" columns={2}>
           <StatCard
-            accent="billing"
+            icon={<CreditCard className={iconClass} />}
             label={t('academySettings.currentPlan')}
             value={ro.planName ?? '—'}
             delta={usageLabel}
           />
           <StatCard
-            accent="brand"
+            icon={<Building2 className={iconClass} />}
             label={t('academySettings.academyStatus')}
             value={t(academySettingsStatusKey(ro.status))}
           />

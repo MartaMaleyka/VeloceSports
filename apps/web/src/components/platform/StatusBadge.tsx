@@ -1,6 +1,6 @@
 import { AcademyStatus, PlanStatus, UserStatus } from '@velocesport/shared';
 import type { AcademySuspensionReason } from '@velocesport/shared';
-import { Badge, type BadgeVariant } from '@velocesport/design-system';
+import { Badge, cn, type BadgeVariant } from '@velocesport/design-system';
 import { useTranslation, type TranslationKey } from '@velocesport/i18n';
 
 type StatusType = 'academy' | 'plan' | 'user';
@@ -43,33 +43,40 @@ function labelKey(
   return 'common.inactive';
 }
 
-function StatusIcon({ type, status }: { type: StatusType; status: string }) {
-  const variant = variantFor(type, status);
-  if (variant === 'success') {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (variant === 'warning') {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 9v4M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
+function StatusDot({ variant, pulse }: { variant: BadgeVariant; pulse?: boolean }) {
+  const color =
+    variant === 'success'
+      ? 'bg-action-primary'
+      : variant === 'warning'
+        ? 'bg-feedback-warning'
+        : variant === 'error'
+          ? 'bg-feedback-error'
+          : 'bg-text-muted';
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    <span
+      className={cn('inline-block h-1.5 w-1.5 shrink-0 rounded-full', color, pulse && 'ds-pulse-dot')}
+      aria-hidden="true"
+    />
   );
 }
 
 export function StatusBadge({ type, status, suspensionReason }: StatusBadgeProps) {
   const { t } = useTranslation();
+  const variant = variantFor(type, status);
+  const pulse =
+    (type === 'academy' && status === AcademyStatus.ACTIVE) ||
+    (type === 'plan' && status === PlanStatus.ACTIVE) ||
+    (type === 'user' && status === UserStatus.ACTIVE);
   return (
-    <Badge variant={variantFor(type, status)} icon={<StatusIcon type={type} status={status} />}>
+    <Badge
+      variant={variant}
+      className={
+        variant === 'success'
+          ? 'border-section-brand-border bg-section-brand-subtle text-section-brand-fg'
+          : undefined
+      }
+      icon={<StatusDot variant={variant} pulse={pulse} />}
+    >
       {t(labelKey(type, status, suspensionReason))}
     </Badge>
   );

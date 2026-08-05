@@ -42,7 +42,7 @@ export function ViewToggle({
   return (
     <div
       className={cn(
-        'inline-flex rounded-md border border-border bg-bg-muted/40 p-0.5',
+        'inline-flex rounded-full border border-border bg-bg-muted/50 p-1',
         className,
       )}
       role="group"
@@ -53,10 +53,10 @@ export function ViewToggle({
         onClick={() => onChange('cards')}
         aria-pressed={value === 'cards'}
         className={cn(
-          'inline-flex min-h-touch items-center gap-1.5 rounded px-3 py-2 text-sm font-medium',
+          'inline-flex min-h-touch items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium',
           'transition-[background-color,color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)]',
           value === 'cards'
-            ? 'bg-bg-surface text-text-primary shadow-sm'
+            ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
             : 'text-text-secondary hover:text-text-primary',
         )}
       >
@@ -68,11 +68,11 @@ export function ViewToggle({
         onClick={() => onChange('table')}
         aria-pressed={value === 'table'}
         className={cn(
-          'inline-flex min-h-touch items-center gap-1.5 rounded px-3 py-2 text-sm font-medium',
+          'inline-flex min-h-touch items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium',
           'transition-[background-color,color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)]',
           hideTableOnMobile && 'hidden md:inline-flex',
           value === 'table'
-            ? 'bg-bg-surface text-text-primary shadow-sm'
+            ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
             : 'text-text-secondary hover:text-text-primary',
         )}
       >

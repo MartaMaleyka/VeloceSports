@@ -12,11 +12,9 @@ import {
   Button,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
-  LabeledValue,
   Modal,
   Select,
   StatCard,
@@ -29,12 +27,19 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
+import { Layers, Plus, User, UserRoundCheck, Users } from 'lucide-react';
 import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
+
+function playerInitials(firstName: string, lastName: string): string {
+  const f = firstName.trim()[0] ?? '';
+  const l = lastName.trim()[0] ?? '';
+  return `${f}${l}`.toUpperCase() || '?';
+}
 
 const PAGE_SIZE = 12;
 
@@ -76,7 +81,21 @@ function PlayerStatusBadge({ status }: { status: PlayerStatus }) {
       : status === PlayerStatus.PENDING
         ? 'warning'
         : 'default';
-  return <Badge variant={variant}>{t(tenantPlayerStatusKey(status))}</Badge>;
+  return (
+    <Badge
+      variant={variant}
+      icon={
+        status === PlayerStatus.ACTIVE ? (
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-feedback-success ds-pulse-dot"
+            aria-hidden="true"
+          />
+        ) : undefined
+      }
+    >
+      {t(tenantPlayerStatusKey(status))}
+    </Badge>
+  );
 }
 
 function TenantPlayersContent() {
@@ -292,18 +311,20 @@ function TenantPlayersContent() {
   const kpiHeader = kpis ? (
     <StatCardGrid columns={3}>
       <StatCard
-        accent="plans"
-        icon={<span aria-hidden="true">⚽</span>}
+        icon={<User className="h-5 w-5" />}
         label={t('tenant.players.kpis.active')}
-        value={String(kpis.activePlayers)}
+        value={kpis.activePlayers}
         delta={t('tenant.players.kpis.limit', { limit: kpis.planLimit })}
       />
-      <StatCard accent="plans" icon={<span aria-hidden="true">⏳</span>} label={t('tenant.players.kpis.pending')} value={String(kpis.pendingCount)} />
       <StatCard
-        accent="plans"
-        icon={<span aria-hidden="true">#</span>}
+        icon={<UserRoundCheck className="h-5 w-5" />}
+        label={t('tenant.players.kpis.pending')}
+        value={kpis.pendingCount}
+      />
+      <StatCard
+        icon={<Layers className="h-5 w-5" />}
         label={t('tenant.players.kpis.categories')}
-        value={String(kpis.byCategory.length)}
+        value={kpis.byCategory.length}
       />
     </StatCardGrid>
   ) : null;
@@ -360,29 +381,57 @@ function TenantPlayersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate}>
+          <Button type="button" onClick={openCreate} className="gap-1.5">
+            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.players.create')}
           </Button>
         }
         renderCard={(player) => (
           <DataCard>
-            <DataCardHeader
-              title={playerName(player)}
-              badge={<PlayerStatusBadge status={player.status} />}
-            />
-            <LabeledValue label={t('tenant.players.jersey')} value={`#${player.jerseyNumber}`} />
-            <LabeledValue
-              label={t('tenant.players.category')}
-              value={player.categoryName ?? t('tenant.players.noCategory')}
-            />
-            <LabeledValue
-              label={t('tenant.players.parents')}
-              value={
-                player.parents.length
-                  ? player.parents.map((p) => p.email).join(', ')
-                  : t('tenant.players.noParents')
-              }
-            />
+            <header className="flex items-start gap-3">
+              <div className="relative shrink-0">
+                <span
+                  className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-gradient font-display text-lg font-semibold text-text-on-primary shadow-sm"
+                  aria-hidden="true"
+                >
+                  {playerInitials(player.firstName, player.lastName)}
+                </span>
+                <span
+                  className="absolute -bottom-1 -right-1 flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-bg-surface bg-bg-surface px-1 font-display text-2xl font-bold tabular-nums text-text-primary"
+                  aria-label={`#${player.jerseyNumber}`}
+                >
+                  {player.jerseyNumber}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+                    {playerName(player)}
+                  </h3>
+                  <PlayerStatusBadge status={player.status} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="ds-club-pill">
+                    {player.categoryName ?? t('tenant.players.noCategory')}
+                  </span>
+                </div>
+              </div>
+            </header>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {player.parents.length > 0 ? (
+                player.parents.map((p) => (
+                  <span
+                    key={p.id}
+                    className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border bg-bg-muted px-2.5 py-0.5 text-xs text-text-secondary"
+                  >
+                    <Users className="h-3 w-3 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{p.email}</span>
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-text-muted">{t('tenant.players.noParents')}</span>
+              )}
+            </div>
             <DataCardFooter>
               <RowActionsMenu {...playerActions(player)} />
             </DataCardFooter>

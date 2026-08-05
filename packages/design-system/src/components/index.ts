@@ -28,3 +28,4 @@ export { DataViewSkeleton } from './DataViewSkeleton.js';
 export { DataCard, DataCardHeader, DataCardFooter, type DataCardProps } from './DataCard.js';
 export { SortableTableHeaderCell, type SortableTableHeaderCellProps } from './SortableTableHeaderCell.js';
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
+export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';

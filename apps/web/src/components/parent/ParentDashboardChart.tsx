@@ -1,9 +1,9 @@
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,17 +13,40 @@ import type { ParentDashboardTimelinePointDto } from '@velocesport/shared';
 import { useTranslation } from '@velocesport/i18n';
 import { useChartTheme } from '../../hooks/useChartTheme';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useEffect, useState } from 'react';
 
 interface ParentDashboardChartProps {
   timeline: ParentDashboardTimelinePointDto[];
   formatMonth: (monthKey: string) => string;
 }
 
+function readCssVar(name: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 export function ParentDashboardChart({ timeline, formatMonth }: ParentDashboardChartProps) {
   const { t } = useTranslation();
-  const colors = useChartTheme();
+  const baseColors = useChartTheme();
   const reducedMotion = useReducedMotion();
   const animate = !reducedMotion;
+  const [brandStroke, setBrandStroke] = useState('#84cc16');
+  const [brandFill, setBrandFill] = useState('rgba(163, 230, 53, 0.25)');
+
+  useEffect(() => {
+    const refresh = () => {
+      setBrandStroke(readCssVar('--color-section-brand-fg', '#84cc16'));
+      setBrandFill(readCssVar('--color-section-brand-muted', 'rgba(163, 230, 53, 0.25)'));
+    };
+    refresh();
+    const observer = new MutationObserver(refresh);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class'],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const data = timeline.map((point) => ({
     name: formatMonth(point.monthKey),
@@ -36,8 +59,8 @@ export function ParentDashboardChart({ timeline, formatMonth }: ParentDashboardC
   const useLine = data.length >= 3;
 
   return (
-    <section className="rounded-lg border border-section-users-border bg-section-users-subtle/30 p-4 sm:p-6">
-      <h3 className="mb-4 text-base font-semibold text-text-primary">
+    <section className="rounded-xl border border-border bg-bg-surface p-4 sm:p-6">
+      <h3 className="mb-4 font-display text-base font-semibold text-text-primary">
         {t('parentDashboard.chartTitle')}
       </h3>
       <div
@@ -47,45 +70,55 @@ export function ParentDashboardChart({ timeline, formatMonth }: ParentDashboardC
       >
         <ResponsiveContainer width="100%" height="100%">
           {useLine ? (
-            <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke={colors.grid} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: colors.text, fontSize: 11 }} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="parentDashboardArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={brandStroke} stopOpacity={0.15} />
+                  <stop offset="100%" stopColor={brandStroke} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke={baseColors.grid} strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: baseColors.text, fontSize: 11 }} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fill: baseColors.text, fontSize: 12 }} tickLine={false} />
               <Tooltip
                 contentStyle={{
                   background: 'var(--color-bg-surface)',
                   border: '1px solid var(--color-border-default)',
                   borderRadius: '8px',
+                  boxShadow: 'var(--shadow-elevation-card)',
                 }}
-                labelStyle={{ color: 'var(--color-text-primary)' }}
+                labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="actions"
                 name={t('parentDashboard.chartActions')}
-                stroke={colors.primary}
-                strokeWidth={2}
-                dot={{ fill: colors.primary, r: 4 }}
+                stroke={brandStroke}
+                strokeWidth={2.5}
+                fill="url(#parentDashboardArea)"
+                dot={{ fill: brandStroke, r: 4, strokeWidth: 0 }}
                 isAnimationActive={animate}
               />
-            </LineChart>
+            </AreaChart>
           ) : (
             <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke={colors.grid} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: colors.text, fontSize: 11 }} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
+              <CartesianGrid stroke={baseColors.grid} strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: baseColors.text, fontSize: 11 }} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fill: baseColors.text, fontSize: 12 }} tickLine={false} />
               <Tooltip
                 contentStyle={{
                   background: 'var(--color-bg-surface)',
                   border: '1px solid var(--color-border-default)',
                   borderRadius: '8px',
+                  boxShadow: 'var(--shadow-elevation-card)',
                 }}
-                labelStyle={{ color: 'var(--color-text-primary)' }}
+                labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
               />
               <Bar
                 dataKey="actions"
                 name={t('parentDashboard.chartActions')}
-                fill={colors.primary}
+                fill={brandFill}
+                stroke={brandStroke}
                 radius={[4, 4, 0, 0]}
                 isAnimationActive={animate}
               />

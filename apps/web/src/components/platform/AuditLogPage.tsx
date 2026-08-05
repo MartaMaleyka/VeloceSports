@@ -28,6 +28,7 @@ import {
   ToastProvider,
 } from '@velocesport/design-system';
 import { useTranslation, auditActionKey } from '@velocesport/i18n';
+import { ScrollText, Sparkles } from 'lucide-react';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { formatAuditDate } from '../../lib/format-audit-date';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
@@ -35,20 +36,6 @@ import { AuditActionBadge, AuditEntityBadge } from './AuditBadges';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
 
 const PAGE_SIZE = 25;
-
-function AuditIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9 2 2 4-4"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
@@ -192,14 +179,12 @@ function AuditLogContent() {
       <StatCard
         label={t('platform.audit.kpis.totalEvents')}
         value={kpis?.totalEvents ?? '—'}
-        icon={<AuditIcon />}
-        accent="audit"
+        icon={<ScrollText className="h-5 w-5" aria-hidden="true" />}
       />
       <StatCard
         label={t('platform.audit.kpis.topAction')}
         value={topActionLabel}
-        icon={<AuditIcon />}
-        accent="audit"
+        icon={<Sparkles className="h-5 w-5" aria-hidden="true" />}
       />
     </StatCardGrid>
   );

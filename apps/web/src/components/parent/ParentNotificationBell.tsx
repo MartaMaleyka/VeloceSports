@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ParentNotificationDto } from '@velocesport/shared';
 import { Button, cn } from '@velocesport/design-system';
@@ -126,11 +127,15 @@ export default function ParentNotificationBell() {
         aria-expanded={open}
         onClick={handleOpen}
       >
-        <span aria-hidden="true">🔔</span>
+        <Bell className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-feedback-error px-1 text-xs font-bold text-text-on-primary">
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
+          <span
+            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-action-primary ds-pulse-dot"
+            aria-hidden="true"
+          />
+        )}
+        {unreadCount > 0 && (
+          <span className="sr-only">{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}
       </button>
 

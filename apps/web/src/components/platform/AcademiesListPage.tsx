@@ -2,13 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AcademyListItemDto, PlanDto } from '@velocesport/shared';
 import { AcademyStatus } from '@velocesport/shared';
 import {
+  Badge,
   Button,
   ConfirmModal,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
-  LabeledValue,
   SortableTableHeaderCell,
   StatCard,
   StatCardGrid,
@@ -21,6 +20,13 @@ import {
   useToast,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
+import {
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
+  Plus,
+  Users,
+} from 'lucide-react';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
 import { appPath } from '../../lib/app-path';
@@ -34,60 +40,11 @@ const PAGE_SIZE = 12;
 type SortKey = 'name' | 'plan' | 'users' | 'status';
 type SortDirection = 'asc' | 'desc';
 
-function AcademiesIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ActiveIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M20 6L9 17l-5-5"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+function academyInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase();
 }
 
 function compareAcademies(
@@ -217,7 +174,7 @@ function AcademiesListContent() {
     primaryActions: [
       {
         id: 'view',
-        label: t('common.view'),
+        label: t('matches.viewDetail'),
         onClick: () => {
           window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}`);
         },
@@ -283,17 +240,40 @@ function AcademiesListContent() {
   });
 
   const renderAcademyCard = (academy: AcademyListItemDto) => (
-    <DataCard>
-      <DataCardHeader title={academy.name} subtitle={academy.slug} />
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <LabeledValue label={t('platform.academies.columns.plan')}>{planLabel(academy)}</LabeledValue>
-        <LabeledValue label={t('platform.academies.columns.users')}>{academy.userCount}</LabeledValue>
-        <LabeledValue label={t('platform.academies.columns.status')}>
-          <StatusBadge type="academy" status={academy.status} suspensionReason={academy.suspensionReason} />
-        </LabeledValue>
-        <LabeledValue label={t('nav.billing')}>
-          <BillingStatusBadge status={academy.billingStatus} />
-        </LabeledValue>
+    <DataCard className="ds-card-interactive">
+      <div className="flex items-start gap-4">
+        <div
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-gradient font-display text-lg font-bold text-text-on-primary shadow-brand"
+          aria-hidden="true"
+        >
+          {academyInitials(academy.name)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate font-display text-xl font-semibold tracking-tight text-text-primary">
+              {academy.name}
+            </h3>
+            <StatusBadge
+              type="academy"
+              status={academy.status}
+              suspensionReason={academy.suspensionReason}
+            />
+          </div>
+          <p className="mt-0.5 text-xs text-text-muted">{academy.slug}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge
+              variant="default"
+              accent="plans"
+              className="font-medium"
+            >
+              {planLabel(academy)}
+            </Badge>
+            <BillingStatusBadge status={academy.billingStatus} />
+          </div>
+          <p className="mt-3 text-sm text-text-secondary">
+            {t('platform.academies.cardUsers', { count: academy.userCount })}
+          </p>
+        </div>
       </div>
       <DataCardFooter>
         <RowActionsMenu {...academyActions(academy)} />
@@ -380,30 +360,28 @@ function AcademiesListContent() {
   );
 
   const kpiHeader = (
-    <StatCardGrid>
+    <StatCardGrid columns={4}>
       <StatCard
-        icon={<AcademiesIcon />}
+        icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
         value={kpis.total}
         label={t('platform.academies.kpis.total')}
-        accent="academies"
       />
       <StatCard
-        icon={<ActiveIcon />}
+        icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
         value={kpis.active}
         label={t('platform.academies.kpis.active')}
         variant="success"
       />
       <StatCard
-        icon={<WarningIcon />}
+        icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
         value={kpis.suspendedInactive}
         label={t('platform.academies.kpis.suspendedInactive')}
         variant="warning"
       />
       <StatCard
-        icon={<UsersIcon />}
+        icon={<Users className="h-5 w-5" aria-hidden="true" />}
         value={kpis.platformUsers}
         label={t('platform.academies.kpis.platformUsers')}
-        accent="users"
       />
     </StatCardGrid>
   );
@@ -447,10 +425,13 @@ function AcademiesListContent() {
         toolbarExtra={
           <Button
             type="button"
+            className="gap-2"
             onClick={() => {
               window.location.href = appPath('/dashboard/super-admin/academies/new');
             }}
           >
+            <Building2 className="h-4 w-4" aria-hidden="true" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
             {t('platform.academies.create')}
           </Button>
         }

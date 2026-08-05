@@ -31,6 +31,7 @@ import {
   useToast,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
+import { AlertTriangle, CheckCircle2, Clock3, DollarSign } from 'lucide-react';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { downloadPlatformInvoicePdf } from '../../lib/download-pdf';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
@@ -335,11 +336,30 @@ function InvoicesListContent() {
   );
 
   const kpiHeader = kpis && !loading && !error ? (
-    <StatCardGrid>
-      <StatCard icon={<span aria-hidden="true">$</span>} value={formatMoney(kpis.totalBilled, kpis.currency, locale)} label={t('platform.billing.kpis.totalBilled')} accent="billing" />
-      <StatCard icon={<span aria-hidden="true">⏳</span>} value={kpis.pendingCount} label={t('platform.billing.kpis.pending')} variant="warning" />
-      <StatCard icon={<span aria-hidden="true">!</span>} value={kpis.overdueCount} label={t('platform.billing.kpis.overdue')} variant="error" />
-      <StatCard icon={<span aria-hidden="true">✓</span>} value={kpis.paidCount} label={t('platform.billing.kpis.paid')} variant="success" />
+    <StatCardGrid columns={4}>
+      <StatCard
+        icon={<DollarSign className="h-5 w-5" aria-hidden="true" />}
+        value={formatMoney(kpis.totalBilled, kpis.currency, locale)}
+        label={t('platform.billing.kpis.totalBilled')}
+      />
+      <StatCard
+        icon={<Clock3 className="h-5 w-5" aria-hidden="true" />}
+        value={kpis.pendingCount}
+        label={t('platform.billing.kpis.pending')}
+        variant="warning"
+      />
+      <StatCard
+        icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
+        value={kpis.overdueCount}
+        label={t('platform.billing.kpis.overdue')}
+        variant="error"
+      />
+      <StatCard
+        icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+        value={kpis.paidCount}
+        label={t('platform.billing.kpis.paid')}
+        variant="success"
+      />
     </StatCardGrid>
   ) : undefined;
 

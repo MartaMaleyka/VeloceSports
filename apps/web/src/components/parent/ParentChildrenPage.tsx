@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type {
   ParentCategoryOptionDto,
-  ParentEnrollPlayerBody,
   PlayerDto,
 } from '@velocesport/shared';
 import { PlayerStatus } from '@velocesport/shared';
@@ -9,23 +8,21 @@ import {
   Alert,
   Badge,
   Button,
-  DataCard,
-  DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
-  LabeledValue,
   Modal,
   Select,
   ToastProvider,
   useToast,
+  cn,
 } from '@velocesport/design-system';
+import { FileText, Shirt, UserPlus } from 'lucide-react';
 import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
 import { appPath } from '../../lib/app-path';
-import { RowActionsMenu } from '../platform/RowActionsMenu';
+import { ParentChildAvatar } from './ParentChildAvatar';
 
 function ChildStatusBadge({ player }: { player: PlayerDto }) {
   const { t } = useTranslation();
@@ -38,7 +35,20 @@ function ChildStatusBadge({ player }: { player: PlayerDto }) {
     return <Badge variant="error">{t('parent.children.status.rejected')}</Badge>;
   }
   if (player.status === PlayerStatus.ACTIVE) {
-    return <Badge variant="success">{t('parent.children.status.active')}</Badge>;
+    return (
+      <Badge
+        accent="brand"
+        className="border-section-brand-border bg-section-brand-subtle text-section-brand-fg"
+        icon={
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-action-primary ds-pulse-dot"
+            aria-hidden="true"
+          />
+        }
+      >
+        {t('parent.children.status.active')}
+      </Badge>
+    );
   }
   return <Badge variant="default">{t(tenantPlayerStatusKey(player.status))}</Badge>;
 }
@@ -207,48 +217,80 @@ function ParentChildrenContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openEnroll}>
+          <Button type="button" onClick={openEnroll} className="gap-1.5">
+            <UserPlus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('parent.children.enroll')}
           </Button>
         }
         renderCard={(child) => (
-          <DataCard>
-            <DataCardHeader title={childName(child)} badge={<ChildStatusBadge player={child} />} />
-            <LabeledValue
-              label={t('parent.children.category')}
-              value={child.categoryName ?? t('tenant.players.noCategory')}
-            />
-            {child.status === PlayerStatus.ACTIVE && child.jerseyNumber > 0 && (
-              <LabeledValue label={t('parent.children.jersey')} value={`#${child.jerseyNumber}`} />
+          <article
+            className={cn(
+              'ds-card-interactive flex h-full flex-col gap-4 rounded-xl border border-border bg-bg-surface p-4 sm:p-5',
             )}
+          >
+            <header className="flex items-start gap-3">
+              <ParentChildAvatar
+                firstName={child.firstName}
+                lastName={child.lastName}
+                jerseyNumber={
+                  child.status === PlayerStatus.ACTIVE && child.jerseyNumber > 0
+                    ? child.jerseyNumber
+                    : null
+                }
+                size="xl"
+              />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <h3 className="font-display text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
+                    {childName(child)}
+                  </h3>
+                  <ChildStatusBadge player={child} />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="ds-club-pill">
+                    {child.categoryName ?? t('tenant.players.noCategory')}
+                  </span>
+                  {child.status === PlayerStatus.ACTIVE && child.jerseyNumber > 0 && (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary">
+                      <Shirt className="h-4 w-4 text-section-brand-fg" aria-hidden="true" />
+                      #{child.jerseyNumber}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </header>
             {statusMessage(child) && (
               <p className="text-sm text-text-secondary">{statusMessage(child)}</p>
             )}
             {(canEdit(child) || child.status === PlayerStatus.ACTIVE) && (
-              <DataCardFooter>
-                <div className="flex flex-wrap gap-2">
-                  {canEdit(child) && (
-                    <RowActionsMenu
-                      primaryActions={[
-                        { id: 'edit', label: t('common.edit'), onClick: () => openEdit(child) },
-                      ]}
-                    />
-                  )}
-                  {child.status === PlayerStatus.ACTIVE && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        window.location.href = appPath(`/dashboard/parent/children/${child.id}/matches`);
-                      }}
-                    >
-                      {t('parent.children.viewReportCards')}
-                    </Button>
-                  )}
-                </div>
-              </DataCardFooter>
+              <div className="mt-auto flex flex-wrap gap-2 border-t border-border pt-4">
+                {canEdit(child) && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-touch"
+                    onClick={() => openEdit(child)}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                )}
+                {child.status === PlayerStatus.ACTIVE && (
+                  <Button
+                    type="button"
+                    className="min-h-touch gap-1.5"
+                    onClick={() => {
+                      window.location.href = appPath(
+                        `/dashboard/parent/children/${child.id}/matches`,
+                      );
+                    }}
+                  >
+                    <FileText className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+                    {t('parent.children.viewReportCards')}
+                  </Button>
+                )}
+              </div>
             )}
-          </DataCard>
+          </article>
         )}
         renderTable={(visible) => (
           <div className="overflow-x-auto">
@@ -274,7 +316,12 @@ function ParentChildrenContent() {
                     <td className="px-3 py-2">
                       <div className="flex flex-wrap gap-2">
                         {canEdit(child) && (
-                          <Button type="button" variant="secondary" onClick={() => openEdit(child)}>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="border-section-brand-border text-section-brand-fg hover:bg-section-brand-subtle hover:text-section-brand-fg"
+                            onClick={() => openEdit(child)}
+                          >
                             {t('common.edit')}
                           </Button>
                         )}

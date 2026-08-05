@@ -6,7 +6,7 @@ import { redirectUnlessRole } from '../../../../lib/page-access';
 import { t } from '@velocesport/i18n';
 
 const session = getSession(Astro.cookies);
-const accessDenied = redirectUnlessRole(session, 'academy_admin');
+const accessDenied = redirectUnlessRole(session, 'coach');
 if (accessDenied) return Astro.redirect(accessDenied);
 
 const locale = Astro.locals.locale;
@@ -14,7 +14,7 @@ const locale = Astro.locals.locale;
 
 <BaseLayout
   locale={locale}
-  title={`${t('dashboard.academyAdmin.categories.title', locale)} — ${t('common.appName', locale)}`}
+  title={`${t('dashboard.coach.categories.title', locale)} — ${t('common.appName', locale)}`}
 >
   <DashboardShell
     client:load
@@ -22,9 +22,9 @@ const locale = Astro.locals.locale;
     role={session.role}
     roles={session.roles}
     activeNavId="categories"
-    contentKey="academyAdmin"
-    pageTitle={t('dashboard.academyAdmin.categories.title', locale)}
-    pageDescription={t('dashboard.academyAdmin.categories.description', locale)}
+    contentKey="coach"
+    pageTitle={t('dashboard.coach.categories.title', locale)}
+    pageDescription={t('dashboard.coach.categories.description', locale)}
     hideWelcome
     pageId="categories"
     headerSectionAccent="brand"

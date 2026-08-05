@@ -17,23 +17,23 @@ function readCssVar(name: string, fallback: string): string {
 
 export function useChartTheme(): ChartThemeColors {
   const [colors, setColors] = useState<ChartThemeColors>({
-    primary: '#0a7d8c',
-    secondary: '#5247b8',
+    primary: '#65A30D',
+    secondary: '#8B5CF6',
     grid: '#e5e7eb',
     text: '#6b7280',
     billed: '#d97706',
-    collected: '#0d7a5f',
+    collected: '#65A30D',
   });
 
   useEffect(() => {
     const refresh = () => {
       setColors({
-        primary: readCssVar('--color-section-academies-fg', '#0a7d8c'),
-        secondary: readCssVar('--color-section-plans-fg', '#5247b8'),
+        primary: readCssVar('--color-action-primary', '#65A30D'),
+        secondary: readCssVar('--color-section-super-admins-fg', '#8B5CF6'),
         grid: readCssVar('--color-border-default', '#e5e7eb'),
         text: readCssVar('--color-text-muted', '#6b7280'),
         billed: readCssVar('--color-section-billing-fg', '#d97706'),
-        collected: readCssVar('--color-action-primary', '#0d7a5f'),
+        collected: readCssVar('--color-action-primary', '#65A30D'),
       });
     };
     refresh();

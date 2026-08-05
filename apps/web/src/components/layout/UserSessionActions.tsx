@@ -39,7 +39,7 @@ export default function UserSessionActions() {
 
   return (
     <ToastProvider>
-      <div className="relative flex items-center gap-2">
+      <div className="group/session relative flex items-center gap-2">
         <button
           ref={triggerRef}
           type="button"
@@ -56,7 +56,7 @@ export default function UserSessionActions() {
           )}
         >
           <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-text-on-primary"
+            className="ds-avatar-sport flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-text-on-primary"
             aria-hidden="true"
           >
             {initials}

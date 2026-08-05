@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../utils/cn.js';
 import type { SectionAccentId } from '../theme/sections.js';
-import { sectionStatCardClasses } from '../theme/sections.js';
+import { useCountUp } from '../hooks/useCountUp.js';
 
 export type StatCardVariant = 'default' | 'success' | 'warning' | 'info' | 'error';
 
@@ -11,28 +11,54 @@ export interface StatCardProps {
   label: string;
   /** Variación opcional, p. ej. "+2 este mes" */
   delta?: string;
-  /** Semántico (feedback) — prioridad sobre accent cuando ambos aplican */
+  /** Semántico (feedback) — solo afecta borde/énfasis */
   variant?: StatCardVariant;
-  /** Acento de sección del panel (Planes, Academias, etc.) */
+  /**
+   * @deprecated StatCards usan estilo unificado brand deportivo.
+   */
   accent?: SectionAccentId;
   className?: string;
+  /** Contenido extra bajo el label (pills, desglose) */
+  children?: ReactNode;
+  /** Desactiva count-up (p. ej. strings no numéricos ya se saltan solos) */
+  animateValue?: boolean;
 }
 
-const variantStyles: Record<StatCardVariant, string> = {
-  default: 'border-border bg-bg-surface',
-  success: 'border-feedback-success/30 bg-feedback-success/5',
-  warning: 'border-feedback-warning/30 bg-feedback-warning/5',
-  info: 'border-feedback-info/30 bg-feedback-info/5',
-  error: 'border-feedback-error/30 bg-feedback-error/5',
+const variantBorder: Record<StatCardVariant, string> = {
+  default: 'border-border',
+  success: 'border-feedback-success/30',
+  warning: 'border-feedback-warning/30',
+  info: 'border-feedback-info/30',
+  error: 'border-feedback-error/30',
 };
 
-const iconVariantStyles: Record<StatCardVariant, string> = {
-  default: 'bg-bg-muted text-text-secondary',
-  success: 'bg-feedback-success/15 text-feedback-success',
-  warning: 'bg-feedback-warning/15 text-feedback-warning',
-  info: 'bg-feedback-info/15 text-feedback-info',
-  error: 'bg-feedback-error/15 text-feedback-error',
-};
+function parseCountable(value: string | number): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const raw = String(value).trim();
+  if (/^\d+$/.test(raw)) return Number(raw);
+  return null;
+}
+
+function StatValue({
+  value,
+  animateValue,
+}: {
+  value: string | number;
+  animateValue: boolean;
+}) {
+  const numeric = parseCountable(value);
+  const counted = useCountUp(numeric ?? 0, {
+    enabled: animateValue && numeric !== null,
+  });
+
+  const display = numeric !== null && animateValue ? String(counted) : String(value);
+
+  return (
+    <p className="ds-stat-card__value font-display text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">
+      {display}
+    </p>
+  );
+}
 
 export function StatCard({
   icon,
@@ -40,37 +66,29 @@ export function StatCard({
   label,
   delta,
   variant = 'default',
-  accent,
   className,
+  children,
+  animateValue = true,
 }: StatCardProps) {
-  const isSemantic = variant !== 'default';
-  const sectionStyles = accent && !isSemantic ? sectionStatCardClasses(accent) : null;
-
   return (
     <div
       className={cn(
-        'ds-card-interactive flex flex-col gap-3 rounded-lg border p-4 sm:p-5',
-        sectionStyles?.card ?? variantStyles[variant],
+        'ds-stat-card ds-card-interactive group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-[color:var(--color-border-card)] p-4 sm:p-5',
+        variant === 'default' ? undefined : variantBorder[variant],
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
-            sectionStyles?.icon ?? iconVariantStyles[variant],
-          )}
-          aria-hidden="true"
-        >
+      <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
+      <div className="relative z-[1] flex items-start justify-between gap-3">
+        <div className="ds-stat-card__icon" aria-hidden="true">
           {icon}
         </div>
         {delta && <span className="text-xs font-medium text-text-muted">{delta}</span>}
       </div>
-      <div>
-        <p className="text-2xl font-bold tabular-nums tracking-tight text-text-primary sm:text-3xl">
-          {value}
-        </p>
-        <p className="mt-1 text-sm text-text-secondary">{label}</p>
+      <div className="relative z-[1]">
+        <StatValue value={value} animateValue={animateValue} />
+        <p className="mt-1 text-sm font-medium text-text-secondary">{label}</p>
+        {children}
       </div>
     </div>
   );
@@ -79,17 +97,17 @@ export function StatCard({
 export interface StatCardGridProps {
   children: ReactNode;
   className?: string;
+  /** Columnas en desktop (móvil siempre 1; tablet 2 si ≥2) */
+  columns?: 2 | 3 | 4;
 }
 
-export function StatCardGrid({ children, className }: StatCardGridProps) {
-  return (
-    <div
-      className={cn(
-        'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+export function StatCardGrid({ children, className, columns = 3 }: StatCardGridProps) {
+  const cols =
+    columns === 2
+      ? 'sm:grid-cols-2 lg:grid-cols-2'
+      : columns === 4
+        ? 'sm:grid-cols-2 lg:grid-cols-4'
+        : 'sm:grid-cols-2 lg:grid-cols-3';
+
+  return <div className={cn('grid grid-cols-1 gap-4', cols, className)}>{children}</div>;
 }

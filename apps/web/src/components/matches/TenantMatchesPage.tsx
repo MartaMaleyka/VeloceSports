@@ -3,16 +3,14 @@ import type {
   MatchCategoryOptionDto,
   MatchDto,
   MatchesKpisDto,
-  MatchType,
 } from '@velocesport/shared';
-import { MATCH_TYPES, MatchStatus } from '@velocesport/shared';
+import { MATCH_TYPES, MatchStatus, MatchType } from '@velocesport/shared';
 import {
   Alert,
   Badge,
   Button,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
@@ -29,6 +27,7 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
+import { Calendar, CheckCircle2, CircleDot, Plus } from 'lucide-react';
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
@@ -66,37 +65,67 @@ interface TenantMatchesPageProps {
   basePath: string;
 }
 
+function daysUntil(iso: string): number {
+  const target = new Date(iso).getTime();
+  return Math.ceil((target - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
 function MatchStatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
-  const icon =
-    status === MatchStatus.IN_PROGRESS
-      ? '▶'
-      : status === MatchStatus.FINISHED
-        ? '✓'
-        : status === MatchStatus.CANCELLED
-          ? '✕'
-          : '◷';
   const variant =
     status === MatchStatus.IN_PROGRESS
       ? 'success'
       : status === MatchStatus.SCHEDULED
         ? 'info'
-        : status === MatchStatus.CANCELLED
-          ? 'default'
-          : 'default';
+        : 'default';
+  const dotClass =
+    status === MatchStatus.IN_PROGRESS
+      ? 'bg-action-primary ds-pulse-dot'
+      : status === MatchStatus.SCHEDULED
+        ? 'bg-feedback-info'
+        : 'bg-text-muted';
   return (
-    <Badge variant={variant}>
-      <span aria-hidden="true" className="mr-1">
-        {icon}
-      </span>
+    <Badge
+      variant={variant}
+      className={
+        status === MatchStatus.IN_PROGRESS
+          ? 'border-section-brand-border bg-section-brand-subtle text-section-brand-fg'
+          : undefined
+      }
+      icon={<span className={`inline-block h-1.5 w-1.5 rounded-full ${dotClass}`} aria-hidden="true" />}
+    >
       {t(matchStatusKey(status))}
     </Badge>
   );
 }
 
+function matchTypeEmoji(type: string): string {
+  if (type === MatchType.LEAGUE) return '🏆';
+  if (type === MatchType.FRIENDLY) return '🤝';
+  if (type === MatchType.TOURNAMENT) return '🥇';
+  return '';
+}
+
+function matchRailClass(status: string): string {
+  if (status === MatchStatus.IN_PROGRESS) return 'ds-match-rail ds-match-rail--live';
+  if (status === MatchStatus.SCHEDULED) return 'ds-match-rail ds-match-rail--scheduled';
+  if (status === MatchStatus.FINISHED) return 'ds-match-rail ds-match-rail--finished';
+  return 'ds-match-rail';
+}
+
 function MatchTypeBadge({ type }: { type: string }) {
   const { t } = useTranslation();
-  return <Badge variant="default">{t(matchTypeKey(type))}</Badge>;
+  const emoji = matchTypeEmoji(type);
+  return (
+    <Badge variant="default">
+      {emoji ? (
+        <span className="mr-1" aria-hidden="true">
+          {emoji}
+        </span>
+      ) : null}
+      {t(matchTypeKey(type))}
+    </Badge>
+  );
 }
 
 function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
@@ -111,7 +140,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(() => readUrlSearchParam('status'));
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState(() => readUrlSearchParam('categoryId'));
   const [typeFilter, setTypeFilter] = useState('');
   const [page, setPage] = useState(1);
 
@@ -321,22 +350,29 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   const kpiHeader = kpis ? (
     <StatCardGrid columns={3}>
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">📅</span>}
+        icon={<Calendar className="h-5 w-5" />}
         label={t('matches.kpis.upcoming')}
-        value={String(kpis.upcomingCount)}
+        value={kpis.upcomingCount}
       />
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">▶</span>}
+        icon={
+          <span className="relative inline-flex">
+            <CircleDot className="h-5 w-5" />
+            {kpis.inProgressCount > 0 && (
+              <span
+                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-action-primary ds-pulse-dot"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+        }
         label={t('matches.kpis.inProgress')}
-        value={String(kpis.inProgressCount)}
+        value={kpis.inProgressCount}
       />
       <StatCard
-        accent="matches"
-        icon={<span aria-hidden="true">✓</span>}
+        icon={<CheckCircle2 className="h-5 w-5" />}
         label={t('matches.kpis.playedMonth')}
-        value={String(kpis.playedThisMonth)}
+        value={kpis.playedThisMonth}
       />
     </StatCardGrid>
   ) : null;
@@ -370,7 +406,13 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
           ...categories.map((c) => ({ value: String(c.id), label: c.name })),
         ]}
         toolbarExtra={
-          <Button type="button" onClick={openCreate} disabled={categories.length === 0}>
+          <Button
+            type="button"
+            onClick={openCreate}
+            disabled={categories.length === 0}
+            className="gap-1.5"
+          >
+            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('matches.create')}
           </Button>
         }
@@ -383,22 +425,70 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         onViewModeChange={setViewMode}
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
-        renderCard={(match) => (
-          <DataCard>
-            <DataCardHeader
-              title={match.opponent}
-              badge={<MatchStatusBadge status={match.status} />}
-            />
-            <LabeledValue label={t('matches.category')} value={match.categoryName} />
-            <LabeledValue label={t('matches.datetime')} value={formatDatetime(match.matchDatetime)} />
-            <div className="flex flex-wrap gap-2">
+        renderCard={(match) => {
+          const days = daysUntil(match.matchDatetime);
+          return (
+          <DataCard className={matchRailClass(match.status)}>
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="font-display text-xl font-bold tracking-tight text-text-primary sm:text-2xl">
+                {match.opponent}
+              </h3>
+              <MatchStatusBadge status={match.status} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
               <MatchTypeBadge type={match.matchType} />
             </div>
+            <div className="mt-3 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="ds-club-pill">{match.categoryName}</span>
+                <span className="text-sm font-semibold text-text-primary">
+                  {formatDatetime(match.matchDatetime)}
+                </span>
+                {match.status === MatchStatus.SCHEDULED && days >= 0 && (
+                  <span className="inline-flex items-center rounded-full border border-section-brand-border bg-section-brand-subtle px-2.5 py-0.5 text-xs font-semibold text-section-brand-fg">
+                    {t('matches.inDays', { days })}
+                  </span>
+                )}
+              </div>
+            </div>
             <DataCardFooter>
-              <RowActionsMenu {...matchActions(match)} />
+              <div className="flex w-full flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  className="min-h-touch flex-1 sm:flex-none"
+                  onClick={() => {
+                    window.location.href = `${basePath}/${match.id}`;
+                  }}
+                >
+                  {match.status === MatchStatus.IN_PROGRESS
+                    ? t('matches.continueCapture')
+                    : t('matches.viewDetail')}
+                </Button>
+                {match.status === MatchStatus.SCHEDULED && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="min-h-touch flex-1 sm:flex-none"
+                    onClick={() => void changeStatus(match, MatchStatus.IN_PROGRESS)}
+                  >
+                    {t('matches.actions.start')}
+                  </Button>
+                )}
+                <RowActionsMenu
+                  {...(() => {
+                    const { primaryActions, menuActions } = matchActions(match);
+                    const skip = new Set(['view', 'start']);
+                    return {
+                      primaryActions: primaryActions.filter((a) => !skip.has(a.id)),
+                      menuActions: menuActions.filter((a) => !skip.has(a.id)),
+                    };
+                  })()}
+                />
+              </div>
             </DataCardFooter>
           </DataCard>
-        )}
+          );
+        }}
         renderTable={(visible) => (
           <Table>
             <TableHead>

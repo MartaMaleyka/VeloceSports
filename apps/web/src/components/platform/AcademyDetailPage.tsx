@@ -24,6 +24,7 @@ import {
   useToast,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
+import { Users, Gauge } from 'lucide-react';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
 import { appPath } from '../../lib/app-path';
@@ -45,29 +46,6 @@ interface AcademyDetailPageProps {
 
 type SortKey = 'email' | 'role' | 'status';
 type SortDirection = 'asc' | 'desc';
-
-function UsersIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function LimitIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="8" width="18" height="13" rx="2" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M7 8V6a5 5 0 0 1 10 0v2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function compareUsers(
   a: PlatformUserDto,
@@ -307,13 +285,12 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
     academy && !loading ? (
       <StatCardGrid>
         <StatCard
-          icon={<UsersIcon />}
+          icon={<Users className="h-5 w-5" aria-hidden="true" />}
           value={userKpis.total}
           label={t('platform.academies.users.kpis.total')}
-          accent="users"
         />
         <StatCard
-          icon={<LimitIcon />}
+          icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
           value={
             planLimit !== null
               ? t('platform.academies.users.kpis.limitUsage', {
@@ -324,25 +301,21 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
           }
           label={t('platform.academies.users.kpis.limit')}
           variant={atUserLimit ? 'warning' : 'default'}
-          accent={atUserLimit ? undefined : 'academies'}
         />
         <StatCard
-          icon={<UsersIcon />}
+          icon={<Users className="h-5 w-5" aria-hidden="true" />}
           value={userKpis.admins}
           label={t('platform.academies.users.kpis.admins')}
-          accent="users"
         />
         <StatCard
-          icon={<UsersIcon />}
+          icon={<Users className="h-5 w-5" aria-hidden="true" />}
           value={userKpis.coaches}
           label={t('platform.academies.users.kpis.coaches')}
-          accent="users"
         />
         <StatCard
-          icon={<UsersIcon />}
+          icon={<Users className="h-5 w-5" aria-hidden="true" />}
           value={userKpis.parents}
           label={t('platform.academies.users.kpis.parents')}
-          accent="users"
         />
       </StatCardGrid>
     ) : undefined;
@@ -409,38 +382,69 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
   return (
     <div className="space-y-8">
       {academy && (
-        <section className="ds-brand-card border-l-[3px] border-section-academies-fg p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-text-primary">{academy.name}</h2>
-              <p className="text-sm text-text-muted">{academy.slug}</p>
+        <section className="ds-brand-card ds-card-interactive border-l-[3px] border-section-brand-fg p-5 sm:p-6">
+          <div className="flex flex-wrap items-start gap-4">
+            <div
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient font-display text-xl font-bold text-text-on-primary shadow-brand"
+              aria-hidden="true"
+            >
+              {academy.name
+                .trim()
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((p) => p[0] ?? '')
+                .join('')
+                .toUpperCase() || '?'}
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <StatusBadge
-                type="academy"
-                status={academy.status}
-                suspensionReason={academy.suspensionReason}
-              />
-              {academy.status === AcademyStatus.SUSPENDED && (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    setReactivateTarget({
-                      id: academy.id,
-                      name: academy.name,
-                      overdueInvoiceCount: academy.overdueInvoiceCount,
-                    })
-                  }
-                >
-                  {t('platform.academies.reactivate.action')}
-                </Button>
-              )}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
+                    {academy.name}
+                  </h2>
+                  <p className="text-sm text-text-muted">{academy.slug}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusBadge
+                    type="academy"
+                    status={academy.status}
+                    suspensionReason={academy.suspensionReason}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      window.location.href = appPath(
+                        `/dashboard/super-admin/academies/${academy.id}/edit`,
+                      );
+                    }}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                  {academy.status === AcademyStatus.SUSPENDED && (
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        setReactivateTarget({
+                          id: academy.id,
+                          name: academy.name,
+                          overdueInvoiceCount: academy.overdueInvoiceCount,
+                        })
+                      }
+                    >
+                      {t('platform.academies.reactivate.action')}
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-text-muted">{t('platform.academies.columns.plan')}</dt>
-              <dd>{academy.plan?.name ?? t('platform.academies.noPlan')}</dd>
+              <dd className="font-medium text-text-primary">
+                {academy.plan?.name ?? t('platform.academies.noPlan')}
+              </dd>
             </div>
             {academy.billingEstimate && (
               <div className="sm:col-span-2">

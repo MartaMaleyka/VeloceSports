@@ -110,7 +110,7 @@ function DashboardShellInner({
             aria-label={t('a11y.closeNav')}
             onClick={() => setMobileNavOpen(false)}
           />
-          <div className="absolute left-0 top-0 h-full w-64 bg-bg-surface shadow-md">
+          <div className="absolute left-0 top-0 h-full w-64 shadow-md">
             <Sidebar roles={roles} primaryRole={primaryRole} activeNavId={activeNavId} />
           </div>
         </div>

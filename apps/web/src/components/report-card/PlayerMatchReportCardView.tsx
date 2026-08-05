@@ -19,7 +19,6 @@ import {
 } from '@velocesport/i18n';
 import { useChartTheme } from '../../hooks/useChartTheme';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
-import { avatarColorFromName } from '../../lib/avatar-color';
 
 type ChartMode = 'radar' | 'bars';
 
@@ -30,7 +29,7 @@ interface PlayerMatchReportCardViewProps {
 function impactBarColor(impact: ActionImpact): string {
   if (impact === ActionImpact.POSITIVE) return 'var(--color-feedback-success)';
   if (impact === ActionImpact.NEGATIVE) return 'var(--color-feedback-error)';
-  return 'var(--color-section-matches-fg)';
+  return 'var(--color-action-primary)';
 }
 
 function formatAvg(value: number | null): string {
@@ -47,7 +46,6 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
   const [chartMode, setChartMode] = useState<ChartMode>('radar');
 
   const fullName = `${data.player.firstName} ${data.player.lastName}`;
-  const avatar = avatarColorFromName(fullName);
 
   const matchDate = new Date(data.match.matchDatetime).toLocaleDateString(
     locale === 'es' ? 'es-PA' : 'en-US',
@@ -94,39 +92,47 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
     <article className="mx-auto w-full max-w-md">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-bg-surface shadow-[var(--shadow-elevation-card)]">
         <div
-          className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-section-users-fg/20 via-section-matches-fg/10 to-transparent"
+          className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-brand-subtle via-section-brand-subtle/80 to-transparent"
           aria-hidden="true"
         />
         <div className="relative p-5 sm:p-6">
           {/* Cabecera cromo */}
           <header className="mb-6 text-center">
-            <div
-              className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-bold shadow-lg ring-4 ring-bg-surface"
-              style={{ backgroundColor: avatar.bg, color: avatar.fg }}
-              aria-hidden="true"
-            >
-              {data.player.initials}
+            <div className="relative mx-auto mb-4 inline-flex">
+              <div
+                className="flex h-24 w-24 items-center justify-center rounded-2xl bg-brand-gradient font-display text-2xl font-bold text-text-on-primary shadow-lg ring-4 ring-bg-surface"
+                aria-hidden="true"
+              >
+                {data.player.initials}
+              </div>
+              {data.match.matchJerseyNumber != null && (
+                <span
+                  className="absolute -bottom-1 -right-1 flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-bg-surface bg-section-brand-subtle px-1.5 font-display text-sm font-bold tabular-nums text-section-brand-fg shadow-sm"
+                  aria-hidden="true"
+                >
+                  #{data.match.matchJerseyNumber}
+                </span>
+              )}
             </div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-section-users-fg">
+            <p className="text-xs font-semibold uppercase tracking-widest text-section-brand-fg">
               {data.academy.name}
             </p>
-            <h1 className="mt-1 text-2xl font-bold leading-tight text-text-primary sm:text-3xl">
+            <h1 className="mt-1 font-display text-2xl font-bold leading-tight text-text-primary sm:text-3xl">
               {fullName}
             </h1>
             {data.match.matchJerseyNumber != null && (
-              <p className="mt-1 text-4xl font-black tabular-nums text-section-matches-fg">
-                #{data.match.matchJerseyNumber}
-              </p>
+              <p className="sr-only">#{data.match.matchJerseyNumber}</p>
             )}
-            <p className="mt-2 text-sm text-text-secondary">
-              {data.match.categoryName} · vs {data.match.opponent}
-            </p>
-            <p className="text-xs text-text-muted">{matchDate}</p>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+              <span className="ds-club-pill">{data.match.categoryName}</span>
+              <span className="text-sm text-text-secondary">vs {data.match.opponent}</span>
+            </div>
+            <p className="mt-1 text-xs text-text-muted">{matchDate}</p>
           </header>
 
           {/* Toggle gráfico */}
           <div
-            className="mb-4 flex rounded-lg border border-border bg-bg-muted p-1"
+            className="mb-4 flex rounded-full border border-border bg-bg-muted/50 p-1"
             role="tablist"
             aria-label={t('reportCard.chartToggleLabel')}
           >
@@ -137,9 +143,9 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
                 role="tab"
                 aria-selected={chartMode === mode}
                 onClick={() => setChartMode(mode)}
-                className={`min-h-touch flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                className={`min-h-touch flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                   chartMode === mode
-                    ? 'bg-bg-surface text-section-matches-fg shadow-sm'
+                    ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
@@ -193,9 +199,9 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
                       <Radar
                         name={t('reportCard.scoreLabel')}
                         dataKey="score"
-                        stroke={colors.primary}
-                        fill={colors.primary}
-                        fillOpacity={0.35}
+                        stroke="var(--color-action-primary)"
+                        fill="var(--color-action-primary)"
+                        fillOpacity={0.4}
                         isAnimationActive={animate}
                       />
                     </RadarChart>
@@ -253,7 +259,7 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
           </section>
 
           {/* Frase motivacional */}
-          <blockquote className="mb-6 rounded-xl border border-section-users-border bg-section-users-subtle/50 px-4 py-4 text-center">
+          <blockquote className="mb-6 rounded-xl border border-section-brand-border bg-section-brand-subtle/50 px-4 py-4 text-center">
             <p className="text-base font-semibold leading-snug text-text-primary">
               {t(motivationKey)}
             </p>
@@ -277,7 +283,7 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
                 aria-label={t('reportCard.minutesPlayed')}
               >
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-section-matches-fg to-section-users-fg"
+                  className="h-full rounded-full bg-gradient-to-r from-action-primary to-section-brand-fg"
                   style={{
                     width: `${Math.min(100, (data.minutesPlayed / 90) * 100)}%`,
                   }}

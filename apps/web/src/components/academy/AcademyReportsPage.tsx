@@ -8,9 +8,10 @@ import {
   TENANT_MANAGEABLE_ROLES,
 } from '@velocesport/shared';
 import {
-  Alert,
   Button,
   DataCard,
+  DataCardFooter,
+  DataCardHeader,
   Label,
   Select,
   ToastProvider,
@@ -26,6 +27,7 @@ import {
   reportTypeTitleKey,
   reportTypeDescriptionKey,
 } from '@velocesport/i18n';
+import { Download, Info } from 'lucide-react';
 import { tenantFetchList } from '../../lib/tenant-api';
 import { downloadTenantReport, ReportApiError } from '../../lib/reports-api';
 
@@ -120,11 +122,11 @@ function AcademyReportsContent() {
           filtersToParams(filtersByReport[reportType]),
           locale as Locale,
         );
-        showToast(t('reports.exportSuccess'), 'success');
+        showToast({ variant: 'success', message: t('reports.exportSuccess') });
       } catch (err) {
         const message =
           err instanceof ReportApiError ? err.message : t('reports.exportError');
-        showToast(message, 'error');
+        showToast({ variant: 'error', message });
       } finally {
         setExporting(null);
       }
@@ -220,7 +222,13 @@ function AcademyReportsContent() {
 
   return (
     <div className="space-y-6">
-      <Alert variant="info">{t('reports.hint')}</Alert>
+      <div
+        role="status"
+        className="flex gap-3 rounded-md border border-feedback-info/30 bg-feedback-info-subtle p-4 text-sm text-text-primary"
+      >
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-feedback-info" aria-hidden="true" />
+        <div className="min-w-0 flex-1">{t('reports.hint')}</div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {REPORT_TYPES.map((reportType) => {
@@ -231,17 +239,13 @@ function AcademyReportsContent() {
           const busyPdf = exporting === pdfKey;
 
           return (
-            <DataCard key={reportType} className="flex h-full flex-col gap-4 p-4 sm:p-5">
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary">
-                  {t(reportTypeTitleKey(reportType))}
-                </h2>
-                <p className="mt-1 text-sm text-text-secondary">
-                  {t(reportTypeDescriptionKey(reportType))}
-                </p>
-              </div>
+            <DataCard key={reportType}>
+              <DataCardHeader
+                title={t(reportTypeTitleKey(reportType))}
+                subtitle={t(reportTypeDescriptionKey(reportType))}
+              />
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {(reportType === TenantReportType.PLAYERS ||
                   reportType === TenantReportType.MATCHES) && (
                   <div className="sm:col-span-2">
@@ -351,7 +355,17 @@ function AcademyReportsContent() {
                 )}
               </div>
 
-              <div className="mt-auto flex flex-col gap-2 sm:flex-row">
+              <DataCardFooter className="flex-col sm:flex-row">
+                <Button
+                  type="button"
+                  className="w-full sm:flex-1"
+                  disabled={exporting !== null}
+                  loading={busyPdf}
+                  onClick={() => handleExport(reportType, ReportExportFormat.PDF)}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  {t('reports.exportPdf')}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"
@@ -362,16 +376,7 @@ function AcademyReportsContent() {
                 >
                   {t('reports.exportCsv')}
                 </Button>
-                <Button
-                  type="button"
-                  className="w-full sm:flex-1"
-                  disabled={exporting !== null}
-                  loading={busyPdf}
-                  onClick={() => handleExport(reportType, ReportExportFormat.PDF)}
-                >
-                  {t('reports.exportPdf')}
-                </Button>
-              </div>
+              </DataCardFooter>
             </DataCard>
           );
         })}

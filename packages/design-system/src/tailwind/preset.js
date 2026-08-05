@@ -130,6 +130,7 @@ export default {
       boxShadow: {
         sm: 'var(--shadow-sm)',
         md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
         card: 'var(--shadow-elevation-card)',
         brand: 'var(--shadow-elevation-brand)',
         focus: 'var(--shadow-focus-ring)',

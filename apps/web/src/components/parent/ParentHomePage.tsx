@@ -5,22 +5,34 @@ import type {
   PlayerDto,
 } from '@velocesport/shared';
 import { PlayerStatus } from '@velocesport/shared';
+import type { ActionImpact } from '@velocesport/shared';
 import {
   Alert,
   Button,
   EmptyState,
-  Label,
-  Select,
   Skeleton,
   StatCard,
   StatCardGrid,
   cn,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
+import { Activity, Clock3, Trophy } from 'lucide-react';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
+import { fetchMyProfile } from '../../lib/profile-api';
 import { appPath } from '../../lib/app-path';
 import { ParentDashboardChart } from './ParentDashboardChart';
+import { ParentChildAvatar } from './ParentChildAvatar';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
+
+function highlightChipClasses(impact: ActionImpact): string {
+  if (impact === 'positive') {
+    return 'border-section-brand-border bg-section-brand-subtle text-section-brand-fg hover:bg-section-brand-muted';
+  }
+  if (impact === 'negative') {
+    return 'border-feedback-error/30 bg-feedback-error-subtle text-feedback-error hover:bg-feedback-error/15';
+  }
+  return 'border-border bg-bg-muted text-text-secondary hover:bg-bg-subtle';
+}
 
 function formatMonthLabel(monthKey: string, locale: string): string {
   const [year, month] = monthKey.split('-').map(Number);
@@ -197,44 +209,48 @@ function ChildDashboardContent({
     );
   }
 
-  const minutesValue = `${data.kpis.totalMinutes} ${t('reportCard.minutesUnit')}`;
-
   return (
-    <div className="space-y-6">
-      <StatCardGrid>
-        <StatCard
-          icon={<span aria-hidden="true">⚽</span>}
-          label={t('parentDashboard.kpiMatches')}
-          value={String(data.kpis.matchesPlayed)}
-          accent="users"
-        />
-        <StatCard
-          icon={<span aria-hidden="true">⏱</span>}
-          label={t('parentDashboard.kpiMinutes')}
-          value={minutesValue}
-          accent="users"
-        />
-        <StatCard
-          icon={<span aria-hidden="true">📊</span>}
-          label={t('parentDashboard.kpiActions')}
-          value={String(data.kpis.totalActions)}
-          accent="users"
-        />
-      </StatCardGrid>
+    <div className="ds-stagger-enter space-y-6">
+      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 0 }}>
+        <StatCardGrid>
+          <StatCard
+            icon={<Trophy className="h-5 w-5" aria-hidden="true" />}
+            label={t('parentDashboard.kpiMatches')}
+            value={data.kpis.matchesPlayed}
+          />
+          <StatCard
+            icon={<Clock3 className="h-5 w-5" aria-hidden="true" />}
+            label={t('parentDashboard.kpiMinutes')}
+            value={data.kpis.totalMinutes}
+          />
+          <StatCard
+            icon={<Activity className="h-5 w-5" aria-hidden="true" />}
+            label={t('parentDashboard.kpiActions')}
+            value={data.kpis.totalActions}
+          />
+        </StatCardGrid>
+      </div>
 
       {data.kpis.highlights.length > 0 && (
-        <section className="rounded-lg border border-border bg-bg-surface p-4 sm:p-5">
-          <h3 className="mb-3 text-sm font-semibold text-text-primary">
+        <section
+          className="ds-stagger-item ds-card-interactive rounded-xl border border-border bg-bg-surface p-4 sm:p-5"
+          style={{ ['--stagger-index' as string]: 1 }}
+        >
+          <h3 className="mb-3 font-display text-base font-semibold text-text-primary">
             {t('parentDashboard.highlights')}
           </h3>
           <ul className="flex flex-wrap gap-2">
-            {data.kpis.highlights.map((h) => (
+            {data.kpis.highlights.map((h, index) => (
               <li
                 key={h.code}
-                className="rounded-full border border-section-users-border bg-section-users-subtle/40 px-3 py-1 text-sm text-text-primary"
+                className={cn(
+                  'ds-stagger-item rounded-full border px-3 py-1.5 text-sm transition-[transform,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)] hover:-translate-y-0.5',
+                  highlightChipClasses(h.impact),
+                )}
+                style={{ ['--stagger-index' as string]: Math.min(index + 2, 12) }}
               >
                 <span className="font-medium">{h.name}</span>
-                <span className="ml-1 tabular-nums text-text-secondary">×{h.count}</span>
+                <span className="ml-1 tabular-nums opacity-80">×{h.count}</span>
               </li>
             ))}
           </ul>
@@ -268,7 +284,7 @@ function ChildDashboardContent({
           return (
             <a
               href={reportPath(match.matchId)}
-              className="block text-section-users-fg underline-offset-2 hover:underline"
+              className="block text-section-brand-fg underline-offset-2 hover:underline"
               title={t('parentDashboard.viewReportCard')}
             >
               {col.label}
@@ -338,10 +354,10 @@ function ChildDashboardPanel({
       <div className="space-y-4">
         <StatCardGrid>
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
+            <Skeleton key={i} className="h-28 rounded-lg" />
           ))}
         </StatCardGrid>
-        <Skeleton className="h-64 rounded-lg" />
+        <Skeleton className="h-64 rounded-xl" />
       </div>
     );
   }
@@ -371,6 +387,7 @@ export function ParentHomePage() {
   const [childrenError, setChildrenError] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
   const [period, setPeriod] = useState<ParentDashboardPeriodValue>('all');
+  const [firstName, setFirstName] = useState<string | null>(null);
   const [availablePeriods, setAvailablePeriods] = useState<
     ParentPlayerDashboardDto['availablePeriods']
   >([{ value: 'all', monthKey: null }]);
@@ -379,9 +396,13 @@ export function ParentHomePage() {
     setLoadingChildren(true);
     setChildrenError(null);
     try {
-      const list = await parentFetchList<PlayerDto>('children');
+      const [list, profile] = await Promise.all([
+        parentFetchList<PlayerDto>('children'),
+        fetchMyProfile().catch(() => null),
+      ]);
       const active = list.filter((c) => c.status === PlayerStatus.ACTIVE);
       setChildren(active);
+      if (profile?.firstName) setFirstName(profile.firstName);
       if (active.length > 0) {
         setSelectedChildId((prev) =>
           prev != null && active.some((c) => c.id === prev) ? prev : active[0].id,
@@ -397,11 +418,6 @@ export function ParentHomePage() {
   useEffect(() => {
     void loadChildren();
   }, [loadChildren]);
-
-  const selectedChild = useMemo(
-    () => children.find((c) => c.id === selectedChildId) ?? null,
-    [children, selectedChildId],
-  );
 
   const periodOptions = useMemo(
     () =>
@@ -426,9 +442,17 @@ export function ParentHomePage() {
 
   if (loadingChildren) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full max-w-xs rounded-lg" />
-        <Skeleton className="h-24 rounded-lg" />
+      <div className="space-y-6">
+        <Skeleton className="h-36 rounded-xl" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+        </div>
+        <StatCardGrid>
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-28 rounded-lg" />
+          ))}
+        </StatCardGrid>
       </div>
     );
   }
@@ -454,82 +478,124 @@ export function ParentHomePage() {
     );
   }
 
-  const showTabs = children.length > 1;
+  const greetingName = firstName ?? t('roles.parent');
 
   return (
-    <div className="space-y-5">
-      {showTabs && (
+    <div className="ds-stagger-enter space-y-8">
+      <div
+        className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
+        style={{ ['--stagger-index' as string]: 0 }}
+      >
+        <div className="ds-academy-hero__speed-pattern" aria-hidden="true" />
+        <div className="relative z-[1]">
+          <p className="text-sm font-semibold uppercase tracking-wide text-section-brand-fg">
+            {t('dashboard.parent.home.heroEyebrow')}
+          </p>
+          <h2 className="ds-text-gradient-brand mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">
+            {t('dashboard.parent.home.heroHello', { name: greetingName })}
+          </h2>
+          <p className="mt-3 max-w-prose text-base font-medium text-text-secondary">
+            {t('dashboard.parent.home.heroSubtitle')}
+          </p>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          'ds-stagger-item grid gap-3',
+          children.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2',
+        )}
+        style={{ ['--stagger-index' as string]: 1 }}
+        role="tablist"
+        aria-label={t('parentDashboard.childTabs')}
+      >
+        {children.map((child) => {
+          const selected = child.id === selectedChildId;
+          return (
+            <button
+              key={child.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              className={cn(
+                'ds-card-interactive flex min-h-touch items-center gap-4 rounded-xl border-2 bg-bg-surface p-4 text-left sm:p-5',
+                'transition-[border-color,box-shadow,transform,opacity] duration-[var(--motion-duration-normal)] ease-[var(--motion-ease)]',
+                'focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)]',
+                'active:scale-[0.97]',
+                selected
+                  ? 'scale-[1.02] border-section-brand-fg shadow-[0_0_0_3px_var(--color-section-brand-muted),0_8px_24px_-8px_var(--color-section-brand-muted)]'
+                  : 'border-border opacity-70 hover:opacity-100 hover:border-section-brand-border',
+              )}
+              onClick={() => {
+                setSelectedChildId(child.id);
+                setPeriod('all');
+              }}
+            >
+              <ParentChildAvatar
+                firstName={child.firstName}
+                lastName={child.lastName}
+                jerseyNumber={child.jerseyNumber}
+                size="xl"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-xl font-bold tracking-tight text-text-primary sm:text-2xl">
+                  {child.firstName} {child.lastName}
+                </span>
+                <span className="mt-2 flex flex-wrap items-center gap-2">
+                  {child.categoryName && (
+                    <span className="ds-club-pill">{child.categoryName}</span>
+                  )}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="ds-stagger-item space-y-2" style={{ ['--stagger-index' as string]: 2 }}>
+        <p className="text-sm font-medium text-text-secondary">{t('parentDashboard.periodLabel')}</p>
         <div
-          className="flex gap-2 overflow-x-auto pb-1"
-          role="tablist"
-          aria-label={t('parentDashboard.childTabs')}
+          className="inline-flex max-w-full flex-wrap gap-1 rounded-full border border-border bg-bg-muted/50 p-1"
+          role="group"
+          aria-label={t('parentDashboard.periodLabel')}
         >
-          {children.map((child) => {
-            const selected = child.id === selectedChildId;
-            const label = t('parentDashboard.tabLabel', {
-              name: `${child.firstName} ${child.lastName}`,
-              jersey: String(child.jerseyNumber ?? '—'),
-            });
+          {periodOptions.map((opt) => {
+            const active = period === opt.value;
             return (
               <button
-                key={child.id}
+                key={opt.value}
                 type="button"
-                role="tab"
-                aria-selected={selected}
+                aria-pressed={active}
                 className={cn(
-                  'shrink-0 rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
-                  selected
-                    ? 'border-section-users-border bg-section-users-subtle text-section-users-fg'
-                    : 'border-border bg-bg-surface text-text-secondary hover:bg-bg-subtle',
+                  'min-h-touch shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)]',
+                  'focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)]',
+                  'active:scale-[0.97]',
+                  active
+                    ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
+                    : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary',
                 )}
-                onClick={() => {
-                  setSelectedChildId(child.id);
-                  setPeriod('all');
-                }}
+                onClick={() => setPeriod(opt.value as ParentDashboardPeriodValue)}
               >
-                {label}
+                {opt.label}
               </button>
             );
           })}
         </div>
-      )}
-
-      {selectedChild && (
-        <header className="space-y-1">
-          {!showTabs && (
-            <h2 className="text-lg font-semibold text-text-primary">
-              {selectedChild.firstName} {selectedChild.lastName}
-              {selectedChild.jerseyNumber != null && (
-                <span className="ml-2 text-base font-normal text-text-secondary">
-                  #{selectedChild.jerseyNumber}
-                </span>
-              )}
-            </h2>
-          )}
-          {selectedChild.categoryName && (
-            <p className="text-sm text-text-secondary">{selectedChild.categoryName}</p>
-          )}
-        </header>
-      )}
-
-      <div className="max-w-xs space-y-2">
-        <Label htmlFor="parent-dashboard-period">{t('parentDashboard.periodLabel')}</Label>
-        <Select
-          id="parent-dashboard-period"
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as ParentDashboardPeriodValue)}
-          options={periodOptions}
-        />
       </div>
 
       {selectedChildId != null && (
-        <ChildDashboardPanel
+        <div
           key={`${selectedChildId}-${period}`}
-          playerId={selectedChildId}
-          period={period}
-          locale={locale}
-          onPeriodsLoaded={handlePeriodsLoaded}
-        />
+          className="ds-stagger-item"
+          style={{ ['--stagger-index' as string]: 3 }}
+        >
+          <ChildDashboardPanel
+            playerId={selectedChildId}
+            period={period}
+            locale={locale}
+            onPeriodsLoaded={handlePeriodsLoaded}
+          />
+        </div>
       )}
     </div>
   );

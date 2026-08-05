@@ -1,12 +1,18 @@
 import { lazy, type ComponentType } from 'react';
 import TenantMatchesPage from '../components/matches/TenantMatchesPage';
 import MatchDetailPage from '../components/matches/MatchDetailPage';
+import CoachHomePage from '../components/coach/CoachHomePage';
+import CoachCategoriesPage from '../components/coach/CoachCategoriesPage';
+import CoachPlayersPage from '../components/coach/CoachPlayersPage';
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),
 );
 
 export const coachPages = {
+  home: CoachHomePage,
+  categories: CoachCategoriesPage,
+  players: CoachPlayersPage,
   matches: TenantMatchesPage,
   matchDetail: MatchDetailPage,
   matchReportCard: PlayerMatchReportPage as ComponentType<Record<string, unknown>>,

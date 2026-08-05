@@ -1,7 +1,7 @@
 import type { MonthlyGrowthPointDto, MonthlyRevenuePointDto } from '@velocesport/shared';
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   Legend,
   Line,
@@ -47,40 +47,51 @@ export function PlatformMetricsCharts({
     label: formatMonthLabel(p.month, locale),
   }));
 
+  const tooltipStyle = {
+    background: 'var(--color-bg-surface)',
+    border: '1px solid var(--color-border-default)',
+    borderRadius: '10px',
+    boxShadow: 'var(--shadow-md)',
+  } as const;
+
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <section className="rounded-lg border border-section-academies-border bg-section-academies-subtle/30 p-4 sm:p-6">
-        <h3 className="mb-4 text-base font-semibold text-text-primary">
+      <section className="ds-card-interactive rounded-xl border border-border bg-bg-surface p-4 sm:p-6">
+        <h3 className="mb-4 font-display text-base font-semibold text-text-primary">
           {t('dashboard.superAdmin.home.chartGrowth')}
         </h3>
         <div className="h-64 w-full" role="img" aria-label={t('dashboard.superAdmin.home.chartGrowth')}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <AreaChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="saGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={colors.primary} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={colors.primary} stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
               <CartesianGrid stroke={colors.grid} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
               <Tooltip
-                contentStyle={{
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: '8px',
-                }}
+                contentStyle={tooltipStyle}
                 labelStyle={{ color: 'var(--color-text-primary)' }}
               />
-              <Bar
+              <Area
+                type="monotone"
                 dataKey="count"
                 name={t('dashboard.superAdmin.home.newAcademies')}
-                fill={colors.primary}
-                radius={[4, 4, 0, 0]}
+                stroke={colors.primary}
+                strokeWidth={2.5}
+                fill="url(#saGrowthFill)"
                 isAnimationActive={animate}
               />
-            </BarChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </section>
 
-      <section className="rounded-lg border border-section-billing-border bg-section-billing-subtle/30 p-4 sm:p-6">
-        <h3 className="mb-4 text-base font-semibold text-text-primary">
+      <section className="ds-card-interactive rounded-xl border border-border bg-bg-surface p-4 sm:p-6">
+        <h3 className="mb-4 font-display text-base font-semibold text-text-primary">
           {t('dashboard.superAdmin.home.chartRevenue')}
         </h3>
         <div className="h-64 w-full" role="img" aria-label={t('dashboard.superAdmin.home.chartRevenue')}>
@@ -89,13 +100,7 @@ export function PlatformMetricsCharts({
               <CartesianGrid stroke={colors.grid} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
               <YAxis tick={{ fill: colors.text, fontSize: 12 }} tickLine={false} />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: '8px',
-                }}
-              />
+              <Tooltip contentStyle={tooltipStyle} />
               <Legend />
               <Line
                 type="monotone"
@@ -111,7 +116,7 @@ export function PlatformMetricsCharts({
                 dataKey="collected"
                 name={t('dashboard.superAdmin.home.collected')}
                 stroke={colors.collected}
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 isAnimationActive={animate}
               />

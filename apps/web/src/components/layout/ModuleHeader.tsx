@@ -19,9 +19,11 @@ export default function ModuleHeader({
     <header className={cn('px-4 py-6 sm:px-8', sectionModuleHeaderClasses(sectionAccent))}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold text-text-primary sm:text-3xl">{title}</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
+            {title}
+          </h1>
           {description && (
-            <p className="mt-2 max-w-prose text-base text-text-secondary">{description}</p>
+            <p className="mt-2 max-w-prose text-base font-medium text-text-secondary">{description}</p>
           )}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

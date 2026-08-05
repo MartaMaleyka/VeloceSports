@@ -751,7 +751,7 @@ export default function MatchCapturePanel({
                     className={cn(
                       'min-h-10 min-w-10 flex-1 rounded-lg border text-sm font-semibold md:min-h-touch md:min-w-touch',
                       period === p
-                        ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
+                        ? 'border-section-brand-fg bg-section-brand-subtle text-section-brand-fg'
                         : 'border-border bg-bg-muted text-text-secondary',
                     )}
                   >
@@ -779,7 +779,7 @@ export default function MatchCapturePanel({
             </div>
           </div>
         ) : match.clock ? (
-          <p className="font-mono text-lg font-bold tabular-nums text-text-primary">
+          <p className="font-display text-lg font-bold tabular-nums text-text-primary">
             {t('matches.capture.clockDisplay', {
               period: match.clock.currentPeriod,
               minute: match.clock.minute,
@@ -902,16 +902,16 @@ export default function MatchCapturePanel({
                     >
                       <span
                         className={cn(
-                          'font-black tabular-nums leading-none',
+                          'ds-capture-player__jersey font-display font-bold tabular-nums leading-none',
                           boardFullscreen ? 'text-2xl' : 'text-xl',
-                          isStarter ? 'text-section-matches-fg' : 'text-text-primary',
+                          isStarter && !isSelected && 'text-section-brand-fg',
                         )}
                       >
                         {player.jerseyNumber}
                       </span>
                       <span
                         className={cn(
-                          'mt-0.5 line-clamp-1 text-center font-medium leading-tight text-text-secondary',
+                          'ds-capture-player__name mt-0.5 line-clamp-1 text-center font-medium leading-tight',
                           boardFullscreen ? 'text-[0.65rem]' : 'text-[0.6rem]',
                         )}
                       >
@@ -920,7 +920,7 @@ export default function MatchCapturePanel({
                       {isStarter && (
                         <span
                           className={cn(
-                            'mt-0.5 font-semibold uppercase leading-none text-section-matches-fg',
+                            'mt-0.5 rounded-full border border-section-brand-border bg-section-brand-subtle px-1 font-semibold uppercase leading-none text-section-brand-fg',
                             boardFullscreen ? 'text-[0.6rem]' : 'text-[0.55rem]',
                           )}
                         >
@@ -1008,7 +1008,7 @@ export default function MatchCapturePanel({
             aria-expanded={historySheetOpen}
             onClick={() => setHistorySheetOpen(true)}
           >
-            <span className="text-sm font-semibold text-text-primary">
+            <span className="font-display text-sm font-semibold text-text-primary">
               {t('matches.capture.history')} ({history.length})
             </span>
             <span className="text-xs text-text-muted">{t('matches.capture.historyOpen')}</span>
@@ -1081,7 +1081,7 @@ export default function MatchCapturePanel({
             aria-label={t('matches.capture.history')}
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-              <h3 className="text-base font-semibold text-text-primary">
+              <h3 className="font-display text-base font-semibold text-text-primary">
                 {t('matches.capture.history')}
                 <span className="ml-1.5 font-normal text-text-muted">({history.length})</span>
               </h3>
@@ -1247,7 +1247,7 @@ function CaptureActionGrid({
                 'flex min-h-[3.75rem] w-full min-w-0 flex-col items-center justify-center rounded-lg border px-2 py-2 text-center transition-colors',
                 impactChipClasses(action.impact),
                 isSelected &&
-                  'ring-2 ring-section-matches-fg ring-offset-2 ring-offset-bg-surface',
+                  'ring-2 ring-section-brand-fg ring-offset-2 ring-offset-bg-surface',
               )}
             >
               <span className="font-mono text-xs leading-none opacity-70">{action.code}</span>
@@ -1307,7 +1307,7 @@ function CaptureHistoryList({
     >
       {showHeader && (
         <div className="flex shrink-0 items-center justify-between border-b border-border bg-bg-muted/40 px-3 py-2">
-          <h3 className="text-sm font-semibold text-text-primary">
+          <h3 className="font-display text-sm font-semibold text-text-primary">
             {t('matches.capture.history')}
             <span className="ml-1.5 font-normal text-text-muted">({history.length})</span>
           </h3>
@@ -1385,7 +1385,7 @@ function HistoryRow({
       className={cn(
         'flex flex-col gap-1.5 border-b border-border last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
         compact ? 'py-2' : 'py-3',
-        !reducedMotion && pulse && 'animate-pulse bg-section-matches-bg/40',
+        !reducedMotion && pulse && 'animate-pulse bg-section-brand-subtle/40',
         voided && 'opacity-60',
       )}
     >

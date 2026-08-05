@@ -53,17 +53,25 @@ export default function MatchClockBar({
         <div className="flex min-w-0 items-baseline gap-2">
           <span
             className={cn(
-              'font-mono text-2xl font-black tabular-nums leading-none md:text-3xl',
-              running ? 'text-section-matches-fg' : 'text-text-primary',
+              'font-display text-2xl font-bold tabular-nums leading-none md:text-3xl',
+              running ? 'ds-match-clock-value' : 'ds-match-clock-value--paused',
             )}
             aria-live="polite"
             aria-atomic="true"
           >
             {t('matches.capture.clockDisplay', { period, minute })}
           </span>
-          <span className="text-xs text-text-muted">
-            {running ? t('matches.capture.clockRunning') : t('matches.capture.clockPaused')}
-          </span>
+          {running ? (
+            <span className="ds-match-clock-running inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium">
+              <span
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-action-primary ds-pulse-dot"
+                aria-hidden="true"
+              />
+              {t('matches.capture.clockRunning')}
+            </span>
+          ) : (
+            <span className="text-xs text-text-muted">{t('matches.capture.clockPaused')}</span>
+          )}
         </div>
 
         {!captureLocked && (
@@ -106,14 +114,16 @@ export default function MatchClockBar({
             >
               {t('matches.capture.clockNextPeriodShort', { next: period + 1, total: periodsCount })}
             </Button>
-            <button
+            <Button
               type="button"
-              className="min-h-9 rounded-md px-2 text-xs font-medium text-text-muted underline-offset-2 hover:text-text-secondary hover:underline md:min-h-touch md:text-sm"
+              size="md"
+              variant="secondary"
+              className="min-h-9 px-3 text-xs md:min-h-touch md:text-sm"
               disabled={commandLoading}
               onClick={openAdjust}
             >
               {t('matches.capture.clockAdjust')}
-            </button>
+            </Button>
           </div>
         )}
       </div>

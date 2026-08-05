@@ -247,7 +247,7 @@ export function PlayerObservationsPanel({
       {mode === 'coach' && (
         <form
           onSubmit={(e) => void handleSubmit(e)}
-          className="rounded-lg border border-section-matches-border bg-section-matches-subtle/20 p-4 space-y-3"
+          className="space-y-3 rounded-lg border border-section-brand-border bg-section-brand-subtle/20 p-4"
         >
           <Label htmlFor={`obs-content-${playerId}`}>{t('playerObservations.formLabel')}</Label>
           <textarea

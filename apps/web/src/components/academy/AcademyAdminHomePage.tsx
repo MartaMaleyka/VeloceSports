@@ -10,10 +10,17 @@ import {
   StatCard,
   StatCardGrid,
   cn,
-  sectionQuickLinkClasses,
-  type SectionAccentId,
 } from '@velocesport/design-system';
 import { useTranslation, academyAdminHomeBillingStatusKey } from '@velocesport/i18n';
+import {
+  Users,
+  UserRoundCheck,
+  Layers,
+  UserCog,
+  Trophy,
+  CreditCard,
+  ArrowRight,
+} from 'lucide-react';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
 import { appPath } from '../../lib/app-path';
 import { AcademyDashboardChart } from './AcademyDashboardChart';
@@ -24,22 +31,31 @@ interface QuickLinkProps {
   href: string;
   title: string;
   description: string;
-  accent: SectionAccentId;
 }
 
-function QuickLinkCard({ href, title, description, accent }: QuickLinkProps) {
+function QuickLinkCard({ href, title, description }: QuickLinkProps) {
   return (
     <a
       href={href}
       className={cn(
         'ds-card-interactive block rounded-lg border border-border bg-bg-surface p-5 no-underline',
-        sectionQuickLinkClasses(accent),
+        'border-l-[3px] border-l-action-primary',
       )}
     >
       <h3 className="text-base font-semibold text-text-primary">{title}</h3>
       <p className="mt-1 text-sm text-text-secondary">{description}</p>
     </a>
   );
+}
+
+function SeverityDot({ variant }: { variant: 'warning' | 'error' | 'info' }) {
+  const color =
+    variant === 'error'
+      ? 'bg-feedback-error'
+      : variant === 'warning'
+        ? 'bg-feedback-warning ds-pulse-dot'
+        : 'bg-feedback-info';
+  return <span className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', color)} aria-hidden="true" />;
 }
 
 function AcademyAdminHomeContent() {
@@ -150,13 +166,13 @@ function AcademyAdminHomeContent() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <Skeleton className="h-16 rounded-lg" />
-        <StatCardGrid>
+        <Skeleton className="h-32 animate-pulse rounded-lg" />
+        <StatCardGrid columns={3}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-lg" />
+            <Skeleton key={i} className="h-28 animate-pulse rounded-lg" />
           ))}
         </StatCardGrid>
-        <Skeleton className="h-72 rounded-lg" />
+        <Skeleton className="h-72 animate-pulse rounded-lg" />
       </div>
     );
   }
@@ -187,38 +203,62 @@ function AcademyAdminHomeContent() {
         ? 'default'
         : 'default';
 
+  const iconClass = 'h-5 w-5';
+
   return (
     <div className="ds-stagger-enter space-y-8">
       <div
-        className="ds-stagger-item rounded-lg border border-section-brand-border bg-section-brand-subtle px-4 py-5 sm:px-6"
+        className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
         style={{ ['--stagger-index' as string]: 0 }}
       >
-        <p className="text-sm font-medium text-section-brand-fg">{t('dashboard.academyAdmin.home.academyLabel')}</p>
-        <h2 className="mt-1 text-2xl font-bold text-text-primary">{data.academyName}</h2>
-        <p className="mt-2 text-sm text-text-secondary">{t('dashboard.academyAdmin.home.pulseSubtitle')}</p>
+        <div className="ds-academy-hero__speed-pattern" aria-hidden="true" />
+        <div className="relative z-[1] flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-wide text-section-brand-fg">
+              {t('dashboard.academyAdmin.home.academyLabel')}
+            </p>
+            <h2 className="ds-text-gradient-brand mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {data.academyName}
+            </h2>
+            <p className="mt-3 max-w-prose text-base font-medium text-text-secondary">
+              {t('dashboard.academyAdmin.home.pulseSubtitle')}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-section-brand-border bg-section-brand-subtle px-4 py-2 text-sm font-semibold text-section-brand-fg shadow-sm">
+              <span aria-hidden="true">⚽</span>
+              {data.players.activeCount} {t('dashboard.academyAdmin.home.kpis.activePlayers')}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-surface/80 px-4 py-2 text-sm font-semibold text-text-primary shadow-sm backdrop-blur-sm">
+              <span aria-hidden="true">🏆</span>
+              {data.categories.totalCount} {t('dashboard.academyAdmin.home.kpis.categories')}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-surface/80 px-4 py-2 text-sm font-semibold text-text-primary shadow-sm backdrop-blur-sm">
+              <span aria-hidden="true">📊</span>
+              {data.matches.upcomingCount} {t('dashboard.academyAdmin.home.kpis.upcomingMatches')}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
-        <StatCardGrid>
+        <StatCardGrid columns={3}>
           <StatCard
-            accent="plans"
-            icon={<span aria-hidden="true">👤</span>}
-            value={`${data.players.activeCount}`}
+            icon={<Users className={iconClass} />}
+            value={data.players.activeCount}
             label={t('dashboard.academyAdmin.home.kpis.activePlayers')}
             delta={playerUsage}
             variant={data.players.activeCount >= data.players.planLimit ? 'warning' : 'default'}
           />
           <StatCard
-            accent="plans"
-            icon={<span aria-hidden="true">⏳</span>}
-            value={String(data.players.pendingCount)}
+            icon={<UserRoundCheck className={iconClass} />}
+            value={data.players.pendingCount}
             label={t('dashboard.academyAdmin.home.kpis.pendingPlayers')}
             variant={data.players.pendingCount > 0 ? 'warning' : 'default'}
           />
           <StatCard
-            accent="academies"
-            icon={<span aria-hidden="true">📁</span>}
-            value={String(data.categories.totalCount)}
+            icon={<Layers className={iconClass} />}
+            value={data.categories.totalCount}
             label={t('dashboard.academyAdmin.home.kpis.categories')}
             delta={
               data.categories.withoutCoachCount > 0
@@ -229,11 +269,10 @@ function AcademyAdminHomeContent() {
             }
           />
           <StatCard
-            accent="users"
-            icon={<span aria-hidden="true">🧑‍🤝‍🧑</span>}
-            value={String(
-              data.usersByRole.coach + data.usersByRole.parent + data.usersByRole.academyAdmin,
-            )}
+            icon={<UserCog className={iconClass} />}
+            value={
+              data.usersByRole.coach + data.usersByRole.parent + data.usersByRole.academyAdmin
+            }
             label={t('dashboard.academyAdmin.home.kpis.users')}
             delta={t('dashboard.academyAdmin.home.usersBreakdown', {
               coaches: data.usersByRole.coach,
@@ -242,9 +281,8 @@ function AcademyAdminHomeContent() {
             })}
           />
           <StatCard
-            accent="matches"
-            icon={<span aria-hidden="true">⚽</span>}
-            value={String(data.matches.upcomingCount)}
+            icon={<Trophy className={iconClass} />}
+            value={data.matches.upcomingCount}
             label={t('dashboard.academyAdmin.home.kpis.upcomingMatches')}
             delta={
               data.matches.inProgressCount > 0
@@ -255,20 +293,20 @@ function AcademyAdminHomeContent() {
             }
           />
           <StatCard
-            accent="billing"
-            icon={<span aria-hidden="true">💳</span>}
+            icon={<CreditCard className={iconClass} />}
             value={data.billing.planName ?? '—'}
             label={t('dashboard.academyAdmin.home.kpis.billing')}
             delta={t('dashboard.academyAdmin.home.nextDue', {
               date: data.billing.nextDueDate ? formatDate(data.billing.nextDueDate) : '—',
             })}
             variant={billingVariant}
+            animateValue={false}
           />
         </StatCardGrid>
       </div>
 
       <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 2 }}>
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.attentionTitle')}
         </h2>
         {attentionItems.length === 0 ? (
@@ -277,10 +315,9 @@ function AcademyAdminHomeContent() {
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {attentionItems.map((item) => (
               <li key={item.key}>
-                <a
-                  href={item.href}
+                <div
                   className={cn(
-                    'flex min-h-touch flex-col justify-between gap-3 rounded-lg border bg-bg-surface p-4 no-underline transition-colors hover:bg-bg-muted sm:flex-row sm:items-center',
+                    'ds-card-interactive flex min-h-touch flex-col gap-4 rounded-lg border bg-bg-surface p-4 sm:flex-row sm:items-center sm:justify-between',
                     item.variant === 'error'
                       ? 'border-feedback-error/40'
                       : item.variant === 'warning'
@@ -288,14 +325,25 @@ function AcademyAdminHomeContent() {
                         : 'border-border',
                   )}
                 >
-                  <div>
-                    <p className="font-semibold text-text-primary">{item.title}</p>
-                    <p className="mt-1 text-sm text-text-secondary">{item.description}</p>
+                  <div className="flex gap-3">
+                    <SeverityDot variant={item.variant} />
+                    <div>
+                      <p className="font-semibold text-text-primary">{item.title}</p>
+                      <p className="mt-1 text-sm text-text-secondary">{item.description}</p>
+                    </div>
                   </div>
-                  <span className="shrink-0 text-sm font-medium text-section-brand-fg">
-                    {t('dashboard.academyAdmin.home.attentionAction')} →
-                  </span>
-                </a>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="shrink-0"
+                    onClick={() => {
+                      window.location.href = item.href;
+                    }}
+                  >
+                    {t('dashboard.academyAdmin.home.attentionAction')}
+                    <ArrowRight className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
@@ -306,7 +354,10 @@ function AcademyAdminHomeContent() {
         <AcademyDashboardChart byCategory={data.players.byCategory} />
       </div>
 
-      <div className="ds-stagger-item grid gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ ['--stagger-index' as string]: 4 }}>
+      <div
+        className="ds-stagger-item grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        style={{ ['--stagger-index' as string]: 4 }}
+      >
         <DataCard className="p-4">
           <LabeledValue label={t('dashboard.academyAdmin.home.billingStatus')}>
             <Badge
@@ -316,6 +367,19 @@ function AcademyAdminHomeContent() {
                   : data.billing.academyBillingStatus === AcademyBillingStatus.PENDING
                     ? 'warning'
                     : 'success'
+              }
+              icon={
+                <span
+                  className={cn(
+                    'inline-block h-1.5 w-1.5 rounded-full',
+                    data.billing.academyBillingStatus === AcademyBillingStatus.OVERDUE
+                      ? 'bg-feedback-error'
+                      : data.billing.academyBillingStatus === AcademyBillingStatus.PENDING
+                        ? 'bg-feedback-warning'
+                        : 'bg-feedback-success',
+                  )}
+                  aria-hidden="true"
+                />
               }
             >
               {t(academyAdminHomeBillingStatusKey(data.billing.academyBillingStatus))}
@@ -342,7 +406,7 @@ function AcademyAdminHomeContent() {
       </div>
 
       <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 5 }}>
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.quickLinksTitle')}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -350,31 +414,26 @@ function AcademyAdminHomeContent() {
             href={`${BASE}/users`}
             title={t('dashboard.academyAdmin.users.title')}
             description={t('dashboard.academyAdmin.users.description')}
-            accent="users"
           />
           <QuickLinkCard
             href={`${BASE}/categories`}
             title={t('dashboard.academyAdmin.categories.title')}
             description={t('dashboard.academyAdmin.categories.description')}
-            accent="academies"
           />
           <QuickLinkCard
             href={`${BASE}/players`}
             title={t('dashboard.academyAdmin.players.title')}
             description={t('dashboard.academyAdmin.players.description')}
-            accent="plans"
           />
           <QuickLinkCard
             href={`${BASE}/matches`}
             title={t('dashboard.academyAdmin.matches.title')}
             description={t('dashboard.academyAdmin.matches.description')}
-            accent="matches"
           />
           <QuickLinkCard
             href={`${BASE}/billing`}
             title={t('dashboard.academyAdmin.billing.title')}
             description={t('dashboard.academyAdmin.billing.description')}
-            accent="billing"
           />
         </div>
       </section>

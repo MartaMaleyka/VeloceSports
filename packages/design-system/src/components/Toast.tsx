@@ -82,7 +82,7 @@ function ToastViewport({
       aria-label={t('a11y.notifications')}
     >
       {toasts.map((toast) => (
-        <div key={toast.id} className={cn('animate-in fade-in shadow-md')}>
+        <div key={toast.id} className={cn('ds-toast-enter shadow-md')}>
           <Alert variant={toast.variant} title={toast.title} role="status">
             <div className="flex items-start justify-between gap-2">
               <span>{toast.message}</span>

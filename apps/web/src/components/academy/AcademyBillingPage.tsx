@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { BillingSummaryDto, InvoiceDto } from '@velocesport/shared';
 import { AcademyBillingStatus } from '@velocesport/shared';
 import {
   Alert,
+  Badge,
   DataCard,
   DataCardFooter,
   DataCardHeader,
   DataView,
   LabeledValue,
-  StatCard,
-  StatCardGrid,
   Table,
   TableBody,
   TableCell,
@@ -18,6 +17,13 @@ import {
   ToastProvider,
 } from '@velocesport/design-system';
 import { useTranslation, platformBillingAcademyStatusKey } from '@velocesport/i18n';
+import {
+  Calendar,
+  CalendarClock,
+  CalendarRange,
+  CheckCircle2,
+  Clock,
+} from 'lucide-react';
 import { billingFetch, billingFetchList, BillingApiError } from '../../lib/billing-api';
 import { downloadBillingInvoicePdf } from '../../lib/download-pdf';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
@@ -25,12 +31,43 @@ import { InvoiceStatusBadge, InvoiceTypeBadge } from '../platform/BillingBadges'
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 
 const PAGE_SIZE = 12;
+const iconClass = 'h-5 w-5';
 
 function formatMoney(amount: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale === 'es' ? 'es-PA' : 'en-US', {
     style: 'currency',
     currency,
   }).format(amount);
+}
+
+function billingStatusBadgeVariant(
+  status: AcademyBillingStatus,
+): 'success' | 'warning' | 'error' {
+  if (status === AcademyBillingStatus.OVERDUE) return 'error';
+  if (status === AcademyBillingStatus.PENDING) return 'warning';
+  return 'success';
+}
+
+function PeriodInfoCard({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-bg-surface p-4">
+      <div
+        className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-brand-subtle text-action-primary"
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
+      <LabeledValue label={label}>{children}</LabeledValue>
+    </div>
+  );
 }
 
 function AcademyBillingContent() {
@@ -192,49 +229,77 @@ function AcademyBillingContent() {
   );
 
   const header = summary && !loading ? (
-    <>
-      <StatCardGrid className="sm:grid-cols-2 lg:grid-cols-2">
-        <StatCard
-          icon={<span aria-hidden="true">📋</span>}
-          value={summary.planName ?? '—'}
-          label={t('platform.billing.summary.currentPlan')}
-          delta={summary.planPrice != null ? formatMoney(summary.planPrice, 'USD', locale) : undefined}
-          accent="billing"
+    <div className="space-y-4">
+      <div className="relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-6">
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-subtle via-transparent to-transparent"
+          aria-hidden="true"
         />
-        <StatCard
-          icon={<span aria-hidden="true">💳</span>}
-          value={t(platformBillingAcademyStatusKey(summary.academyBillingStatus))}
-          label={t('platform.billing.summary.billingStatus')}
-          variant={
-            summary.academyBillingStatus === AcademyBillingStatus.OVERDUE
-              ? 'error'
-              : summary.academyBillingStatus === AcademyBillingStatus.PENDING
-                ? 'warning'
-                : 'success'
-          }
-        />
-      </StatCardGrid>
-      <div className="mt-4 grid gap-3 rounded-lg border border-section-billing-border bg-section-billing-subtle p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-        <LabeledValue label={t('platform.billing.summary.anchorDay')}>
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-text-secondary">
+              {t('platform.billing.summary.currentPlan')}
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
+              {summary.planName ?? '—'}
+            </h2>
+            {summary.planPrice != null && (
+              <p className="mt-2 text-lg font-semibold tabular-nums text-action-primary">
+                {formatMoney(summary.planPrice, 'USD', locale)}
+              </p>
+            )}
+          </div>
+          <Badge
+            variant={billingStatusBadgeVariant(summary.academyBillingStatus)}
+            icon={
+              summary.academyBillingStatus === AcademyBillingStatus.CURRENT ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-current"
+                  aria-hidden="true"
+                />
+              )
+            }
+          >
+            {t(platformBillingAcademyStatusKey(summary.academyBillingStatus))}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <PeriodInfoCard
+          icon={<Calendar className={iconClass} />}
+          label={t('platform.billing.summary.anchorDay')}
+        >
           {t('platform.billing.summary.anchorDayValue', { day: summary.billingAnchorDay })}
-        </LabeledValue>
-        <LabeledValue label={t('platform.billing.summary.currentPeriod')}>
+        </PeriodInfoCard>
+        <PeriodInfoCard
+          icon={<CalendarRange className={iconClass} />}
+          label={t('platform.billing.summary.currentPeriod')}
+        >
           {t('platform.billing.summary.periodRange', {
             start: summary.currentPeriod.periodStart,
             end: summary.currentPeriod.periodEnd,
           })}
-        </LabeledValue>
-        <LabeledValue label={t('platform.billing.summary.nextPeriod')}>
+        </PeriodInfoCard>
+        <PeriodInfoCard
+          icon={<CalendarClock className={iconClass} />}
+          label={t('platform.billing.summary.nextPeriod')}
+        >
           {t('platform.billing.summary.periodRange', {
             start: summary.nextPeriod.periodStart,
             end: summary.nextPeriod.periodEnd,
           })}
-        </LabeledValue>
-        <LabeledValue label={t('platform.billing.summary.dueDate')}>
+        </PeriodInfoCard>
+        <PeriodInfoCard
+          icon={<Clock className={iconClass} />}
+          label={t('platform.billing.summary.dueDate')}
+        >
           {summary.currentPeriod.dueDate}
-        </LabeledValue>
+        </PeriodInfoCard>
       </div>
-    </>
+    </div>
   ) : undefined;
 
   return (

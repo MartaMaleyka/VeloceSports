@@ -7,14 +7,13 @@ import type {
 import { CategoryStatus } from '@velocesport/shared';
 import {
   Alert,
+  Badge,
   Button,
   DataCard,
   DataCardFooter,
-  DataCardHeader,
   DataView,
   Input,
   Label,
-  LabeledValue,
   Modal,
   Select,
   StatCard,
@@ -27,12 +26,22 @@ import {
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
+import { Layers, Plus, UserCheck, UserX } from 'lucide-react';
 import { useTranslation } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
 import { readUrlSearchFlag } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { StatusBadge } from '../platform/StatusBadge';
+
+function coachInitials(email: string): string {
+  const local = email.split('@')[0] ?? '';
+  const parts = local.split(/[._-]/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase() || '?';
+  }
+  return local.slice(0, 2).toUpperCase() || '?';
+}
 
 const PAGE_SIZE = 12;
 
@@ -197,18 +206,21 @@ function TenantCategoriesContent() {
   const kpiHeader = kpis ? (
     <StatCardGrid columns={3}>
       <StatCard
-        accent="academies"
-        icon={<span aria-hidden="true">📁</span>}
+        icon={<Layers className="h-5 w-5" />}
         label={t('tenant.categories.kpis.total')}
         value={String(kpis.totalCategories)}
         delta={t('tenant.categories.kpis.limit', { limit: kpis.planLimit })}
       />
-      <StatCard accent="academies" icon={<span aria-hidden="true">✓</span>} label={t('tenant.categories.kpis.withCoach')} value={String(kpis.withCoach)} />
       <StatCard
-        accent="academies"
-        icon={<span aria-hidden="true">—</span>}
+        icon={<UserCheck className="h-5 w-5" />}
+        label={t('tenant.categories.kpis.withCoach')}
+        value={String(kpis.withCoach)}
+      />
+      <StatCard
+        icon={<UserX className="h-5 w-5" />}
         label={t('tenant.categories.kpis.withoutCoach')}
         value={String(kpis.withoutCoach)}
+        variant={kpis.withoutCoach > 0 ? 'warning' : 'default'}
       />
     </StatCardGrid>
   ) : null;
@@ -245,21 +257,39 @@ function TenantCategoriesContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate}>
+          <Button type="button" onClick={openCreate} className="gap-1.5">
+            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.categories.create')}
           </Button>
         }
         renderCard={(category) => (
           <DataCard>
-            <DataCardHeader
-              title={category.name}
-              badge={<StatusBadge type="user" status={category.status} />}
-            />
-            <LabeledValue label={t('tenant.categories.ageRange')} value={ageRange(category)} />
-            <LabeledValue
-              label={t('tenant.categories.coach')}
-              value={category.coach?.email ?? t('tenant.categories.noCoach')}
-            />
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
+                {category.name}
+              </h3>
+              <StatusBadge type="user" status={category.status} />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="rounded-full border border-border bg-bg-muted px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+                {ageRange(category)}
+              </span>
+            </div>
+            <div className="mt-3">
+              {category.coach ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-text-on-primary shadow-sm"
+                    aria-hidden="true"
+                  >
+                    {coachInitials(category.coach.email)}
+                  </span>
+                  <span className="truncate text-sm text-text-secondary">{category.coach.email}</span>
+                </div>
+              ) : (
+                <Badge variant="warning">{t('tenant.categories.noCoach')}</Badge>
+              )}
+            </div>
             <DataCardFooter>
               <RowActionsMenu {...categoryActions(category)} />
             </DataCardFooter>

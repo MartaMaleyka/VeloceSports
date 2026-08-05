@@ -138,14 +138,15 @@ export function canImmediateUndo(entry: CaptureHistoryEntry, nowMs: number): boo
 }
 
 export function impactChipClasses(impact: ActionImpact): string {
-  if (impact === 'positive') return 'border-feedback-success/40 bg-feedback-success/10 text-feedback-success';
-  if (impact === 'negative') return 'border-feedback-error/40 bg-feedback-error/10 text-feedback-error';
-  return 'border-border bg-bg-muted text-text-secondary';
+  if (impact === 'positive') return 'ds-capture-impact--positive';
+  if (impact === 'negative') return 'ds-capture-impact--negative';
+  return 'ds-capture-impact--neutral';
 }
 
 export function impactPlayerRingClasses(impact: ActionImpact | null, selected: boolean): string {
-  if (!selected) return 'border-border bg-bg-surface';
-  if (impact === 'positive') return 'border-feedback-success bg-feedback-success/15 ring-2 ring-feedback-success/30';
-  if (impact === 'negative') return 'border-feedback-error bg-feedback-error/15 ring-2 ring-feedback-error/30';
-  return 'border-section-matches-fg bg-section-matches-bg ring-2 ring-section-matches-fg/30';
+  if (!selected) return 'ds-capture-player';
+  if (impact === 'negative') {
+    return 'ds-capture-player ds-capture-player--selected border-feedback-error bg-feedback-error/15';
+  }
+  return 'ds-capture-player ds-capture-player--selected';
 }

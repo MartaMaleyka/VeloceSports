@@ -189,28 +189,25 @@ export default function MatchAttendancePanel({
   return (
     <div className="space-y-4 pb-24">
       {!canEdit && !matchLocked && (
-        <Alert variant="info">{t('matches.attendance.readOnlyHint')}</Alert>
+        <p className="text-xs text-text-muted">{t('matches.attendance.readOnlyHint')}</p>
       )}
       {matchLocked && (
-        <Alert variant="info">{t('matches.attendance.lockedHint')}</Alert>
+        <p className="text-xs text-text-muted">{t('matches.attendance.lockedHint')}</p>
       )}
 
       <StatCardGrid className="lg:grid-cols-3">
         <StatCard
-          accent="matches"
-          icon={<span className="text-lg font-bold">✓</span>}
+          icon={<span className="text-lg font-bold" aria-hidden="true">✓</span>}
           value={summary.presentCount}
           label={t('matches.attendance.kpiPresent')}
         />
         <StatCard
-          accent="matches"
-          icon={<span className="text-lg font-bold">★</span>}
+          icon={<span className="text-lg font-bold" aria-hidden="true">★</span>}
           value={summary.starterCount}
           label={t('matches.attendance.kpiStarters')}
         />
         <StatCard
-          accent="matches"
-          icon={<span className="text-lg font-bold">↔</span>}
+          icon={<span className="text-lg font-bold" aria-hidden="true">↔</span>}
           value={summary.substituteCount}
           label={t('matches.attendance.kpiSubstitutes')}
         />
@@ -251,10 +248,10 @@ export default function MatchAttendancePanel({
                   disabled={readOnly}
                   onClick={() => togglePresent(entry)}
                   aria-pressed={entry.attended}
-                  className={`min-h-touch min-w-[7rem] shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`min-h-12 min-w-[8.5rem] shrink-0 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors ${
                     entry.attended
-                      ? 'border-feedback-success bg-feedback-success/15 text-feedback-success'
-                      : 'border-border bg-bg-muted text-text-secondary hover:border-border-strong'
+                      ? 'border-section-brand-border bg-section-brand-subtle text-section-brand-fg'
+                      : 'border-border bg-bg-muted text-text-muted hover:border-border-strong'
                   } ${readOnly ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                   {entry.attended
@@ -281,10 +278,10 @@ export default function MatchAttendancePanel({
                           type="button"
                           disabled={readOnly}
                           onClick={() => setLineup(entry, entry.lineup === role ? null : role)}
-                          className={`min-h-touch flex-1 rounded-lg border px-2 py-2 text-sm font-medium transition-colors ${
+                          className={`min-h-12 flex-1 rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
                             entry.lineup === role
-                              ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
-                              : 'border-border bg-bg-muted text-text-secondary'
+                              ? 'border-section-brand-border bg-section-brand-subtle text-section-brand-fg'
+                              : 'border-border bg-bg-muted text-text-muted'
                           } ${readOnly ? 'cursor-not-allowed opacity-60' : ''}`}
                         >
                           {label}

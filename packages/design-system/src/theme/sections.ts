@@ -15,39 +15,21 @@ export const SECTION_ACCENT_IDS = [
 
 export type SectionAccentId = (typeof SECTION_ACCENT_IDS)[number];
 
+/** StatCards unificados: superficie neutra + ícono brand (sin pasteles por sección). */
+const UNIFIED_STAT_CARD = {
+  card: 'border-border bg-bg-surface',
+  icon: 'bg-brand-subtle text-action-primary',
+} as const;
+
 const statCardClasses: Record<SectionAccentId, { card: string; icon: string }> = {
-  brand: {
-    card: 'border-section-brand-border bg-section-brand-subtle',
-    icon: 'bg-section-brand-muted text-section-brand-fg',
-  },
-  plans: {
-    card: 'border-section-plans-border bg-section-plans-subtle',
-    icon: 'bg-section-plans-muted text-section-plans-fg',
-  },
-  academies: {
-    card: 'border-section-academies-border bg-section-academies-subtle',
-    icon: 'bg-section-academies-muted text-section-academies-fg',
-  },
-  users: {
-    card: 'border-section-users-border bg-section-users-subtle',
-    icon: 'bg-section-users-muted text-section-users-fg',
-  },
-  billing: {
-    card: 'border-section-billing-border bg-section-billing-subtle',
-    icon: 'bg-section-billing-muted text-section-billing-fg',
-  },
-  matches: {
-    card: 'border-section-matches-border bg-section-matches-subtle',
-    icon: 'bg-section-matches-muted text-section-matches-fg',
-  },
-  'super-admins': {
-    card: 'border-section-super-admins-border bg-section-super-admins-subtle',
-    icon: 'bg-section-super-admins-muted text-section-super-admins-fg',
-  },
-  audit: {
-    card: 'border-section-audit-border bg-section-audit-subtle',
-    icon: 'bg-section-audit-muted text-section-audit-fg',
-  },
+  brand: UNIFIED_STAT_CARD,
+  plans: UNIFIED_STAT_CARD,
+  academies: UNIFIED_STAT_CARD,
+  users: UNIFIED_STAT_CARD,
+  billing: UNIFIED_STAT_CARD,
+  matches: UNIFIED_STAT_CARD,
+  'super-admins': UNIFIED_STAT_CARD,
+  audit: UNIFIED_STAT_CARD,
 };
 
 const badgeClasses: Record<SectionAccentId, string> = {
@@ -64,7 +46,7 @@ const badgeClasses: Record<SectionAccentId, string> = {
 
 const navActiveClasses: Record<SectionAccentId, string> = {
   brand:
-    'bg-section-brand-subtle text-section-brand-fg border-l-[3px] border-section-brand-fg font-semibold',
+    'bg-section-brand-subtle text-section-brand-fg border-l-4 border-section-brand-fg font-semibold',
   plans:
     'bg-section-plans-subtle text-section-plans-fg border-l-[3px] border-section-plans-fg font-semibold',
   academies:
@@ -125,9 +107,9 @@ export function sectionAccentFromNavId(navId: string): SectionAccentId {
     players: 'plans',
     matches: 'matches',
     actions: 'matches',
-    children: 'users',
-    calendar: 'matches',
-    notifications: 'audit',
+    children: 'brand',
+    calendar: 'brand',
+    notifications: 'brand',
     'super-admins': 'super-admins',
     audit: 'audit',
     reports: 'audit',

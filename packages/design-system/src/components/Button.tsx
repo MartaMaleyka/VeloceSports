@@ -13,11 +13,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] hover:bg-[var(--button-primary-bg-hover)] border border-transparent shadow-sm',
+    'ds-btn-sport ds-btn-sport--primary bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] hover:bg-[var(--button-primary-bg-hover)] border border-transparent shadow-sm',
   secondary:
-    'bg-bg-surface text-text-primary border border-border hover:bg-bg-muted',
+    'ds-btn-sport ds-btn-sport--secondary bg-bg-surface text-text-primary border border-section-brand-border hover:bg-section-brand-subtle hover:text-section-brand-fg',
   ghost:
-    'bg-transparent text-action-primary hover:bg-action-primary-subtle border border-transparent',
+    'ds-btn-sport bg-transparent text-action-primary hover:bg-action-primary-subtle border border-transparent',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -50,7 +50,6 @@ export function Button({
         sizeClasses[size],
         className,
       )}
-      style={{ transition: 'var(--transition-interactive)' }}
       {...props}
     >
       {loading && (

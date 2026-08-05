@@ -33,9 +33,9 @@ export function VoiceMicButton({
       className={cn(
         'relative flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-full border transition-colors',
         active
-          ? 'border-section-matches-fg bg-section-matches-bg text-section-matches-fg'
+          ? 'border-section-brand-fg bg-section-brand-subtle text-section-brand-fg'
           : 'border-border bg-bg-muted text-text-secondary hover:bg-bg-surface',
-        continuousActive && 'ring-2 ring-section-matches-fg/40',
+        continuousActive && 'ring-2 ring-section-brand-fg/40',
         !supported && 'cursor-not-allowed opacity-60',
         className,
       )}
@@ -46,8 +46,10 @@ export function VoiceMicButton({
       {active && !reducedMotion && (
         <span
           className={cn(
-            'absolute inset-0 rounded-full border-2 border-section-matches-fg/50',
-            continuousActive ? 'animate-pulse' : 'animate-ping',
+            'absolute inset-0 rounded-full',
+            continuousActive
+              ? 'animate-pulse border-2 border-action-primary/50'
+              : 'animate-ping bg-action-primary/40',
           )}
           aria-hidden="true"
         />
