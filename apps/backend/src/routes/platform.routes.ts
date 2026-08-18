@@ -38,6 +38,11 @@ import {
   platformAcademyUserRoleParamsSchema,
   superAdminUserIdParamSchema,
 } from '../validators/user-role.validator.js';
+import {
+  resetPasswordBodySchema,
+  resetPasswordUserParamSchema,
+} from '../validators/password-reset.validator.js';
+import { passwordResetController } from '../controllers/password-reset.controller.js';
 
 const router = Router();
 
@@ -110,6 +115,22 @@ router.patch(
   '/academies/:academyId/users/:userId/status',
   validate(updateUserStatusSchema),
   (req, res, next) => platformController.updateAcademyUserStatus(req, res, next),
+);
+
+/**
+ * @openapi
+ * /api/platform/users/{userId}/reset-password:
+ *   post:
+ *     tags: [Platform]
+ *     summary: Resetear contraseña de cualquier usuario (super_admin)
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post(
+  '/users/:userId/reset-password',
+  validate(resetPasswordUserParamSchema, 'params'),
+  validate(resetPasswordBodySchema),
+  (req, res, next) => passwordResetController.resetPassword(req, res, next),
 );
 
 router.get('/super-admins', (req, res, next) => platformController.listSuperAdmins(req, res, next));

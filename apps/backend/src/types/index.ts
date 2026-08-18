@@ -7,6 +7,13 @@ export interface JwtPayload {
   /** Roles efectivos del usuario (permisos unificados). */
   roles: UserRole[];
   tenantId?: number;
+  /** Si true, el usuario debe cambiar la contraseña antes de usar el resto de la API. */
+  mustChangePassword?: boolean;
+  /**
+   * Unix seconds de `users.password_reset_at` al emitir el token.
+   * Si en DB hay reset y no coincide, el access token quedó invalidado por un reset admin.
+   */
+  passwordResetAt?: number;
 }
 
 export interface AuthUser {
@@ -14,6 +21,7 @@ export interface AuthUser {
   role: UserRole;
   roles: UserRole[];
   tenantId: number | null;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthenticatedRequest {
@@ -40,8 +48,8 @@ export class UnauthorizedError extends AppError {
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = 'Acceso denegado') {
-    super(403, message, 'FORBIDDEN');
+  constructor(message = 'Acceso denegado', code = 'FORBIDDEN') {
+    super(403, message, code);
   }
 }
 

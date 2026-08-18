@@ -59,6 +59,7 @@ export function getSession(cookies: AstroCookies): SessionUser | null {
       role: roles.includes(role) ? role : roles[0]!,
       roles,
       tenantId: payload.tenantId !== undefined ? Number(payload.tenantId) : null,
+      mustChangePassword: Boolean(payload.mustChangePassword),
     };
   } catch (error) {
     if (import.meta.env.DEV) {

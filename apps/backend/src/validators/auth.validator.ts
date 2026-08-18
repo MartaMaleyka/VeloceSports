@@ -60,12 +60,15 @@ export const updateProfileSchema = z
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Ingresa tu contraseña actual'),
+    currentPassword: z.string().min(1, 'Ingresa tu contraseña actual').optional(),
     newPassword: strongPasswordSchema,
     revokeOtherSessions: z.boolean().optional().default(false),
     refreshToken: z.string().min(1).optional(),
   })
-  .refine((data) => data.currentPassword !== data.newPassword, {
-    message: 'La nueva contraseña debe ser distinta a la actual',
-    path: ['newPassword'],
-  });
+  .refine(
+    (data) => !data.currentPassword || data.currentPassword !== data.newPassword,
+    {
+      message: 'La nueva contraseña debe ser distinta a la actual',
+      path: ['newPassword'],
+    },
+  );

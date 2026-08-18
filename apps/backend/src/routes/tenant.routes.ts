@@ -41,6 +41,11 @@ import {
   assignUserRoleBodySchema,
   userRoleParamSchema,
 } from '../validators/user-role.validator.js';
+import {
+  resetPasswordBodySchema,
+  resetPasswordUserParamSchema,
+} from '../validators/password-reset.validator.js';
+import { passwordResetController } from '../controllers/password-reset.controller.js';
 
 const router = Router();
 
@@ -116,6 +121,41 @@ router.patch(
   validate(tenantIdParamSchema, 'params'),
   validate(updateTenantUserStatusBodySchema),
   (req, res, next) => tenantController.updateUserStatus(req, res, next),
+);
+
+/**
+ * @openapi
+ * /api/tenant/users/{userId}/reset-password:
+ *   post:
+ *     tags: [Tenant Users]
+ *     summary: Resetear contraseña de un usuario de la academia
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPassword: { type: string }
+ *               generateRandom: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Contraseña reseteada
+ *       403:
+ *         description: Sin permiso
+ */
+router.post(
+  '/users/:userId/reset-password',
+  validate(resetPasswordUserParamSchema, 'params'),
+  validate(resetPasswordBodySchema),
+  (req, res, next) => passwordResetController.resetPassword(req, res, next),
 );
 
 router.post(

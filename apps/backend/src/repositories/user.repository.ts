@@ -7,7 +7,7 @@ import { TenantScopedRepository } from './base.repository.js';
 import { userRoleRepository } from './user-role.repository.js';
 
 const USER_COLUMNS =
-  'id, email, first_name, last_name, password_hash, role, tenant_id, status, last_login_at, created_at, updated_at';
+  'id, email, first_name, last_name, password_hash, role, tenant_id, status, must_change_password, password_reset_at, password_reset_by, last_login_at, created_at, updated_at';
 
 export interface UserRow extends RowDataPacket {
   id: number;
@@ -18,6 +18,9 @@ export interface UserRow extends RowDataPacket {
   role: UserRole;
   tenant_id: number | null;
   status: UserStatus;
+  must_change_password: boolean | number;
+  password_reset_at: Date | null;
+  password_reset_by: number | null;
   last_login_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -136,7 +139,7 @@ export class UserRepository extends TenantScopedRepository {
     }
 
     const [rows] = await pool.execute<UserRow[]>(
-      `SELECT u.id, u.email, u.first_name, u.last_name, u.password_hash, u.role, u.tenant_id, u.status, u.last_login_at, u.created_at, u.updated_at
+      `SELECT u.id, u.email, u.first_name, u.last_name, u.password_hash, u.role, u.tenant_id, u.status, u.must_change_password, u.password_reset_at, u.password_reset_by, u.last_login_at, u.created_at, u.updated_at
        FROM users u
        WHERE ${conditions.join(' AND ')}
        ORDER BY u.email ASC`,
@@ -352,6 +355,51 @@ export class UserRepository extends TenantScopedRepository {
   async updatePassword(userId: number, passwordHash: string): Promise<void> {
     const pool = getPool();
     await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, userId]);
+  }
+
+  async updatePasswordWithResetAudit(
+    userId: number,
+    passwordHash: string,
+    resetByUserId: number,
+    resetAt: Date = new Date(),
+  ): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE users
+       SET password_hash = ?,
+           must_change_password = TRUE,
+           password_reset_at = ?,
+           password_reset_by = ?
+       WHERE id = ?`,
+      [passwordHash, resetAt, resetByUserId, userId],
+    );
+  }
+
+  async clearMustChangePassword(userId: number, passwordHash: string): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE users
+       SET password_hash = ?,
+           must_change_password = FALSE
+       WHERE id = ?`,
+      [passwordHash, userId],
+    );
+  }
+
+  async findPasswordGateState(
+    userId: number,
+  ): Promise<{ must_change_password: boolean; password_reset_at: Date | null } | null> {
+    const pool = getPool();
+    const [rows] = await pool.execute<UserRow[]>(
+      'SELECT must_change_password, password_reset_at FROM users WHERE id = ? LIMIT 1',
+      [userId],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      must_change_password: Boolean(row.must_change_password),
+      password_reset_at: row.password_reset_at,
+    };
   }
 
   /** Actualiza perfil propio (sin cambiar rol). Solo el usuario indicado. */

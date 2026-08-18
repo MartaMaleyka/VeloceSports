@@ -28,7 +28,8 @@ export interface UpdateProfileRequestDto {
 }
 
 export interface ChangePasswordRequestDto {
-  currentPassword: string;
+  /** Obligatorio salvo cuando must_change_password = true. */
+  currentPassword?: string;
   newPassword: string;
   revokeOtherSessions?: boolean;
   /** Refresh token de la sesión actual (para excluirla al revocar otras). */
@@ -39,6 +40,18 @@ export interface LoginResponseDto {
   accessToken: string;
   refreshToken: string;
   user: AuthUserDto;
+  /** Si true, el frontend debe forzar el cambio de contraseña. */
+  mustChangePassword?: boolean;
+}
+
+export interface ResetPasswordRequestDto {
+  newPassword?: string;
+  generateRandom?: boolean;
+}
+
+export interface ResetPasswordResponseDto {
+  mustChangeOnNextLogin: true;
+  temporaryPassword?: string;
 }
 
 export interface RefreshResponseDto {

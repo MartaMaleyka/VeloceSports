@@ -26,7 +26,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (PUBLIC_PATHS.has(pathname)) {
     if (session && pathname === '/login') {
+      if (session.mustChangePassword) {
+        return context.redirect('/dashboard/change-password-required');
+      }
       return context.redirect(getDashboardPathForSession(session));
+    }
+    if (pathname === '/dashboard/change-password-required') {
+      if (!session) {
+        return context.redirect('/login');
+      }
+      return next();
     }
     return next();
   }
@@ -44,10 +53,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect(`/login?${params.toString()}`);
     }
 
+    if (
+      session.mustChangePassword &&
+      pathname !== '/dashboard/change-password-required'
+    ) {
+      return context.redirect('/dashboard/change-password-required');
+    }
+
     const requiredRole = getRequiredRoleForPath(pathname);
     if (requiredRole && !sessionHasRole(session, requiredRole)) {
       return context.redirect(getDashboardPathForSession(session));
     }
+  }
+
+  if (
+    pathname === '/dashboard/change-password-required' &&
+    session &&
+    !session.mustChangePassword
+  ) {
+    return context.redirect(getDashboardPathForSession(session));
   }
 
   return next();

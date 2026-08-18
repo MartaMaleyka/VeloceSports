@@ -99,6 +99,11 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
         message: t('auth.login.successToast'),
       });
 
+      if (loginBody.data.mustChangePassword) {
+        window.location.href = appPath('/dashboard/change-password-required');
+        return;
+      }
+
       const dashboardPath =
         redirectPath && redirectPath.startsWith('/dashboard')
           ? redirectPath

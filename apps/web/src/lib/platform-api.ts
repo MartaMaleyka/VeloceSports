@@ -48,6 +48,9 @@ export async function platformFetch<T>(
   }
 
   if (!response.ok || !body.success) {
+    if (response.status === 403 && body.code === 'PASSWORD_CHANGE_REQUIRED') {
+      window.location.href = appPath('/dashboard/change-password-required');
+    }
     throw new PlatformApiError(body.message ?? 'Request failed', response.status, body.code, body.details);
   }
 

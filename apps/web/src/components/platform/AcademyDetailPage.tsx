@@ -33,6 +33,7 @@ import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './Reactiva
 import { RowActionsMenu } from './RowActionsMenu';
 import { StatusBadge } from './StatusBadge';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { ResetPasswordModal } from '../auth/ResetPasswordModal';
 
 const PAGE_SIZE = 12;
 
@@ -88,6 +89,7 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
   const [userFormError, setUserFormError] = useState<string | null>(null);
   const [userSubmitting, setUserSubmitting] = useState(false);
   const [tempCreds, setTempCreds] = useState<{ email: string; password: string } | null>(null);
+  const [resetTarget, setResetTarget] = useState<PlatformUserDto | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<ReactivateAcademyTarget | null>(null);
 
   const load = useCallback(async () => {
@@ -198,6 +200,11 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
 
   const userActions = (user: PlatformUserDto) => ({
     primaryActions: [
+      {
+        id: 'reset-password',
+        label: t('tenant.users.resetPassword'),
+        onClick: () => setResetTarget(user),
+      },
       {
         id: 'toggle',
         label: user.status === UserStatus.ACTIVE ? t('common.inactive') : t('common.active'),
@@ -572,6 +579,16 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
           password={tempCreds.password}
           titleKey="platform.academies.tempPassword.title"
           descriptionKey="platform.academies.tempPassword.description"
+        />
+      )}
+
+      {resetTarget && (
+        <ResetPasswordModal
+          open
+          onClose={() => setResetTarget(null)}
+          userId={resetTarget.id}
+          userName={resetTarget.email}
+          academyId={academyId}
         />
       )}
 

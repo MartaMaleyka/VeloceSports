@@ -39,6 +39,13 @@ function toSessionTimestamp(value: Date | string): number {
   return ms;
 }
 
+function passwordResetAtClaim(value: Date | string | null | undefined): number | undefined {
+  if (!value) return undefined;
+  const ms = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  if (!Number.isFinite(ms)) return undefined;
+  return Math.floor(ms / 1000);
+}
+
 export class UserSessionService {
   /** Single-flight por sessionId: requests concurrentes con el mismo refresh comparten resultado. */
   private refreshInflight = new Map<number, Promise<SessionTokensResult>>();
@@ -104,6 +111,10 @@ export class UserSessionService {
       role: user.role,
       roles,
       tenantId,
+      ...(Boolean(user.must_change_password) ? { mustChangePassword: true as const } : {}),
+      ...(passwordResetAtClaim(user.password_reset_at) != null
+        ? { passwordResetAt: passwordResetAtClaim(user.password_reset_at)! }
+        : {}),
     };
   }
 

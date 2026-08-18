@@ -22,6 +22,14 @@ function buildTokenPayload(payload: JwtPayload): Record<string, unknown> {
     tokenPayload.tenantId = payload.tenantId;
   }
 
+  if (payload.mustChangePassword) {
+    tokenPayload.mustChangePassword = true;
+  }
+
+  if (typeof payload.passwordResetAt === 'number' && Number.isFinite(payload.passwordResetAt)) {
+    tokenPayload.passwordResetAt = payload.passwordResetAt;
+  }
+
   return tokenPayload;
 }
 
@@ -51,6 +59,9 @@ export function verifyAccessToken(token: string): JwtPayload {
     role,
     roles,
     tenantId: decoded.tenantId !== undefined ? Number(decoded.tenantId) : undefined,
+    mustChangePassword: Boolean(decoded.mustChangePassword),
+    passwordResetAt:
+      decoded.passwordResetAt !== undefined ? Number(decoded.passwordResetAt) : undefined,
   };
 }
 
@@ -71,6 +82,9 @@ export function verifyRefreshToken(token: string): RefreshJwtPayload {
     role,
     roles,
     tenantId: decoded.tenantId !== undefined ? Number(decoded.tenantId) : undefined,
+    mustChangePassword: Boolean(decoded.mustChangePassword),
+    passwordResetAt:
+      decoded.passwordResetAt !== undefined ? Number(decoded.passwordResetAt) : undefined,
     sessionId,
   };
 }

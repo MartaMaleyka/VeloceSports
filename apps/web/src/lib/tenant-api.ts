@@ -32,6 +32,9 @@ export async function tenantFetch<T>(path: string, options: RequestInit = {}): P
 
   const body = (await response.json()) as ApiResponse<T>;
   if (!response.ok || !body.success) {
+    if (response.status === 403 && body.code === 'PASSWORD_CHANGE_REQUIRED') {
+      window.location.href = appPath('/dashboard/change-password-required');
+    }
     throw new TenantApiError(body.message ?? 'Request failed', response.status, body.code);
   }
   return body.data as T;

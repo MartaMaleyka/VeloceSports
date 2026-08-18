@@ -35,11 +35,13 @@ import { ClipboardList, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useTranslation, roleKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
+import { fetchMyProfile } from '../../lib/profile-api';
 import { pickPrimaryTenantRole, syncTenantUserRoles } from '../../lib/tenant-roles';
 import { RoleBadgesList, RoleCheckboxGroup } from './RoleFields';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { StatusBadge } from '../platform/StatusBadge';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
+import { ResetPasswordModal } from '../auth/ResetPasswordModal';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
 
 const PAGE_SIZE = 12;
@@ -87,12 +89,14 @@ function TenantUsersContent() {
   const [users, setUsers] = useState<TenantUserDto[]>([]);
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [kpis, setKpis] = useState<TenantUsersKpisDto | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [resetTarget, setResetTarget] = useState<TenantUserDto | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<UserFormState>({ ...emptyUserForm });
@@ -112,14 +116,16 @@ function TenantUsersContent() {
     setLoading(true);
     setError(null);
     try {
-      const [userData, kpiData, categoryData] = await Promise.all([
+      const [userData, kpiData, categoryData, me] = await Promise.all([
         tenantFetchList<TenantUserDto>('users'),
         tenantFetch<TenantUsersKpisDto>('users/kpis'),
         tenantFetchList<CategoryDto>('categories'),
+        fetchMyProfile().catch(() => null),
       ]);
       setUsers(userData);
       setKpis(kpiData);
       setCategories(categoryData);
+      if (me) setCurrentUserId(me.id);
     } catch (e) {
       setError(e instanceof TenantApiError ? e.message : t('tenant.errors.generic'));
     } finally {
@@ -300,23 +306,40 @@ function TenantUsersContent() {
     return new Date(value).toLocaleString(locale === 'es' ? 'es-PA' : 'en-US');
   };
 
-  const userActions = (user: TenantUserDto) => ({
-    primaryActions: [
-      {
-        id: 'edit',
-        label: t('tenant.users.edit'),
-        onClick: () => void openEdit(user.id),
-      },
-      {
-        id: 'toggle',
-        label:
-          user.status === UserStatus.ACTIVE
-            ? t('tenant.users.deactivate')
-            : t('tenant.users.activate'),
-        onClick: () => void toggleStatus(user),
-      },
-    ],
-  });
+  const userActions = (user: TenantUserDto) => {
+    const roles = user.roles ?? [user.role];
+    const canReset =
+      currentUserId != null &&
+      user.id !== currentUserId &&
+      !roles.includes(UserRole.ACADEMY_ADMIN);
+
+    return {
+      primaryActions: [
+        {
+          id: 'edit',
+          label: t('tenant.users.edit'),
+          onClick: () => void openEdit(user.id),
+        },
+        ...(canReset
+          ? [
+              {
+                id: 'reset-password',
+                label: t('tenant.users.resetPassword'),
+                onClick: () => setResetTarget(user),
+              },
+            ]
+          : []),
+        {
+          id: 'toggle',
+          label:
+            user.status === UserStatus.ACTIVE
+              ? t('tenant.users.deactivate')
+              : t('tenant.users.activate'),
+          onClick: () => void toggleStatus(user),
+        },
+      ],
+    };
+  };
 
   const categoryOptions = [
     { value: '', label: t('tenant.players.noCategory') },
@@ -687,6 +710,15 @@ function TenantUsersContent() {
           password={tempCreds.password}
           titleKey="tenant.users.tempPasswordTitle"
           descriptionKey="tenant.users.tempPasswordDescription"
+        />
+      )}
+
+      {resetTarget && (
+        <ResetPasswordModal
+          open
+          onClose={() => setResetTarget(null)}
+          userId={resetTarget.id}
+          userName={userDisplayName(resetTarget)}
         />
       )}
     </>

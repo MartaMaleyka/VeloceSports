@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
+import { generateReadableTemporaryPassword } from '@velocesport/shared';
 
 const TEMP_PASSWORD_LENGTH = 12;
 
 export function generateTemporaryPassword(): string {
-  const raw = crypto.randomBytes(16).toString('base64url');
-  return raw.slice(0, TEMP_PASSWORD_LENGTH);
+  return generateReadableTemporaryPassword(TEMP_PASSWORD_LENGTH, (n) => crypto.randomBytes(n));
 }
 
 export function slugify(value: string): string {

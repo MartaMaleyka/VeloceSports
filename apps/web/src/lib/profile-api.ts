@@ -37,6 +37,9 @@ async function profileFetch<T>(path: string, options: RequestInit = {}): Promise
 
   const body = (await response.json()) as ApiResponse<T>;
   if (!response.ok || !body.success) {
+    if (response.status === 403 && body.code === 'PASSWORD_CHANGE_REQUIRED') {
+      window.location.href = appPath('/dashboard/change-password-required');
+    }
     throw new ProfileApiError(body.message ?? 'Request failed', response.status, body.code);
   }
   return body.data as T;

@@ -11,6 +11,7 @@ export interface SessionUser {
   /** Todos los roles del usuario. */
   roles: LoginRole[];
   tenantId: number | null;
+  mustChangePassword?: boolean;
 }
 
 /** Mapa ruta → rol permitido */
@@ -57,4 +58,4 @@ export function getRequiredRoleForPath(pathname: string): LoginRole | null {
   return null;
 }
 
-export const PUBLIC_PATHS = new Set(['/login']);
+export const PUBLIC_PATHS = new Set(['/login', '/dashboard/change-password-required']);

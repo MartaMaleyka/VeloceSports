@@ -35,6 +35,7 @@ export interface LoginResult {
     tenantId: number | null;
     roles: string[];
   };
+  mustChangePassword: boolean;
 }
 
 export interface RegisterInput {
@@ -89,11 +90,18 @@ export class AuthService {
       ? undefined
       : user.tenant_id ?? undefined;
 
+    const mustChangePassword = Boolean(user.must_change_password);
+    const passwordResetAt = user.password_reset_at
+      ? Math.floor(new Date(user.password_reset_at).getTime() / 1000)
+      : undefined;
+
     const tokenPayload = {
       userId: user.id,
       role: user.role,
       roles,
       tenantId,
+      ...(mustChangePassword ? { mustChangePassword: true as const } : {}),
+      ...(passwordResetAt != null ? { passwordResetAt } : {}),
     };
 
     const { accessToken, refreshToken } = await userSessionService.createSessionWithTokens(
@@ -111,6 +119,7 @@ export class AuthService {
         tenantId: user.tenant_id,
         roles,
       },
+      mustChangePassword,
     };
   }
 
@@ -221,13 +230,29 @@ export class AuthService {
       throw new NotFoundError('Usuario no encontrado');
     }
 
-    const currentValid = await bcrypt.compare(input.currentPassword, user.password_hash);
-    if (!currentValid) {
-      throw new UnauthorizedError('La contraseña actual no es correcta');
+    const mustChange = Boolean(user.must_change_password);
+
+    if (!mustChange) {
+      if (!input.currentPassword) {
+        throw new ValidationError('Ingresa tu contraseña actual');
+      }
+      const currentValid = await bcrypt.compare(input.currentPassword, user.password_hash);
+      if (!currentValid) {
+        throw new UnauthorizedError('La contraseña actual no es correcta');
+      }
+    }
+
+    if (input.currentPassword && input.currentPassword === input.newPassword) {
+      throw new ValidationError('La nueva contraseña debe ser distinta a la actual');
     }
 
     const passwordHash = await bcrypt.hash(input.newPassword, BCRYPT_ROUNDS);
-    await userRepository.updatePassword(userId, passwordHash);
+
+    if (mustChange) {
+      await userRepository.clearMustChangePassword(userId, passwordHash);
+    } else {
+      await userRepository.updatePassword(userId, passwordHash);
+    }
 
     let otherSessionsRevoked = 0;
     if (input.revokeOtherSessions) {
@@ -249,11 +274,12 @@ export class AuthService {
       { userId, tenantId: user.tenant_id },
       'user',
       userId,
-      'password_change',
+      mustChange ? 'password_change_required' : 'password_change',
       null,
       {
         revokeOtherSessions: Boolean(input.revokeOtherSessions),
         otherSessionsRevoked,
+        clearedMustChangePassword: mustChange,
       },
     );
 
