@@ -11,6 +11,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 interface MatchAttendancePanelProps {
   matchId: number;
@@ -229,18 +230,28 @@ export default function MatchAttendancePanel({
           return (
             <li key={entry.playerId} className="p-3 sm:p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-text-primary">
-                    {entry.playerLastName}, {entry.playerFirstName}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {t('matches.attendance.defaultJersey', { number: entry.defaultJerseyNumber })}
-                    {entry.playerStatus !== 'active' && (
-                      <span className="ml-2 text-feedback-warning">
-                        ({t('matches.attendance.inactivePlayer')})
-                      </span>
-                    )}
-                  </p>
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <PlayerAvatar
+                    player={{
+                      firstName: entry.playerFirstName,
+                      lastName: entry.playerLastName,
+                      photoUrl: entry.photoUrl ?? null,
+                    }}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-medium text-text-primary">
+                      {entry.playerLastName}, {entry.playerFirstName}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {t('matches.attendance.defaultJersey', { number: entry.defaultJerseyNumber })}
+                      {entry.playerStatus !== 'active' && (
+                        <span className="ml-2 text-feedback-warning">
+                          ({t('matches.attendance.inactivePlayer')})
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 <button

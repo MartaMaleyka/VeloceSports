@@ -34,12 +34,7 @@ import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-a
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
-
-function playerInitials(firstName: string, lastName: string): string {
-  const f = firstName.trim()[0] ?? '';
-  const l = lastName.trim()[0] ?? '';
-  return `${f}${l}`.toUpperCase() || '?';
-}
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 const PAGE_SIZE = 12;
 
@@ -389,20 +384,16 @@ function TenantPlayersContent() {
         renderCard={(player) => (
           <DataCard>
             <header className="flex items-start gap-3">
-              <div className="relative shrink-0">
-                <span
-                  className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-gradient font-display text-lg font-semibold text-text-on-primary shadow-sm"
-                  aria-hidden="true"
-                >
-                  {playerInitials(player.firstName, player.lastName)}
-                </span>
-                <span
-                  className="absolute -bottom-1 -right-1 flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-bg-surface bg-bg-surface px-1 font-display text-2xl font-bold tabular-nums text-text-primary"
-                  aria-label={`#${player.jerseyNumber}`}
-                >
-                  {player.jerseyNumber}
-                </span>
-              </div>
+              <PlayerAvatar
+                player={{
+                  firstName: player.firstName,
+                  lastName: player.lastName,
+                  photoUrl: player.photoUrl ?? null,
+                  jerseyNumber: player.jerseyNumber,
+                }}
+                size="xl"
+                showJersey
+              />
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
@@ -451,7 +442,19 @@ function TenantPlayersContent() {
             <TableBody>
               {visible.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell>{playerName(player)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <PlayerAvatar
+                        player={{
+                          firstName: player.firstName,
+                          lastName: player.lastName,
+                          photoUrl: player.photoUrl ?? null,
+                        }}
+                        size="sm"
+                      />
+                      <span>{playerName(player)}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>#{player.jerseyNumber}</TableCell>
                   <TableCell>{player.categoryName ?? t('tenant.players.noCategory')}</TableCell>
                   <TableCell>

@@ -4,6 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-dotenv.config({ path: path.resolve(__dirname, '../.env.test') });
+dotenv.config({ path: path.resolve(__dirname, '../.env.test'), override: true });
 
 process.env.NODE_ENV = 'test';

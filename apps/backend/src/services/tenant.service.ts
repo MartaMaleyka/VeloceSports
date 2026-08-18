@@ -30,6 +30,7 @@ import { parentLinkRepository } from '../repositories/parent-link.repository.js'
 import { playerRepository, type PlayerWithCategoryRow } from '../repositories/player.repository.js';
 import { userRepository, type UserRow } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
+import { playerPhotoService } from './player-photo.service.js';
 import { planLimitService } from './plan-limit.service.js';
 import { userSessionService } from './user-session.service.js';
 import { userRoleManagementService } from './user-role-management.service.js';
@@ -471,6 +472,7 @@ async function toPlayerDto(
     const map = await playerRepository.findParentsForPlayers(tenantId, [row.id]);
     parents = map.get(row.id) ?? [];
   }
+  const photoUrl = await playerPhotoService.resolveSignedUrl(row.photo_object_key);
   return {
     id: row.id,
     firstName: row.first_name,
@@ -482,6 +484,7 @@ async function toPlayerDto(
     categoryName: row.category_name,
     status: row.status,
     rejectionReason: row.rejection_reason,
+    photoUrl,
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),

@@ -9,6 +9,7 @@ export interface CapturePlayerRef {
   lastName: string;
   jerseyNumber: number;
   lineup: 'starter' | 'substitute' | null;
+  photoUrl?: string | null;
 }
 
 export interface CaptureActionRef {

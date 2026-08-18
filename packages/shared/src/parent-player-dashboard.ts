@@ -69,6 +69,7 @@ export interface ParentPlayerDashboardDto {
     lastName: string;
     jerseyNumber: number | null;
     categoryName: string | null;
+    photoUrl: string | null;
   };
   period: ParentDashboardPeriodValue;
   availablePeriods: ParentDashboardPeriodOptionDto[];

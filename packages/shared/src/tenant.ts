@@ -154,9 +154,19 @@ export interface PlayerDto {
   categoryName: string | null;
   status: PlayerStatus;
   rejectionReason: string | null;
+  /** URL firmada temporal (MinIO). null si no hay foto. */
+  photoUrl: string | null;
   parents: PlayerParentDto[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PlayerPhotoUploadResponseDto {
+  photoUrl: string;
+}
+
+export interface PlayerPhotoUrlResponseDto {
+  photoUrl: string | null;
 }
 
 export interface PlayersKpisDto {

@@ -19,6 +19,7 @@ import {
 } from '@velocesport/i18n';
 import { useChartTheme } from '../../hooks/useChartTheme';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 type ChartMode = 'radar' | 'bars';
 
@@ -99,20 +100,16 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
           {/* Cabecera cromo */}
           <header className="mb-6 text-center">
             <div className="relative mx-auto mb-4 inline-flex">
-              <div
-                className="flex h-24 w-24 items-center justify-center rounded-2xl bg-brand-gradient font-display text-2xl font-bold text-text-on-primary shadow-lg ring-4 ring-bg-surface"
-                aria-hidden="true"
-              >
-                {data.player.initials}
-              </div>
-              {data.match.matchJerseyNumber != null && (
-                <span
-                  className="absolute -bottom-1 -right-1 flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-bg-surface bg-section-brand-subtle px-1.5 font-display text-sm font-bold tabular-nums text-section-brand-fg shadow-sm"
-                  aria-hidden="true"
-                >
-                  #{data.match.matchJerseyNumber}
-                </span>
-              )}
+              <PlayerAvatar
+                player={{
+                  firstName: data.player.firstName,
+                  lastName: data.player.lastName,
+                  photoUrl: data.player.photoUrl ?? null,
+                  jerseyNumber: data.match.matchJerseyNumber,
+                }}
+                size="xl"
+                showJersey={data.match.matchJerseyNumber != null}
+              />
             </div>
             <p className="text-xs font-semibold uppercase tracking-widest text-section-brand-fg">
               {data.academy.name}

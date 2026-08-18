@@ -25,6 +25,28 @@ export const en = {
     confirm: 'Confirm',
     back: 'Back',
   },
+  players: {
+    photo: {
+      title: "Photo of {name}",
+      subtitle: 'Upload a photo of {name}. Only you and the academy team will see it.',
+      choose: 'Choose photo',
+      hint: 'JPG, PNG or WebP · max 5 MB',
+      upload: 'Upload',
+      delete: 'Remove photo',
+      deleteConfirm: 'Are you sure you want to remove your child’s photo?',
+      deleteYes: 'Yes, remove',
+      change: 'Change photo',
+      success: 'Photo updated',
+      deleted: 'Photo removed',
+      errors: {
+        tooLarge: 'The photo cannot exceed 5 MB',
+        format: 'Unsupported format. Use JPG, PNG or WebP',
+        crop: 'Adjust the square crop before uploading',
+        generic: 'We could not upload the photo. Check your connection and try again.',
+        delete: 'We could not remove the photo. Try again.',
+      },
+    },
+  },
   profile: {
     menuLabel: 'My profile',
     logoutLabel: 'Sign out',

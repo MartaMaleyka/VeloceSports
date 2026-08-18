@@ -20,6 +20,7 @@ export interface MatchAttendanceEntryDto {
   lineup: MatchLineupRole | null;
   matchJerseyNumber: number | null;
   attendanceId: number | null;
+  photoUrl: string | null;
 }
 
 export interface MatchAttendanceSummaryDto {

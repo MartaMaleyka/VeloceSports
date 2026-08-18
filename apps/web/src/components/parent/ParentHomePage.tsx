@@ -534,6 +534,7 @@ export function ParentHomePage() {
               <ParentChildAvatar
                 firstName={child.firstName}
                 lastName={child.lastName}
+                photoUrl={child.photoUrl ?? null}
                 jerseyNumber={child.jerseyNumber}
                 size="xl"
               />

@@ -16,6 +16,7 @@ export interface ParentCalendarMatchRow extends RowDataPacket {
   player_first_name: string;
   player_last_name: string;
   player_jersey_number: number;
+  photo_object_key: string | null;
 }
 
 export class ParentMatchCalendarRepository extends TenantScopedRepository {
@@ -46,7 +47,7 @@ export class ParentMatchCalendarRepository extends TenantScopedRepository {
       SELECT m.id AS match_id, m.opponent, m.match_datetime, m.location, m.match_type, m.status,
              m.category_id, c.name AS category_name,
              p.id AS player_id, p.first_name AS player_first_name, p.last_name AS player_last_name,
-             p.jersey_number AS player_jersey_number
+             p.jersey_number AS player_jersey_number, p.photo_object_key
     `;
 
     const [upcomingRows] = await pool.execute<ParentCalendarMatchRow[]>(

@@ -22,6 +22,7 @@ export interface PlayerMatchReportCardDto {
     firstName: string;
     lastName: string;
     initials: string;
+    photoUrl: string | null;
   };
   academy: {
     name: string;

@@ -14,6 +14,7 @@ import { parentDashboardRepository } from '../repositories/parent-dashboard.repo
 import { playerRepository } from '../repositories/player.repository.js';
 import { NotFoundError } from '../types/index.js';
 import { getPool } from '../config/db.js';
+import { playerPhotoService } from './player-photo.service.js';
 
 async function resolveEffectivePeriods(
   tenantId: number,
@@ -218,6 +219,8 @@ export class ParentDashboardService {
       })
       .slice(0, 5);
 
+    const photoUrl = await playerPhotoService.resolveSignedUrl(player.photo_object_key);
+
     return {
       player: {
         id: player.id,
@@ -225,6 +228,7 @@ export class ParentDashboardService {
         lastName: player.last_name,
         jerseyNumber: player.jersey_number,
         categoryName: player.category_name,
+        photoUrl,
       },
       period,
       availablePeriods,

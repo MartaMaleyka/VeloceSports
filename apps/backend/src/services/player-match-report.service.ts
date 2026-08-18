@@ -22,6 +22,7 @@ import { ForbiddenError, NotFoundError } from '../types/index.js';
 import { userHasRole } from '../utils/role-check.js';
 import type { AuthUser } from '../types/index.js';
 import { getPool } from '../config/db.js';
+import { playerPhotoService } from './player-photo.service.js';
 
 interface ReportActorContext {
   user: AuthUser;
@@ -231,12 +232,15 @@ export class PlayerMatchReportService {
       averagePerMinute: averagePerMinute(row.count, minutesPlayed),
     }));
 
+    const photoUrl = await playerPhotoService.resolveSignedUrl(player.photo_object_key);
+
     return {
       player: {
         id: player.id,
         firstName: player.first_name,
         lastName: player.last_name,
         initials: playerInitials(player.first_name, player.last_name),
+        photoUrl,
       },
       academy: {
         name: academy?.name ?? '',

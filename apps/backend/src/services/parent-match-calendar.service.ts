@@ -8,8 +8,10 @@ import {
 } from '../repositories/parent-match-calendar.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
 import { ForbiddenError } from '../types/index.js';
+import { playerPhotoService } from './player-photo.service.js';
 
-function mapRow(row: ParentCalendarMatchRow): ParentMatchCalendarItemDto {
+async function mapRow(row: ParentCalendarMatchRow): Promise<ParentMatchCalendarItemDto> {
+  const photoUrl = await playerPhotoService.resolveSignedUrl(row.photo_object_key);
   return {
     matchId: row.match_id,
     opponent: row.opponent,
@@ -23,6 +25,7 @@ function mapRow(row: ParentCalendarMatchRow): ParentMatchCalendarItemDto {
     playerFirstName: row.player_first_name,
     playerLastName: row.player_last_name,
     playerJerseyNumber: row.player_jersey_number,
+    photoUrl,
   };
 }
 
@@ -48,10 +51,15 @@ export class ParentMatchCalendarService {
       parentMatchCalendarRepository.getAcademyTimezone(tenantId),
     ]);
 
+    const [upcoming, past] = await Promise.all([
+      Promise.all(rows.upcoming.map(mapRow)),
+      Promise.all(rows.past.map(mapRow)),
+    ]);
+
     return {
       timezone,
-      upcoming: rows.upcoming.map(mapRow),
-      past: rows.past.map(mapRow),
+      upcoming,
+      past,
     };
   }
 }

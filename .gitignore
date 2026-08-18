@@ -18,3 +18,4 @@ tmp-export-test/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+.env.minio

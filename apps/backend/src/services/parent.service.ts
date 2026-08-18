@@ -13,6 +13,7 @@ import { playerRepository, type PlayerWithCategoryRow } from '../repositories/pl
 import { auditService } from './audit.service.js';
 import { planLimitService } from './plan-limit.service.js';
 import { playerService } from './tenant.service.js';
+import { playerPhotoService } from './player-photo.service.js';
 import {
   ForbiddenError,
   NotFoundError,
@@ -35,6 +36,8 @@ async function toPlayerDto(
       : String(row.date_of_birth).slice(0, 10)
     : null;
 
+  const photoUrl = await playerPhotoService.resolveSignedUrl(row.photo_object_key);
+
   return {
     id: row.id,
     firstName: row.first_name,
@@ -46,6 +49,7 @@ async function toPlayerDto(
     categoryName: row.category_name,
     status: row.status,
     rejectionReason: row.rejection_reason,
+    photoUrl,
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),

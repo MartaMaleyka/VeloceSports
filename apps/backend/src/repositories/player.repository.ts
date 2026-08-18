@@ -15,6 +15,9 @@ export interface PlayerRow extends RowDataPacket {
   category_id: number | null;
   status: PlayerStatus;
   rejection_reason: string | null;
+  photo_object_key: string | null;
+  photo_uploaded_at: Date | null;
+  photo_uploaded_by: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -44,6 +47,11 @@ export interface UpdatePlayerInput {
 }
 
 export class PlayerRepository extends TenantScopedRepository {
+  private static readonly PLAYER_SELECT = `p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
+              p.position, p.category_id, p.status, p.rejection_reason,
+              p.photo_object_key, p.photo_uploaded_at, p.photo_uploaded_by,
+              p.created_at, p.updated_at`;
+
   async findByTenantId(
     tenantId: number,
     filters?: { search?: string; status?: PlayerStatus; categoryId?: number },
@@ -68,8 +76,7 @@ export class PlayerRepository extends TenantScopedRepository {
     }
 
     const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
-      `SELECT p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
-              p.position, p.category_id, p.status, p.rejection_reason, p.created_at, p.updated_at,
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
               c.name AS category_name
        FROM players p
        LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
@@ -84,14 +91,27 @@ export class PlayerRepository extends TenantScopedRepository {
     this.assertTenantId(tenantId);
     const pool = getPool();
     const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
-      `SELECT p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
-              p.position, p.category_id, p.status, p.rejection_reason, p.created_at, p.updated_at,
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
               c.name AS category_name
        FROM players p
        LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
        WHERE p.id = ? AND p.tenant_id = ?
        LIMIT 1`,
       [playerId, tenantId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async findByIdGlobal(playerId: number): Promise<PlayerWithCategoryRow | null> {
+    const pool = getPool();
+    const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
+              c.name AS category_name
+       FROM players p
+       LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
+       WHERE p.id = ?
+       LIMIT 1`,
+      [playerId],
     );
     return rows[0] ?? null;
   }
@@ -266,8 +286,7 @@ export class PlayerRepository extends TenantScopedRepository {
     this.assertTenantId(tenantId);
     const pool = getPool();
     const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
-      `SELECT p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
-              p.position, p.category_id, p.status, p.rejection_reason, p.created_at, p.updated_at,
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
               c.name AS category_name
        FROM players p
        INNER JOIN parent_players pp ON pp.player_id = p.id AND pp.tenant_id = p.tenant_id
@@ -350,6 +369,27 @@ export class PlayerRepository extends TenantScopedRepository {
       params,
     );
     return rows;
+  }
+
+  async updatePhoto(
+    tenantId: number,
+    playerId: number,
+    input: {
+      photoObjectKey: string | null;
+      uploadedBy: number | null;
+      uploadedAt: Date | null;
+    },
+  ): Promise<void> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE players
+       SET photo_object_key = ?,
+           photo_uploaded_at = ?,
+           photo_uploaded_by = ?
+       WHERE id = ? AND tenant_id = ?`,
+      [input.photoObjectKey, input.uploadedAt, input.uploadedBy, playerId, tenantId],
+    );
   }
 
   async syncParents(

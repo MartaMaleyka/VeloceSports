@@ -48,6 +48,7 @@ import {
 import { appPath } from '../../lib/app-path';
 import { CoachAnalysisTopChart } from './CoachAnalysisTopChart';
 import { CoachActionChips } from './CoachActionChips';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 const ANALYSIS_BASE = appPath('/dashboard/coach/analysis');
 const PAGE_SIZE = 12;
@@ -79,10 +80,6 @@ function seasonStartIso(): string {
   const now = new Date();
   const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
   return `${year}-08-01`;
-}
-
-function initials(firstName: string, lastName: string): string {
-  return `${firstName.trim()[0] ?? ''}${lastName.trim()[0] ?? ''}`.toUpperCase() || '?';
 }
 
 export default function CoachAnalysisPage() {
@@ -593,9 +590,14 @@ function CoachAnalysisPageInner() {
                   >
                     <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
                     <div className="relative z-[1] flex items-start gap-3">
-                      <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-display text-sm font-bold text-text-on-primary">
-                        {initials(player.firstName, player.lastName)}
-                      </span>
+                      <PlayerAvatar
+                        player={{
+                          firstName: player.firstName,
+                          lastName: player.lastName,
+                          photoUrl: player.photoUrl ?? null,
+                        }}
+                        size="md"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-display text-lg font-bold text-text-primary">
@@ -716,9 +718,14 @@ function CoachAnalysisPageInner() {
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-bold text-text-on-primary">
-                          {initials(player.firstName, player.lastName)}
-                        </span>
+                        <PlayerAvatar
+                          player={{
+                            firstName: player.firstName,
+                            lastName: player.lastName,
+                            photoUrl: player.photoUrl ?? null,
+                          }}
+                          size="sm"
+                        />
                         <div>
                           <p className="font-medium text-text-primary">{player.playerName}</p>
                           <p className="text-xs text-text-muted">#{player.dorsal}</p>

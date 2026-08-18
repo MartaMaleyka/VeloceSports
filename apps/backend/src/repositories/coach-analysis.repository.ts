@@ -20,6 +20,7 @@ export interface CoachAnalysisPlayerRow extends RowDataPacket {
   jersey_number: number;
   category_id: number;
   category_name: string;
+  photo_object_key: string | null;
 }
 
 export interface CoachAnalysisAttendanceRow extends RowDataPacket {
@@ -82,7 +83,7 @@ export class CoachAnalysisRepository extends TenantScopedRepository {
     const placeholders = categoryIds.map(() => '?').join(', ');
     const [rows] = await pool.execute<CoachAnalysisPlayerRow[]>(
       `SELECT p.id AS player_id, p.first_name, p.last_name, p.jersey_number,
-              p.category_id, c.name AS category_name
+              p.category_id, c.name AS category_name, p.photo_object_key
        FROM players p
        INNER JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
        WHERE p.tenant_id = ?
@@ -106,7 +107,7 @@ export class CoachAnalysisRepository extends TenantScopedRepository {
     const placeholders = categoryIds.map(() => '?').join(', ');
     const [rows] = await pool.execute<CoachAnalysisPlayerRow[]>(
       `SELECT p.id AS player_id, p.first_name, p.last_name, p.jersey_number,
-              p.category_id, c.name AS category_name
+              p.category_id, c.name AS category_name, p.photo_object_key
        FROM players p
        INNER JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
        WHERE p.tenant_id = ?

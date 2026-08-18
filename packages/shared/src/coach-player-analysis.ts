@@ -31,6 +31,7 @@ export interface CoachPlayerAnalysisRowDto {
   /** Acciones con count > 0, ordenadas por count desc */
   actionsByCode: CoachAnalysisActionByCodeDto[];
   observationsCount: number;
+  photoUrl: string | null;
 }
 
 export interface CoachPlayerAnalysisListMetaDto {
@@ -94,6 +95,7 @@ export interface CoachPlayerAnalysisDetailDto {
     category: string;
     categoryId: number;
     avatar: string;
+    photoUrl: string | null;
   };
   summary: {
     matchesPlayed: number;

@@ -1,66 +1,68 @@
 import { cn } from '@velocesport/design-system';
+import { Camera } from 'lucide-react';
+import { PlayerAvatar, playerInitials, type PlayerAvatarSize } from '../players/PlayerAvatar';
 
-export function childInitials(firstName: string, lastName: string): string {
-  const f = firstName.trim()[0] ?? '';
-  const l = lastName.trim()[0] ?? '';
-  return `${f}${l}`.toUpperCase() || '?';
-}
+export { playerInitials as childInitials };
 
 interface ParentChildAvatarProps {
   firstName: string;
   lastName: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  /** Dorsal superpuesto estilo camiseta (esquina inferior derecha). */
+  photoUrl?: string | null;
+  size?: PlayerAvatarSize;
   jerseyNumber?: number | null;
   className?: string;
+  /** Solo padres: muestra overlay de cámara para abrir el modal de foto. */
+  editable?: boolean;
+  onEditClick?: () => void;
+  editLabel?: string;
 }
 
-const sizeClasses = {
-  sm: 'h-9 w-9 text-xs',
-  md: 'h-12 w-12 text-sm',
-  lg: 'h-14 w-14 text-base sm:h-16 sm:w-16 sm:text-lg',
-  xl: 'h-16 w-16 text-lg sm:h-20 sm:w-20 sm:text-xl',
-} as const;
-
-const jerseySizeClasses = {
-  sm: 'h-5 min-w-5 px-0.5 text-[10px]',
-  md: 'h-6 min-w-6 px-1 text-xs',
-  lg: 'h-7 min-w-7 px-1 text-sm',
-  xl: 'h-8 min-w-8 px-1.5 text-base',
-} as const;
-
-/** Avatar de hijo con iniciales sobre gradiente brand SquadVeloce. */
+/** Avatar de hijo — delega en PlayerAvatar (foto o iniciales brand). */
 export function ParentChildAvatar({
   firstName,
   lastName,
+  photoUrl,
   size = 'md',
   jerseyNumber,
   className,
+  editable = false,
+  onEditClick,
+  editLabel = 'Cambiar foto',
 }: ParentChildAvatarProps) {
-  const showJersey = jerseyNumber != null && jerseyNumber > 0;
+  if (!editable) {
+    return (
+      <PlayerAvatar
+        player={{ firstName, lastName, photoUrl, jerseyNumber }}
+        size={size}
+        showJersey={jerseyNumber != null && jerseyNumber > 0}
+        className={className}
+      />
+    );
+  }
 
   return (
-    <span className={cn('relative inline-flex shrink-0', className)}>
+    <button
+      type="button"
+      onClick={onEditClick}
+      className={cn(
+        'group relative inline-flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+        className,
+      )}
+      aria-label={editLabel}
+    >
+      <PlayerAvatar
+        player={{ firstName, lastName, photoUrl, jerseyNumber }}
+        size={size}
+        showJersey={jerseyNumber != null && jerseyNumber > 0}
+      />
       <span
         className={cn(
-          'inline-flex items-center justify-center rounded-full bg-brand-gradient font-display font-bold text-text-on-primary shadow-sm',
-          sizeClasses[size],
+          'absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100',
         )}
         aria-hidden="true"
       >
-        {childInitials(firstName, lastName)}
+        <Camera className="h-5 w-5" />
       </span>
-      {showJersey && (
-        <span
-          className={cn(
-            'absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full border-2 border-bg-surface bg-section-brand-subtle px-0.5 font-display font-bold tabular-nums text-section-brand-fg shadow-sm',
-            jerseySizeClasses[size],
-          )}
-          aria-hidden="true"
-        >
-          {jerseyNumber}
-        </span>
-      )}
-    </span>
+    </button>
   );
 }

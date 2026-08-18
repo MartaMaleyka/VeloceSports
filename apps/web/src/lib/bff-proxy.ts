@@ -9,7 +9,7 @@ export interface BffProxyOptions {
   method: string;
   /** Si devuelve Response, se retorna de inmediato (403, etc.). */
   assertAccess?: () => Response | null;
-  body?: string;
+  body?: string | ArrayBuffer | null;
 }
 
 function jsonResponse(data: unknown, status: number): Response {

@@ -16,6 +16,7 @@ import {
 } from '../repositories/match-attendance.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
 import { auditService } from './audit.service.js';
+import { playerPhotoService } from './player-photo.service.js';
 import {
   ForbiddenError,
   NotFoundError,
@@ -90,11 +91,11 @@ export class MatchAttendanceService {
     return { presentCount, starterCount, substituteCount };
   }
 
-  private mergeEntries(
+  private async mergeEntries(
     activePlayers: Awaited<ReturnType<typeof playerRepository.findByTenantId>>,
     attendanceRows: MatchAttendanceRow[],
     inactiveWithAttendance: Awaited<ReturnType<typeof playerRepository.findByTenantId>>,
-  ): MatchAttendanceEntryDto[] {
+  ): Promise<MatchAttendanceEntryDto[]> {
     const attendanceByPlayer = new Map(attendanceRows.map((r) => [r.player_id, r]));
     const playerMap = new Map<number, (typeof activePlayers)[number]>();
 
@@ -109,22 +110,26 @@ export class MatchAttendanceService {
       return a.first_name.localeCompare(b.first_name);
     });
 
-    return sorted.map((player) => {
-      const saved = attendanceByPlayer.get(player.id);
-      const defaultJersey = Number(player.jersey_number);
+    return Promise.all(
+      sorted.map(async (player) => {
+        const saved = attendanceByPlayer.get(player.id);
+        const defaultJersey = Number(player.jersey_number);
+        const photoUrl = await playerPhotoService.resolveSignedUrl(player.photo_object_key);
 
-      return {
-        playerId: player.id,
-        playerFirstName: player.first_name,
-        playerLastName: player.last_name,
-        playerStatus: player.status,
-        defaultJerseyNumber: defaultJersey,
-        attended: saved ? Boolean(saved.attended) : false,
-        lineup: saved?.lineup ?? null,
-        matchJerseyNumber: saved?.match_jersey_number ?? (saved ? null : defaultJersey),
-        attendanceId: saved?.id ?? null,
-      };
-    });
+        return {
+          playerId: player.id,
+          playerFirstName: player.first_name,
+          playerLastName: player.last_name,
+          playerStatus: player.status,
+          defaultJerseyNumber: defaultJersey,
+          attended: saved ? Boolean(saved.attended) : false,
+          lineup: saved?.lineup ?? null,
+          matchJerseyNumber: saved?.match_jersey_number ?? (saved ? null : defaultJersey),
+          attendanceId: saved?.id ?? null,
+          photoUrl,
+        };
+      }),
+    );
   }
 
   async getAttendance(actor: AttendanceActorContext, matchId: number): Promise<MatchAttendanceDto> {
@@ -153,7 +158,7 @@ export class MatchAttendanceService {
       inactiveWithAttendance = allInactive.filter((p) => inactiveIds.includes(p.id));
     }
 
-    const entries = this.mergeEntries(activePlayers, attendanceRows, inactiveWithAttendance);
+    const entries = await this.mergeEntries(activePlayers, attendanceRows, inactiveWithAttendance);
 
     return {
       matchId,

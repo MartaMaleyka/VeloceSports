@@ -43,3 +43,31 @@ docs/
 - Se aplica selectivamente por carpeta → menos ruido, respuestas más precisas.
 - Las reglas separan "qué construir" (dominio) de "cómo construirlo" (stack/seguridad/DS),
   que es justo lo que un modelo necesita para no improvisar.
+
+---
+
+## MinIO local (fotos de jugadores)
+
+Solo para **desarrollo**. Las fotos viven en un bucket privado; el backend sirve URLs firmadas.
+
+1. Copia credenciales:
+   ```bash
+   cp .env.minio.example .env.minio
+   ```
+2. Levanta MySQL + MinIO:
+   ```bash
+   docker compose --env-file .env.minio up -d
+   ```
+3. Consola web MinIO: [http://localhost:9101](http://localhost:9101)  
+   API S3: `http://127.0.0.1:9100`  
+   (Puertos **9100/9101** para no chocar con otros MinIO en 9000/9001.)
+4. Configura el backend (`apps/backend/.env`) con las variables de `apps/backend/.env.example`
+   (`MINIO_ENDPOINT`, `MINIO_PORT=9100`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `MINIO_USE_SSL=false`).
+5. El servicio `minio-init` crea el bucket `squadveloce-players` con política **privada**.
+6. Si el **backend corre en Docker** y MinIO en el host, usa en `.env.production`:
+   - `MINIO_ENDPOINT=host.docker.internal` / `MINIO_PORT=9100` (API interna)
+   - `MINIO_PUBLIC_ENDPOINT=127.0.0.1` / `MINIO_PUBLIC_PORT=9100` (URLs firmadas para el navegador)
+
+La subida de foto pasa por el BFF de Astro con `security.checkOrigin: true`. En Docker hay que
+definir `ASTRO_SITE` y `ASTRO_ALLOWED_ORIGINS` (p. ej. `http://127.0.0.1:9082`) en el build de `web`
+para que el Host público coincida con el `Origin` del navegador. **No** desactivar `checkOrigin`.

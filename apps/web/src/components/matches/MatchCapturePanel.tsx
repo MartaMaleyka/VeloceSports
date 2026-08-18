@@ -48,6 +48,7 @@ import {
   getVoiceVibrationFeedback,
   setVoiceContinuousMode,
 } from './capture/voice-capture-preferences';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 interface MatchCapturePanelProps {
   matchId: number;
@@ -256,6 +257,7 @@ export default function MatchCapturePanel({
         lastName: e.playerLastName,
         jerseyNumber: e.matchJerseyNumber as number,
         lineup: e.lineup,
+        photoUrl: e.photoUrl ?? null,
       }))
       .sort((a, b) => a.jerseyNumber - b.jerseyNumber);
   }, [attendance]);
@@ -900,6 +902,15 @@ export default function MatchCapturePanel({
                         !reducedMotion && isSelected && 'scale-[1.02]',
                       )}
                     >
+                      <PlayerAvatar
+                        player={{
+                          firstName: player.firstName,
+                          lastName: player.lastName,
+                          photoUrl: player.photoUrl ?? null,
+                        }}
+                        size="sm"
+                        className="mb-0.5"
+                      />
                       <span
                         className={cn(
                           'ds-capture-player__jersey font-display font-bold tabular-nums leading-none',

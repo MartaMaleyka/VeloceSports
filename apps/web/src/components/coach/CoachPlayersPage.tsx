@@ -10,6 +10,7 @@ import { Users } from 'lucide-react';
 import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
 import { appPath } from '../../lib/app-path';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 const MATCHES_BASE = appPath('/dashboard/coach/matches');
 const ATTENDANCE_CONCURRENCY = 3;
@@ -21,13 +22,8 @@ type RosterPlayer = {
   jerseyNumber: number;
   categoryId: number;
   categoryName: string;
+  photoUrl: string | null;
 };
-
-function initials(firstName: string, lastName: string): string {
-  const f = firstName.trim()[0] ?? '';
-  const l = lastName.trim()[0] ?? '';
-  return `${f}${l}`.toUpperCase() || '?';
-}
 
 function latestMatchForCategory(matches: MatchDto[], categoryId: number): MatchDto | null {
   const list = matches
@@ -88,6 +84,7 @@ export default function CoachPlayersPage() {
             jerseyNumber: entry.matchJerseyNumber ?? entry.defaultJerseyNumber,
             categoryId: category.id,
             categoryName: category.name,
+            photoUrl: entry.photoUrl ?? null,
           }));
         } catch {
           return [] as RosterPlayer[];
@@ -225,22 +222,16 @@ export default function CoachPlayersPage() {
             >
               <article className="ds-card-interactive rounded-xl border border-border bg-bg-surface p-5">
                 <header className="flex items-start gap-3">
-                  <div className="relative shrink-0">
-                    <span
-                      className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-gradient font-display text-lg font-semibold text-text-on-primary shadow-sm"
-                      aria-hidden="true"
-                    >
-                      {initials(player.firstName, player.lastName)}
-                    </span>
-                    <span
-                      className="absolute -bottom-1 -right-1 flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-bg-surface bg-bg-surface px-1 font-display text-2xl font-bold tabular-nums text-text-primary"
-                      aria-label={t('dashboard.coach.players.jersey', {
-                        number: player.jerseyNumber,
-                      })}
-                    >
-                      {player.jerseyNumber}
-                    </span>
-                  </div>
+                  <PlayerAvatar
+                    player={{
+                      firstName: player.firstName,
+                      lastName: player.lastName,
+                      photoUrl: player.photoUrl ?? null,
+                      jerseyNumber: player.jerseyNumber,
+                    }}
+                    size="xl"
+                    showJersey
+                  />
                   <div className="min-w-0 flex-1 space-y-2">
                     <h3 className="font-display text-lg font-bold tracking-tight text-text-primary sm:text-xl">
                       {player.firstName} {player.lastName}

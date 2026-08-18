@@ -142,6 +142,7 @@ function MatchCalendarCard({
               <ParentChildAvatar
                 firstName={item.playerFirstName}
                 lastName={item.playerLastName}
+                photoUrl={item.photoUrl ?? null}
                 jerseyNumber={item.playerJerseyNumber}
                 size="sm"
               />

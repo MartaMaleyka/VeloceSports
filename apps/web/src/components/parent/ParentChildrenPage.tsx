@@ -23,6 +23,7 @@ import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { ParentApiError, parentFetch, parentFetchList } from '../../lib/parent-api';
 import { appPath } from '../../lib/app-path';
 import { ParentChildAvatar } from './ParentChildAvatar';
+import { PlayerPhotoModal } from '../players/PlayerPhotoModal';
 
 function ChildStatusBadge({ player }: { player: PlayerDto }) {
   const { t } = useTranslation();
@@ -84,6 +85,7 @@ function ParentChildrenContent() {
   const [form, setForm] = useState<ChildFormState>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [photoChild, setPhotoChild] = useState<PlayerDto | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -232,12 +234,16 @@ function ParentChildrenContent() {
               <ParentChildAvatar
                 firstName={child.firstName}
                 lastName={child.lastName}
+                photoUrl={child.photoUrl}
                 jerseyNumber={
                   child.status === PlayerStatus.ACTIVE && child.jerseyNumber > 0
                     ? child.jerseyNumber
                     : null
                 }
                 size="xl"
+                editable={child.status === PlayerStatus.ACTIVE}
+                editLabel={t('players.photo.change')}
+                onEditClick={() => setPhotoChild(child)}
               />
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -426,6 +432,25 @@ function ParentChildrenContent() {
           </div>
         </form>
       </Modal>
+
+      {photoChild && (
+        <PlayerPhotoModal
+          open={Boolean(photoChild)}
+          onClose={() => setPhotoChild(null)}
+          player={photoChild}
+          onChanged={(photoUrl) => {
+            setChildren((prev) =>
+              prev.map((c) => (c.id === photoChild.id ? { ...c, photoUrl } : c)),
+            );
+            showToast({
+              variant: 'success',
+              message: photoUrl
+                ? t('players.photo.success')
+                : t('players.photo.deleted'),
+            });
+          }}
+        />
+      )}
     </>
   );
 }

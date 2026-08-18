@@ -47,6 +47,7 @@ import {
 import { appPath } from '../../lib/app-path';
 import { useChartTheme } from '../../hooks/useChartTheme';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { PlayerAvatar } from '../players/PlayerAvatar';
 
 const ANALYSIS_BASE = appPath('/dashboard/coach/analysis');
 const MATCHES_BASE = appPath('/dashboard/coach/matches');
@@ -172,14 +173,16 @@ export default function CoachAnalysisPlayerDetailPage({
       <header className="ds-card-interactive relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-8">
         <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
         <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative shrink-0">
-            <span className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-brand-gradient font-display text-3xl font-bold text-text-on-primary shadow-brand">
-              {data.player.avatar}
-            </span>
-            <span className="absolute -bottom-1 -right-1 flex h-10 min-w-10 items-center justify-center rounded-full border-2 border-bg-surface bg-bg-surface px-1.5 font-display text-2xl font-bold tabular-nums">
-              {data.player.dorsal}
-            </span>
-          </div>
+          <PlayerAvatar
+            player={{
+              firstName: data.player.firstName,
+              lastName: data.player.lastName,
+              photoUrl: data.player.photoUrl ?? null,
+              jerseyNumber: data.player.dorsal,
+            }}
+            size="xl"
+            showJersey
+          />
           <div className="min-w-0">
             <h2 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
               {data.player.name}

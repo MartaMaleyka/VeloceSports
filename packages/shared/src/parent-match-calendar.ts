@@ -14,6 +14,7 @@ export interface ParentMatchCalendarItemDto {
   playerFirstName: string;
   playerLastName: string;
   playerJerseyNumber: number;
+  photoUrl: string | null;
 }
 
 export interface ParentMatchCalendarDto {
