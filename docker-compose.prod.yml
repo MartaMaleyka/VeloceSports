@@ -31,6 +31,14 @@ services:
     environment:
       DB_HOST: mysql
       RUN_PRODUCTION_SEED: ${RUN_PRODUCTION_SEED:-false}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-squadveloce-players}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-127.0.0.1}
+      MINIO_PUBLIC_PORT: ${MINIO_PUBLIC_PORT:-9100}
     healthcheck:
       test:
         [
@@ -44,8 +52,60 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     networks:
       - velocesport
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: velocesport-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - '127.0.0.1:9100:9000'
+      - '127.0.0.1:9101:9001'
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:9000/minio/health/live']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - velocesport
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    container_name: velocesport-minio-init
+    restart: 'no'
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-squadveloce-players}
+    networks:
+      - velocesport
+    entrypoint: >
+      /bin/sh -c "
+      set -e;
+      BUCKET=\"$${MINIO_BUCKET:-squadveloce-players}\";
+      i=0;
+      until mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\"; do
+        i=$$((i+1));
+        if [ $$i -gt 30 ]; then echo 'MinIO no responde' >&2; exit 1; fi;
+        sleep 2;
+      done;
+      mc mb --ignore-existing local/\"$$BUCKET\";
+      mc anonymous set none local/\"$$BUCKET\";
+      echo \"Bucket $$BUCKET listo (privado)\";
+      "
 
   web:
     build:
@@ -82,6 +142,7 @@ services:
 
 volumes:
   mysql_data:
+  minio_data:
 
 networks:
   velocesport:
