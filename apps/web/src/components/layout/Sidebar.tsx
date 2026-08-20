@@ -23,13 +23,25 @@ import { cn, sectionNavActiveClasses } from '@velocesport/design-system';
 import { getNavLayoutForRoles, getSessionSubtitle, type NavItem } from '../../lib/navigation';
 import UserSessionActions from './UserSessionActions';
 import { fetchMyProfile } from '../../lib/profile-api';
+import { SquadVeloceMonogram } from '../brand/SquadVeloceMonogram';
 
-function brandAsset(file: string): string {
-  const base =
-    typeof import.meta.env.BASE_URL === 'string'
-      ? import.meta.env.BASE_URL.replace(/\/?$/, '/')
-      : '/';
-  return `${base}brand/${file}`;
+function BrandMark({ isBrandPanel }: { isBrandPanel: boolean }) {
+  if (!isBrandPanel) {
+    return (
+      <div
+        className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-gradient text-sm font-bold text-text-on-primary shadow-brand"
+        aria-hidden="true"
+      >
+        V
+      </div>
+    );
+  }
+
+  /* Stopgap: monograma SVG (sin fondo). PNGs full-logo siguen en login/hero.
+   * Cuando lleguen isotype-*.svg oficiales, sustituir este componente. */
+  return (
+    <SquadVeloceMonogram className="ds-brand-sidebar__monogram h-10 w-10 shrink-0 text-text-primary" />
+  );
 }
 
 /** Iconos Lucide por id de nav (sin prefijo de rol multi). */
@@ -107,40 +119,6 @@ function renderNavLink(
       <NavIcon itemId={item.id} />
       <span className="truncate">{item.label}</span>
     </a>
-  );
-}
-
-function BrandMark({ isBrandPanel }: { isBrandPanel: boolean }) {
-  if (!isBrandPanel) {
-    return (
-      <div
-        className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-gradient text-sm font-bold text-text-on-primary shadow-brand"
-        aria-hidden="true"
-      >
-        V
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <img
-        src={brandAsset('logo-light.png')}
-        alt=""
-        width={40}
-        height={40}
-        className="ds-brand-sidebar__logo--light h-10 w-10 shrink-0 object-contain"
-        aria-hidden="true"
-      />
-      <img
-        src={brandAsset('logo-dark.png')}
-        alt=""
-        width={40}
-        height={40}
-        className="ds-brand-sidebar__logo--dark h-10 w-10 shrink-0 object-contain"
-        aria-hidden="true"
-      />
-    </>
   );
 }
 

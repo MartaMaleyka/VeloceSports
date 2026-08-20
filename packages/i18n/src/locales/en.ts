@@ -623,8 +623,7 @@ export const en = {
       },
       actions: {
         title: 'Action catalog',
-        description:
-          'Customize capture codes (e.g. 7-13). Each academy starts from the base catalog and can adjust it.',
+        description: 'Customize what gets tracked in every match.',
       },
       matches: {
         title: 'Matches',
@@ -679,7 +678,7 @@ export const en = {
       },
       settings: {
         title: 'My academy',
-        description: 'Configure your academy profile, contact, and game settings.',
+        description: 'Configure your academy settings.',
       },
       reports: {
         title: 'Reports',
@@ -689,7 +688,7 @@ export const en = {
     coach: {
       greeting: 'Hello, {role}',
       greetingMulti: 'Unified dashboard ({roles})',
-      description: 'Your digital sideline: categories, players, and matches.',
+      description: 'Your pulse on the pitch.',
       welcome:
         'Welcome, coach. Here you will capture live actions and manage your assigned categories.',
       home: {
@@ -719,7 +718,7 @@ export const en = {
       },
       categories: {
         title: 'My categories',
-        description: 'The teams assigned to you.',
+        description: 'The teams you coach.',
         empty: 'You have no assigned categories yet.',
         playerCount: '{count} players',
         matchCount: '{count} matches',
@@ -727,7 +726,7 @@ export const en = {
       },
       players: {
         title: 'My players',
-        description: 'The talent in your categories.',
+        description: 'The talents you shape.',
         empty: 'No players in your matches yet.',
         emptyFiltered: 'No players in this category.',
         viewMatches: 'View matches',
@@ -736,11 +735,12 @@ export const en = {
       },
       matches: {
         title: 'My matches',
-        description: 'The calendar for your categories.',
+        description: 'Your season calendar.',
+        detailDescription: 'Every match, summarized.',
       },
       analysis: {
         title: 'Player analysis',
-        description: 'Compare and spot patterns across your squad.',
+        description: 'Compare, filter, and discover patterns in your squad.',
         heroEyebrow: 'Analysis',
         subtitle: 'Compare, filter, and discover patterns in your squad.',
         feedback: 'Showing {players} players · {actions} recorded actions · {matches} matches in range',
@@ -803,6 +803,7 @@ export const en = {
         },
         detail: {
           title: 'Player detail',
+          description: 'How they shine in every match.',
           topAction: 'Top: {action}',
           topActionEmpty: 'No top action',
           evolution: 'Monthly evolution',
@@ -837,15 +838,15 @@ export const en = {
       },
       children: {
         title: 'My children',
-        description: 'Your talents in the making.',
+        description: 'The talents in development.',
       },
       calendar: {
         title: 'Match calendar',
-        description: 'The upcoming matches for your family.',
+        description: "Your family's upcoming matches.",
       },
       notifications: {
         title: 'Notifications',
-        description: 'Choose when you want to know how they shine.',
+        description: 'Choose what alerts you want to receive.',
       },
     },
   },
@@ -909,7 +910,7 @@ export const en = {
   },
   parentCalendar: {
     title: 'Match calendar',
-    subtitle: 'The upcoming matches for your family.',
+    subtitle: "Your family's upcoming matches.",
     upcomingSection: 'Upcoming',
     pastSection: 'Recent',
     noUpcoming: 'No matches scheduled yet. Your academy will let you know when there is news.',

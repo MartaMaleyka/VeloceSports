@@ -624,8 +624,7 @@ export const es = {
       },
       actions: {
         title: 'Catálogo de acciones',
-        description:
-          'Personaliza los códigos de captura (ej. 7-13). Cada academia parte del catálogo base y puede ajustarlo.',
+        description: 'Personaliza qué se registra en cada partido.',
       },
       home: {
         title: 'Panel de inicio',
@@ -680,7 +679,7 @@ export const es = {
       },
       settings: {
         title: 'Mi academia',
-        description: 'Configura los datos, contacto y reglas de juego de tu academia.',
+        description: 'Configura los datos de tu academia.',
       },
       reports: {
         title: 'Reportes',
@@ -690,7 +689,7 @@ export const es = {
     coach: {
       greeting: 'Hola, {role}',
       greetingMulti: 'Panel unificado ({roles})',
-      description: 'Tu cancha digital: categorías, jugadores y partidos.',
+      description: 'Tu pulso en cancha.',
       welcome:
         'Bienvenido, entrenador. Aquí capturarás acciones en vivo y gestionarás tus categorías.',
       home: {
@@ -720,7 +719,7 @@ export const es = {
       },
       categories: {
         title: 'Mis categorías',
-        description: 'Los equipos que tienes asignados.',
+        description: 'Los equipos que diriges.',
         empty: 'Aún no tienes categorías asignadas.',
         playerCount: '{count} jugadores',
         matchCount: '{count} partidos',
@@ -728,7 +727,7 @@ export const es = {
       },
       players: {
         title: 'Mis jugadores',
-        description: 'Los talentos de tus categorías.',
+        description: 'Los talentos que formas.',
         empty: 'Todavía no hay jugadores en tus partidos.',
         emptyFiltered: 'No hay jugadores en esta categoría.',
         viewMatches: 'Ver partidos',
@@ -737,11 +736,12 @@ export const es = {
       },
       matches: {
         title: 'Mis partidos',
-        description: 'El calendario de tus categorías.',
+        description: 'Tu calendario de la temporada.',
+        detailDescription: 'El resumen de cada encuentro.',
       },
       analysis: {
         title: 'Análisis de jugadores',
-        description: 'Compara y descubre patrones en tu plantel.',
+        description: 'Compara, filtra y descubre patrones en tu plantel.',
         heroEyebrow: 'Análisis',
         subtitle: 'Compara, filtra y descubre patrones en tu plantel.',
         feedback: 'Mostrando {players} jugadores · {actions} acciones registradas · {matches} partidos en el rango',
@@ -804,6 +804,7 @@ export const es = {
         },
         detail: {
           title: 'Detalle del jugador',
+          description: 'Cómo brilla en cada partido.',
           topAction: 'Top: {action}',
           topActionEmpty: 'Sin acción top',
           evolution: 'Evolución mensual',
@@ -839,7 +840,7 @@ export const es = {
       },
       children: {
         title: 'Mis hijos',
-        description: 'Aquí están tus talentos en formación.',
+        description: 'Los talentos que están en formación.',
       },
       calendar: {
         title: 'Calendario de partidos',
@@ -847,7 +848,7 @@ export const es = {
       },
       notifications: {
         title: 'Notificaciones',
-        description: 'Elige cuándo quieres saber cómo brillan.',
+        description: 'Elige qué avisos quieres recibir.',
       },
     },
   },

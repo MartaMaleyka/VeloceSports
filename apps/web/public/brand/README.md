@@ -10,8 +10,24 @@ Archivos en esta carpeta (provisionales):
 | `apple-touch-icon.png` | Icono iOS 180×180 |
 | `og-image.png` | Open Graph 1200×630 |
 
-Los **PNG son provisionales**. Cuando lleguen los SVG originales del isotipo/wordmark, sustituirán estos archivos (mismas rutas públicas) sin cambiar código consumidor.
+Los **PNG son provisionales** y **no tienen canal alpha** (fondo sólido blanco/negro).
 
-**Pendiente — isotipo suelto:** el formulario de login usa `logo-light.png` / `logo-dark.png` a ~90px como stopgap sobre “Bienvenido de vuelta”. Sustituir por un SVG del símbolo SV+balón (sin wordmark, banda de íconos ni eslogan), idealmente `isotype-light.svg` / `isotype-dark.svg` a ~40–48px de alto.
+## Sidebar — stopgap monograma SVG
+
+Los PNG full-logo a 40×40 en el sidebar dejaban un **cuadrado de fondo** visible
+(sobre todo en modo oscuro: negro del PNG ≠ `#0b0b0f` del sidebar). Un `mix-blend-mode`
+no quedó limpio.
+
+**Solución actual:** el sidebar usa el componente React
+`apps/web/src/components/brand/SquadVeloceMonogram.tsx` — SVG inline solo del
+isotipo (S + V/check + balón), sin wordmark, banda de íconos ni eslogan.
+Login/hero siguen con los PNG completos.
+
+### Cuando lleguen los SVG del diseñador
+
+1. Añadir p. ej. `isotype-light.svg` / `isotype-dark.svg` (o un único SVG con `currentColor`).
+2. En `Sidebar.tsx` → `BrandMark`, cargar esos assets (o reemplazar el JSX del monograma).
+3. Borrar `SquadVeloceMonogram.tsx` si ya no se usa.
+4. Actualizar esta tabla.
 
 Slogan de marca: **Desde aquí nace el talento**.

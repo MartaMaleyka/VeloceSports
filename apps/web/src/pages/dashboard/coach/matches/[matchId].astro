@@ -29,6 +29,7 @@ const locale = Astro.locals.locale;
     activeNavId="matches"
     contentKey="coach"
     pageTitle={t('dashboard.coach.matches.title', locale)}
+    pageDescription={t('dashboard.coach.matches.detailDescription', locale)}
     hideWelcome
     pageId="matchDetail"
     pageProps={{ matchId, listPath: '/dashboard/coach/matches' }}

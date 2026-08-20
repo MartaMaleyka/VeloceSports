@@ -1959,6 +1959,14 @@ h3,
   display: block;
 }
 
+/* Monograma SVG del sidebar: hereda color de texto (claro/oscuro). */
+.ds-brand-sidebar__monogram {
+  color: var(--color-text-primary);
+}
+[data-theme='dark'] .ds-brand-sidebar__monogram {
+  color: #f4f4f5;
+}
+
 /* Nav inactivo: zinc-700 aproximado; hover zinc-100 */
 .ds-brand-sidebar .ds-brand-nav-item:not([aria-current='page']),
 .ds-parent-sidebar .ds-brand-nav-item:not([aria-current='page']) {
