@@ -5,8 +5,9 @@ import type {
 } from '@velocesport/shared';
 import { MatchesApiError, matchesFetch, matchesFetchList } from './matches-api';
 import { ParentApiError, parentFetchList } from './parent-api';
+import { PlayerApiError, playerFetch } from './player-api';
 
-export { MatchesApiError, ParentApiError };
+export { MatchesApiError, ParentApiError, PlayerApiError };
 
 export async function fetchCoachObservations(
   playerId: number,
@@ -45,4 +46,8 @@ export async function fetchParentObservations(
   playerId: number,
 ): Promise<PlayerObservationDto[]> {
   return parentFetchList<PlayerObservationDto>(`children/${playerId}/observations`);
+}
+
+export async function fetchPlayerObservations(): Promise<PlayerObservationDto[]> {
+  return playerFetch<PlayerObservationDto[]>('observations');
 }

@@ -117,6 +117,17 @@ export class PlayerObservationService {
     return rows.map((row) => toDto(row));
   }
 
+  async listForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+  ): Promise<PlayerObservationDto[]> {
+    const linked = await playerRepository.isLinkedToViewer(tenantId, viewerUserId, playerId);
+    if (!linked) throw new NotFoundError('Jugador no encontrado');
+    const rows = await playerObservationRepository.findByPlayerId(tenantId, playerId);
+    return rows.map((row) => toDto(row));
+  }
+
   async create(
     actor: ObservationActorContext,
     playerId: number,

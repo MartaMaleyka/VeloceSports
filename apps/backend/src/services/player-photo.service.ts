@@ -113,13 +113,15 @@ export class PlayerPhotoService {
   }
 
   private assertParentCanMutate(actor: AuthUser): void {
-    if (!userHasRole(actor, UserRole.PARENT) || actor.tenantId == null) {
-      throw new ForbiddenError('Solo el padre o tutor vinculado puede gestionar la foto');
+    const isParent = userHasRole(actor, UserRole.PARENT);
+    const isPlayer = userHasRole(actor, UserRole.PLAYER);
+    if ((!isParent && !isPlayer) || actor.tenantId == null) {
+      throw new ForbiddenError('Solo el padre, tutor o el propio jugador pueden gestionar la foto');
     }
   }
 
   private async assertApprovedParentLink(tenantId: number, parentUserId: number, playerId: number) {
-    const linked = await playerRepository.isLinkedToParent(tenantId, parentUserId, playerId);
+    const linked = await playerRepository.isLinkedToViewer(tenantId, parentUserId, playerId);
     if (!linked) {
       throw new ForbiddenError('No puedes gestionar la foto de este jugador');
     }
@@ -154,8 +156,8 @@ export class PlayerPhotoService {
       return player;
     }
 
-    if (userHasRole(actor, UserRole.PARENT)) {
-      const linked = await playerRepository.isLinkedToParent(
+    if (userHasRole(actor, UserRole.PARENT) || userHasRole(actor, UserRole.PLAYER)) {
+      const linked = await playerRepository.isLinkedToViewer(
         actor.tenantId,
         actor.userId,
         playerId,

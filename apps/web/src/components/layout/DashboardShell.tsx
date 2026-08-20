@@ -15,6 +15,7 @@ import { resolvePlatformPage, type PlatformPageId } from '../../lib/platform-pag
 import { resolveAcademyPage, type AcademyPageId } from '../../lib/academy-pages';
 import { resolveCoachPage, type CoachPageId } from '../../lib/coach-pages';
 import { resolveParentPage, type ParentPageId } from '../../lib/parent-pages';
+import { resolvePlayerPage, type PlayerPageId } from '../../lib/player-pages';
 import type { ComponentType } from 'react';
 
 function resolveDashboardPage(
@@ -32,6 +33,8 @@ function resolveDashboardPage(
       return resolveCoachPage(pageId as CoachPageId);
     case 'parent':
       return resolveParentPage(pageId as ParentPageId);
+    case 'player':
+      return resolvePlayerPage(pageId as PlayerPageId);
     default:
       return null;
   }
@@ -43,7 +46,7 @@ interface DashboardShellInnerProps {
   activeNavId: string;
   contentKey: DashboardContentKey;
   children?: ReactNode;
-  pageId?: PlatformPageId | AcademyPageId | CoachPageId | ParentPageId;
+  pageId?: PlatformPageId | AcademyPageId | CoachPageId | ParentPageId | PlayerPageId;
   pageProps?: Record<string, unknown>;
   pageTitle?: string;
   pageDescription?: string;
@@ -188,7 +191,7 @@ export interface DashboardShellProps {
   activeNavId: string;
   contentKey: DashboardContentKey;
   children?: ReactNode;
-  pageId?: PlatformPageId | AcademyPageId | CoachPageId | ParentPageId;
+  pageId?: PlatformPageId | AcademyPageId | CoachPageId | ParentPageId | PlayerPageId;
   pageProps?: Record<string, unknown>;
   pageTitle?: string;
   pageDescription?: string;

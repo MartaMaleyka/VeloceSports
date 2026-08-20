@@ -76,6 +76,7 @@ export const DASHBOARD_ROUTES: Record<LoginRole, string> = {
   academy_admin: '/dashboard/academy-admin',
   coach: '/dashboard/coach',
   parent: '/dashboard/parent',
+  player: '/dashboard/player',
 };
 
 export function getDashboardRoute(role: LoginRole): string {

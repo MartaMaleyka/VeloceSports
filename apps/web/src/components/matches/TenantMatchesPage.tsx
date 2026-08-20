@@ -458,7 +458,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
                   type="button"
                   className="min-h-touch flex-1 sm:flex-none"
                   onClick={() => {
-                    window.location.href = `${basePath}/${match.id}`;
+                    window.location.href = appPath(`${basePath}/${match.id}`);
                   }}
                 >
                   {match.status === MatchStatus.IN_PROGRESS

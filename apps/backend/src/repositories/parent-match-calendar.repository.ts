@@ -72,6 +72,59 @@ export class ParentMatchCalendarRepository extends TenantScopedRepository {
     return { upcoming: upcomingRows, past: pastRows };
   }
 
+  /** Calendario por viewer (player_viewers): SELF/PARENT/etc. */
+  async findMatchesForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    options?: { playerId?: number; pastLimit?: number },
+  ): Promise<{ upcoming: ParentCalendarMatchRow[]; past: ParentCalendarMatchRow[] }> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const params: (string | number)[] = [tenantId, viewerUserId];
+    const playerFilter = options?.playerId != null ? ' AND p.id = ?' : '';
+    if (options?.playerId != null) {
+      params.push(options.playerId);
+    }
+
+    const baseFrom = `
+      FROM player_viewers pv
+      INNER JOIN players p ON p.id = pv.player_id AND p.tenant_id = pv.tenant_id
+      INNER JOIN matches m ON m.category_id = p.category_id AND m.tenant_id = pv.tenant_id
+      INNER JOIN categories c ON c.id = m.category_id AND c.tenant_id = m.tenant_id
+      WHERE pv.tenant_id = ? AND pv.viewer_id = ?
+        AND p.status = 'active'
+        ${playerFilter}
+    `;
+
+    const selectCols = `
+      SELECT m.id AS match_id, m.opponent, m.match_datetime, m.location, m.match_type, m.status,
+             m.category_id, c.name AS category_name,
+             p.id AS player_id, p.first_name AS player_first_name, p.last_name AS player_last_name,
+             p.jersey_number AS player_jersey_number, p.photo_object_key
+    `;
+
+    const [upcomingRows] = await pool.execute<ParentCalendarMatchRow[]>(
+      `${selectCols}
+       ${baseFrom}
+         AND m.status IN ('scheduled', 'in_progress')
+         AND (m.status = 'in_progress' OR m.match_datetime >= NOW())
+       ORDER BY m.match_datetime ASC, p.last_name ASC, p.first_name ASC`,
+      params,
+    );
+
+    const pastLimit = Math.min(Math.max(options?.pastLimit ?? 30, 1), 100);
+    const [pastRows] = await pool.execute<ParentCalendarMatchRow[]>(
+      `${selectCols}
+       ${baseFrom}
+         AND m.status = 'finished'
+       ORDER BY m.match_datetime DESC, p.last_name ASC, p.first_name ASC
+       LIMIT ${pastLimit}`,
+      params,
+    );
+
+    return { upcoming: upcomingRows, past: pastRows };
+  }
+
   async getAcademyTimezone(tenantId: number): Promise<string> {
     this.assertTenantId(tenantId);
     const pool = getPool();

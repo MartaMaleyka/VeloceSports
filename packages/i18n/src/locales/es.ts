@@ -9,6 +9,7 @@ export const es = {
     close: 'Cerrar',
     cancel: 'Cancelar',
     save: 'Guardar',
+    saving: 'Guardando…',
     create: 'Crear',
     edit: 'Editar',
     view: 'Ver',
@@ -35,6 +36,7 @@ export const es = {
       upload: 'Subir',
       delete: 'Eliminar foto',
       deleteConfirm: '¿Seguro que quieres eliminar la foto de tu hijo?',
+      deleteConfirmSelf: '¿Seguro que quieres eliminar tu foto?',
       deleteYes: 'Sí, eliminar',
       change: 'Cambiar foto',
       success: 'Foto actualizada',
@@ -174,6 +176,10 @@ export const es = {
     children: 'Mis hijos',
     parentCalendar: 'Calendario',
     parentNotifications: 'Notificaciones',
+    playerProfile: 'Mi perfil',
+    playerMatches: 'Mis partidos',
+    playerCalendar: 'Mi calendario',
+    playerReports: 'Mis reportes',
     superAdmins: 'Super admins',
     billing: 'Facturación',
     audit: 'Auditoría',
@@ -851,6 +857,90 @@ export const es = {
         description: 'Elige qué avisos quieres recibir.',
       },
     },
+    player: {
+      greeting: 'Hola, {role}',
+      greetingMulti: 'Panel unificado ({roles})',
+      description: 'Tu desarrollo en la academia.',
+      welcome: 'Bienvenido. Aquí ves tu perfil, partidos y reportes.',
+      home: {
+        title: 'Inicio',
+        description: 'Tu resumen de rendimiento.',
+        heroEyebrow: 'Jugador',
+        heroHello: 'Hola, {name}',
+        heroSubtitle: 'Sigue tu progreso en la academia.',
+        goProfile: 'Ver mi perfil',
+        goMatches: 'Ver mis partidos',
+        goReports: 'Ver mis reportes',
+      },
+      profile: {
+        title: 'Mi perfil',
+        description: 'Tus datos como jugador.',
+        firstName: 'Nombre',
+        lastName: 'Apellido',
+        jersey: 'Dorsal',
+        category: 'Categoría',
+        position: 'Posición',
+        dateOfBirth: 'Fecha de nacimiento',
+        changePhoto: 'Cambiar mi foto',
+        photoHint: 'Tu foto la verás tú y el equipo de la academia.',
+        editSection: 'Mis datos',
+        editHint:
+          'Puedes actualizar tu nombre, fecha de nacimiento y posición. El dorsal y la categoría los asigna la academia.',
+        save: 'Guardar mis datos',
+        successUpdate: 'Perfil actualizado',
+        readOnlyAssigned: 'Asignado por la academia',
+      },
+      matches: {
+        title: 'Mis partidos',
+        description: 'Historial y fichas de partido.',
+        emptyTitle: 'Aún no tienes partidos con ficha',
+        emptyDescription:
+          'Cuando juegues partidos con acciones capturadas, verás aquí tus fichas.',
+        opponent: 'Rival',
+        date: 'Fecha',
+        actions: 'Acciones',
+      },
+      calendar: {
+        title: 'Mi calendario',
+        description: 'Tus próximos partidos.',
+        upcomingSection: 'Próximos',
+        pastSection: 'Recientes',
+        noUpcoming: 'No tienes partidos programados por ahora.',
+        emptyTitle: 'Sin partidos en tu calendario',
+        emptyDescription:
+          'Cuando tu academia programe partidos de tu categoría, los verás aquí.',
+        vsOpponent: 'vs {opponent}',
+        location: '{location}',
+        today: 'Hoy',
+        tomorrow: 'Mañana',
+        inDays: 'En {count} días',
+        inProgress: 'En juego',
+        viewReportCard: 'Ver mi ficha',
+      },
+      reports: {
+        title: 'Mis reportes',
+        description: 'Observaciones de tus entrenadores.',
+        intro:
+          'Comentarios de tus entrenadores sobre tu progreso. Cada nota refleja el acompañamiento de la academia.',
+        emptyTitle: 'Sin observaciones aún',
+        emptyDescription:
+          'Cuando tu entrenador comparta comentarios sobre ti, los verás aquí.',
+      },
+      dashboard: {
+        kpiMatches: 'Partidos jugados',
+        kpiMinutes: 'Minutos totales',
+        kpiActions: 'Acciones registradas',
+        highlights: 'Mis acciones destacadas',
+        emptyTitle: 'Sin datos todavía',
+        emptyDescription:
+          'Cuando juegues partidos con acciones capturadas, verás aquí tu progreso.',
+        viewReportCard: 'Ver mi ficha',
+      },
+      errors: {
+        title: 'No pudimos cargar tus datos',
+        generic: 'Revisa tu conexión e intenta de nuevo.',
+      },
+    },
   },
   parent: {
     errors: {
@@ -989,6 +1079,8 @@ export const es = {
     title: 'Observaciones del entrenador',
     parentIntro:
       'Mensajes de los entrenadores sobre el progreso de tu hijo. Cada nota refleja el acompañamiento de la academia en su formación.',
+    playerIntro:
+      'Comentarios de tus entrenadores sobre tu progreso. Cada nota refleja el acompañamiento de la academia.',
     typeGeneral: 'Observación general',
     typeMatch: 'Sobre un partido',
     sectionGeneral: 'Observaciones generales',
@@ -1005,6 +1097,8 @@ export const es = {
     emptyCoach: 'Las observaciones que publiques aparecerán aquí para el jugador y su familia.',
     emptyParent:
       'Cuando el entrenador comparta comentarios sobre tu hijo, los verás aquí con cariño y claridad.',
+    emptyPlayer:
+      'Cuando tu entrenador comparta comentarios sobre ti, los verás aquí.',
     errors: {
       title: 'Error',
       generic: 'No pudimos cargar las observaciones. Intenta de nuevo.',
@@ -1013,6 +1107,7 @@ export const es = {
   reportCard: {
     back: 'Volver',
     backToChildren: 'Volver a mis hijos',
+    backToMatches: 'Volver a mis partidos',
     viewCard: 'Ver ficha',
     share: 'Compartir ficha',
     shareTitle: 'Ficha de {name}',

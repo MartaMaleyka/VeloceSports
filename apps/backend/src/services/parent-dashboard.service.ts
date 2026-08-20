@@ -83,6 +83,15 @@ export class ParentDashboardService {
     if (!linked) throw new NotFoundError('Jugador no encontrado');
   }
 
+  private async assertViewerAccess(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+  ): Promise<void> {
+    const linked = await playerRepository.isLinkedToViewer(tenantId, viewerUserId, playerId);
+    if (!linked) throw new NotFoundError('Jugador no encontrado');
+  }
+
   async getDashboard(
     tenantId: number,
     parentUserId: number,
@@ -90,7 +99,25 @@ export class ParentDashboardService {
     periodParam: string,
   ): Promise<ParentPlayerDashboardDto> {
     await this.assertOwnsPlayer(tenantId, parentUserId, playerId);
+    return this.buildDashboard(tenantId, playerId, periodParam);
+  }
 
+  /** Mismo dashboard filtrado por cualquier viewer (SELF, PARENT, …). */
+  async getDashboardForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+    periodParam: string,
+  ): Promise<ParentPlayerDashboardDto> {
+    await this.assertViewerAccess(tenantId, viewerUserId, playerId);
+    return this.buildDashboard(tenantId, playerId, periodParam);
+  }
+
+  private async buildDashboard(
+    tenantId: number,
+    playerId: number,
+    periodParam: string,
+  ): Promise<ParentPlayerDashboardDto> {
     const player = await playerRepository.findById(tenantId, playerId);
     if (!player) throw new NotFoundError('Jugador no encontrado');
 

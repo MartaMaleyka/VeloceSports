@@ -14,20 +14,22 @@ import {
   deleteCoachObservation,
   fetchCoachObservations,
   fetchParentObservations,
+  fetchPlayerObservations,
   MatchesApiError,
   ParentApiError,
+  PlayerApiError,
   updateCoachObservation,
 } from '../../lib/player-observations-api';
 import { appPath } from '../../lib/app-path';
 
 export interface PlayerObservationsPanelProps {
-  mode: 'coach' | 'parent';
+  mode: 'coach' | 'parent' | 'player';
   playerId: number;
   /** Filtra listado: generales + las de este partido */
   matchId?: number;
   /** Valor por defecto al crear (null = general) */
   defaultMatchId?: number | null;
-  /** Ruta base para enlazar ficha del partido (padre) */
+  /** Ruta base para enlazar ficha del partido (padre/jugador) */
   parentReportBasePath?: string;
   className?: string;
 }
@@ -41,7 +43,7 @@ function ObservationCard({
   onDelete,
 }: {
   observation: PlayerObservationDto;
-  mode: 'coach' | 'parent';
+  mode: 'coach' | 'parent' | 'player';
   locale: string;
   parentReportBasePath?: string;
   onEdit?: (obs: PlayerObservationDto) => void;
@@ -132,7 +134,10 @@ export function PlayerObservationsPanel({
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const reportBase =
-    parentReportBasePath ?? appPath(`/dashboard/parent/children/${playerId}/matches`);
+    parentReportBasePath ??
+    (mode === 'player'
+      ? appPath('/dashboard/player/matches')
+      : appPath(`/dashboard/parent/children/${playerId}/matches`));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -141,11 +146,15 @@ export function PlayerObservationsPanel({
       const data =
         mode === 'coach'
           ? await fetchCoachObservations(playerId, matchId)
-          : await fetchParentObservations(playerId);
+          : mode === 'player'
+            ? await fetchPlayerObservations()
+            : await fetchParentObservations(playerId);
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
       const msg =
-        e instanceof MatchesApiError || e instanceof ParentApiError
+        e instanceof MatchesApiError ||
+        e instanceof ParentApiError ||
+        e instanceof PlayerApiError
           ? e.message
           : t('playerObservations.errors.generic');
       setError(msg);
@@ -236,6 +245,9 @@ export function PlayerObservationsPanel({
         {mode === 'parent' && (
           <p className="mt-1 text-sm text-text-secondary">{t('playerObservations.parentIntro')}</p>
         )}
+        {mode === 'player' && (
+          <p className="mt-1 text-sm text-text-secondary">{t('playerObservations.playerIntro')}</p>
+        )}
       </header>
 
       {error && (
@@ -287,9 +299,11 @@ export function PlayerObservationsPanel({
         <EmptyState
           title={t('playerObservations.emptyTitle')}
           description={
-            mode === 'parent'
-              ? t('playerObservations.emptyParent')
-              : t('playerObservations.emptyCoach')
+            mode === 'player'
+              ? t('playerObservations.emptyPlayer')
+              : mode === 'parent'
+                ? t('playerObservations.emptyParent')
+                : t('playerObservations.emptyCoach')
           }
         />
       ) : (

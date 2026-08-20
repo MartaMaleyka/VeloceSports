@@ -3,10 +3,12 @@ import type { PlayerStatus } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
+import { playerViewerRepository } from './player-viewer.repository.js';
 
 export interface PlayerRow extends RowDataPacket {
   id: number;
   tenant_id: number;
+  user_id: number | null;
   first_name: string;
   last_name: string;
   date_of_birth: Date | null;
@@ -48,7 +50,7 @@ export interface UpdatePlayerInput {
 }
 
 export class PlayerRepository extends TenantScopedRepository {
-  private static readonly PLAYER_SELECT = `p.id, p.tenant_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
+  private static readonly PLAYER_SELECT = `p.id, p.tenant_id, p.user_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
               p.position, p.category_id, p.status, p.rejection_reason,
               p.photo_object_key, p.photo_uploaded_at, p.photo_uploaded_by,
               p.deactivated_at, p.created_at, p.updated_at`;
@@ -352,6 +354,22 @@ export class PlayerRepository extends TenantScopedRepository {
     );
   }
 
+  async isLinkedToViewer(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+  ): Promise<boolean> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM player_viewers
+       WHERE tenant_id = ? AND viewer_id = ? AND player_id = ?
+       LIMIT 1`,
+      [tenantId, viewerUserId, playerId],
+    );
+    return rows.length > 0;
+  }
+
   async isLinkedToParent(
     tenantId: number,
     parentUserId: number,
@@ -359,19 +377,63 @@ export class PlayerRepository extends TenantScopedRepository {
   ): Promise<boolean> {
     this.assertTenantId(tenantId);
     const pool = getPool();
+    // SoT: player_viewers; fallback: parent_players (compat / tests / pre-backfill).
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM parent_players
+      `SELECT 1 AS ok FROM player_viewers
+       WHERE tenant_id = ? AND viewer_id = ? AND player_id = ? AND relationship = 'PARENT'
+       UNION ALL
+       SELECT 1 AS ok FROM parent_players
        WHERE tenant_id = ? AND parent_user_id = ? AND player_id = ?
        LIMIT 1`,
-      [tenantId, parentUserId, playerId],
+      [tenantId, parentUserId, playerId, tenantId, parentUserId, playerId],
     );
     return rows.length > 0;
   }
 
-  async findByParentUserId(tenantId: number, parentUserId: number): Promise<PlayerWithCategoryRow[]> {
+  /** Fuente de verdad: player_viewers (cualquier relationship). */
+  async findByViewerUserId(
+    tenantId: number,
+    viewerUserId: number,
+  ): Promise<PlayerWithCategoryRow[]> {
     this.assertTenantId(tenantId);
     const pool = getPool();
     const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
+              c.name AS category_name
+       FROM players p
+       INNER JOIN (
+         SELECT DISTINCT player_id, tenant_id
+         FROM player_viewers
+         WHERE tenant_id = ? AND viewer_id = ?
+       ) pv ON pv.player_id = p.id AND pv.tenant_id = p.tenant_id
+       LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
+       WHERE p.tenant_id = ?
+       ORDER BY p.last_name ASC, p.first_name ASC`,
+      [tenantId, viewerUserId, tenantId],
+    );
+    return rows;
+  }
+
+  /**
+   * Compat: PARENT desde player_viewers; si vacío, fallback a parent_players.
+   * Tras backfill + dual-write ambas fuentes coinciden.
+   */
+  async findByParentUserId(tenantId: number, parentUserId: number): Promise<PlayerWithCategoryRow[]> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [fromViewers] = await pool.execute<PlayerWithCategoryRow[]>(
+      `SELECT ${PlayerRepository.PLAYER_SELECT},
+              c.name AS category_name
+       FROM players p
+       INNER JOIN player_viewers pv ON pv.player_id = p.id AND pv.tenant_id = p.tenant_id
+       LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
+       WHERE p.tenant_id = ? AND pv.viewer_id = ? AND pv.relationship = 'PARENT'
+       ORDER BY p.last_name ASC, p.first_name ASC`,
+      [tenantId, parentUserId],
+    );
+    if (fromViewers.length > 0) return fromViewers;
+
+    const [fromLegacy] = await pool.execute<PlayerWithCategoryRow[]>(
       `SELECT ${PlayerRepository.PLAYER_SELECT},
               c.name AS category_name
        FROM players p
@@ -381,7 +443,21 @@ export class PlayerRepository extends TenantScopedRepository {
        ORDER BY p.last_name ASC, p.first_name ASC`,
       [tenantId, parentUserId],
     );
-    return rows;
+    return fromLegacy;
+  }
+
+  async setUserId(
+    tenantId: number,
+    playerId: number,
+    userId: number | null,
+    conn?: DbConnection,
+  ): Promise<void> {
+    this.assertTenantId(tenantId);
+    const executor = conn ?? getPool();
+    await executor.execute(
+      'UPDATE players SET user_id = ? WHERE id = ? AND tenant_id = ?',
+      [userId, playerId, tenantId],
+    );
   }
 
   async findParentIds(tenantId: number, playerId: number): Promise<number[]> {
@@ -486,6 +562,8 @@ export class PlayerRepository extends TenantScopedRepository {
   ): Promise<void> {
     this.assertTenantId(tenantId);
     const executor = conn ?? getPool();
+    // Dual-write PARENT: parent_players (compat) + player_viewers (SoT).
+    // SELF/GUARDIAN/MANAGER solo viven en player_viewers — no tienen equivalente aquí.
     await executor.execute(
       'DELETE FROM parent_players WHERE player_id = ? AND tenant_id = ?',
       [playerId, tenantId],
@@ -496,6 +574,7 @@ export class PlayerRepository extends TenantScopedRepository {
         [parentUserId, playerId, tenantId],
       );
     }
+    await playerViewerRepository.syncParentsForPlayer(tenantId, playerId, parentUserIds, conn);
   }
 }
 

@@ -4,9 +4,11 @@ import { Alert, Button, ToastProvider } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import {
   fetchParentReportCard,
+  fetchPlayerReportCard,
   fetchStaffReportCard,
   MatchesApiError,
   ParentApiError,
+  PlayerApiError,
 } from '../../lib/report-card-api';
 import PlayerMatchReportCardView from './PlayerMatchReportCardView';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
@@ -16,7 +18,7 @@ import { appPath } from '../../lib/app-path';
 export interface PlayerMatchReportPageProps {
   playerId?: number;
   matchId?: number;
-  apiMode?: 'parent' | 'staff';
+  apiMode?: 'parent' | 'staff' | 'player';
   backPath?: string;
 }
 
@@ -29,16 +31,18 @@ function PlayerMatchReportContent({
   const playerId =
     resolveNumericRouteId(playerIdProp, /\/children\/(\d+)\/matches/) ||
     resolveNumericRouteId(playerIdProp, /\/players\/(\d+)\/report-card/);
-  const matchId =
-    resolveNumericRouteId(matchIdProp, /\/matches\/(\d+)/);
-  const backPath = appPath(backPathProp ?? '/dashboard/parent/children');
+  const matchId = resolveNumericRouteId(matchIdProp, /\/matches\/(\d+)/);
+  const backPath = appPath(
+    backPathProp ??
+      (apiMode === 'player' ? '/dashboard/player/matches' : '/dashboard/parent/children'),
+  );
   const { t } = useTranslation();
   const [data, setData] = useState<PlayerMatchReportCardDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (playerId <= 0 || matchId <= 0) {
+    if (matchId <= 0 || (apiMode !== 'player' && playerId <= 0)) {
       setError(t('reportCard.errors.notFound'));
       setLoading(false);
       return;
@@ -47,13 +51,17 @@ function PlayerMatchReportContent({
     setError(null);
     try {
       const card =
-        apiMode === 'parent'
-          ? await fetchParentReportCard(playerId, matchId)
-          : await fetchStaffReportCard(matchId, playerId);
+        apiMode === 'player'
+          ? await fetchPlayerReportCard(matchId)
+          : apiMode === 'parent'
+            ? await fetchParentReportCard(playerId, matchId)
+            : await fetchStaffReportCard(matchId, playerId);
       setData(card);
     } catch (e) {
       const message =
-        e instanceof ParentApiError || e instanceof MatchesApiError
+        e instanceof ParentApiError ||
+        e instanceof MatchesApiError ||
+        e instanceof PlayerApiError
           ? e.message
           : t('reportCard.errors.generic');
       setError(message);
@@ -74,7 +82,7 @@ function PlayerMatchReportContent({
     return (
       <div className="space-y-4">
         <Button type="button" variant="secondary" onClick={() => { window.location.href = backPath; }}>
-          ← {t('reportCard.back')}
+          ← {apiMode === 'player' ? t('reportCard.backToMatches') : t('reportCard.back')}
         </Button>
         <Alert variant="error" title={t('reportCard.errors.title')}>
           {error ?? t('reportCard.errors.notFound')}
@@ -86,7 +94,7 @@ function PlayerMatchReportContent({
   return (
     <div className="space-y-4">
       <Button type="button" variant="secondary" onClick={() => { window.location.href = backPath; }}>
-        ← {t('reportCard.back')}
+        ← {apiMode === 'player' ? t('reportCard.backToMatches') : t('reportCard.back')}
       </Button>
       <PlayerMatchReportCardView data={data} />
       {apiMode === 'parent' ? (
@@ -96,12 +104,19 @@ function PlayerMatchReportContent({
           matchId={matchId}
           parentReportBasePath={appPath(`/dashboard/parent/children/${playerId}/matches`)}
         />
-      ) : (
+      ) : apiMode === 'staff' ? (
         <PlayerObservationsPanel
           mode="coach"
           playerId={playerId}
           matchId={matchId}
           defaultMatchId={matchId}
+        />
+      ) : (
+        <PlayerObservationsPanel
+          mode="player"
+          playerId={data.player.id}
+          matchId={matchId}
+          parentReportBasePath={appPath('/dashboard/player/matches')}
         />
       )}
     </div>

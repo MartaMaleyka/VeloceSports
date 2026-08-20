@@ -2,10 +2,11 @@ import type {
   PlayerMatchReportCardDto,
   PlayerMatchReportListItemDto,
 } from '@velocesport/shared';
-import { MatchesApiError, matchesFetch } from './matches-api';
-import { ParentApiError, parentFetch, parentFetchList } from './parent-api';
+import { MatchesApiError, matchesFetch } from './matches-api.js';
+import { ParentApiError, parentFetch, parentFetchList } from './parent-api.js';
+import { PlayerApiError, playerFetch } from './player-api.js';
 
-export { MatchesApiError, ParentApiError };
+export { MatchesApiError, ParentApiError, PlayerApiError };
 
 export async function fetchParentReportCard(
   playerId: number,
@@ -29,4 +30,10 @@ export async function fetchStaffReportCard(
   return matchesFetch<PlayerMatchReportCardDto>(
     `${matchId}/players/${playerId}/report-card`,
   );
+}
+
+export async function fetchPlayerReportCard(
+  matchId: number,
+): Promise<PlayerMatchReportCardDto> {
+  return playerFetch<PlayerMatchReportCardDto>(`matches/${matchId}/report-card`);
 }

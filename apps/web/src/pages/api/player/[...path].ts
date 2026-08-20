@@ -16,10 +16,6 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   return handleProxy(request, cookies, params.path, 'PATCH');
 };
 
-export const DELETE: APIRoute = async ({ params, request, cookies }) => {
-  return handleProxy(request, cookies, params.path, 'DELETE');
-};
-
 async function handleProxy(
   request: Request,
   cookies: Parameters<typeof getSession>[0],
@@ -29,7 +25,7 @@ async function handleProxy(
   const segments = pathParam?.split('/').filter(Boolean) ?? [];
   const path = segments.join('/');
   const url = new URL(request.url);
-  const target = `${INTERNAL_API_URL}/api/tenant/${path}${url.search}`;
+  const target = `${INTERNAL_API_URL}/api/player/${path}${url.search}`;
 
   const hasBody = method !== 'GET' && method !== 'HEAD';
   const body = hasBody ? await request.text() : undefined;
@@ -42,19 +38,10 @@ async function handleProxy(
     body,
     assertAccess: () => {
       const session = getSession(cookies);
-      if (!session) {
+      if (!session || !sessionHasRole(session, 'player')) {
         return json({ success: false, message: 'Acceso denegado' }, 403);
       }
-      if (sessionHasRole(session, 'academy_admin')) {
-        return null;
-      }
-      // Coach solo para invitación de jugador adulto
-      const isInviteAdult =
-        method === 'POST' && /^players\/\d+\/invite-adult$/.test(path);
-      if (isInviteAdult && sessionHasRole(session, 'coach')) {
-        return null;
-      }
-      return json({ success: false, message: 'Acceso denegado' }, 403);
+      return null;
     },
   });
 }

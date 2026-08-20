@@ -20,6 +20,7 @@ export const ROUTE_ROLE_MAP: Record<string, LoginRole> = {
   '/dashboard/academy-admin': 'academy_admin',
   '/dashboard/coach': 'coach',
   '/dashboard/parent': 'parent',
+  '/dashboard/player': 'player',
 };
 
 export function normalizeSessionRoles(user: SessionUser): LoginRole[] {

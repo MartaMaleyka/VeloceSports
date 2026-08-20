@@ -2,6 +2,8 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
+import { playerViewerRepository } from './player-viewer.repository.js';
+import { ViewerRelationship } from '@velocesport/shared';
 
 export interface LinkedPlayerRow extends RowDataPacket {
   id: number;
@@ -57,6 +59,7 @@ export class ParentLinkRepository extends TenantScopedRepository {
   ): Promise<void> {
     this.assertTenantId(tenantId);
     const executor = conn ?? getPool();
+    // Dual-write PARENT: parent_players (compat) + player_viewers (SoT).
     await executor.execute(
       'DELETE FROM parent_players WHERE tenant_id = ? AND parent_user_id = ?',
       [tenantId, parentUserId],
@@ -67,6 +70,7 @@ export class ParentLinkRepository extends TenantScopedRepository {
         [parentUserId, playerId, tenantId],
       );
     }
+    await playerViewerRepository.syncPlayersForParent(tenantId, parentUserId, playerIds, conn);
   }
 
   async linkParentToPlayer(
@@ -77,11 +81,19 @@ export class ParentLinkRepository extends TenantScopedRepository {
   ): Promise<void> {
     this.assertTenantId(tenantId);
     const executor = conn ?? getPool();
+    // Dual-write PARENT.
     await executor.execute(
       `INSERT INTO parent_players (parent_user_id, player_id, tenant_id)
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE parent_user_id = parent_user_id`,
       [parentUserId, playerId, tenantId],
+    );
+    await playerViewerRepository.link(
+      tenantId,
+      playerId,
+      parentUserId,
+      ViewerRelationship.PARENT,
+      conn,
     );
   }
 
@@ -95,6 +107,12 @@ export class ParentLinkRepository extends TenantScopedRepository {
     await pool.execute(
       'DELETE FROM parent_players WHERE tenant_id = ? AND parent_user_id = ? AND player_id = ?',
       [tenantId, parentUserId, playerId],
+    );
+    await playerViewerRepository.unlink(
+      tenantId,
+      playerId,
+      parentUserId,
+      ViewerRelationship.PARENT,
     );
   }
 }

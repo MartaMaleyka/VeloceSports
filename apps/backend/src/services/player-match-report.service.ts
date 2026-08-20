@@ -109,13 +109,37 @@ export class PlayerMatchReportService {
     if (!linked) throw new NotFoundError('Jugador no encontrado');
   }
 
+  private async assertViewerAccess(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+  ): Promise<void> {
+    const linked = await playerRepository.isLinkedToViewer(tenantId, viewerUserId, playerId);
+    if (!linked) throw new NotFoundError('Jugador no encontrado');
+  }
+
   async listMatchesForParent(
     tenantId: number,
     parentUserId: number,
     playerId: number,
   ): Promise<PlayerMatchReportListItemDto[]> {
     await this.assertParentAccess(tenantId, parentUserId, playerId);
+    return this.listFinishedMatches(tenantId, playerId);
+  }
 
+  async listMatchesForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+  ): Promise<PlayerMatchReportListItemDto[]> {
+    await this.assertViewerAccess(tenantId, viewerUserId, playerId);
+    return this.listFinishedMatches(tenantId, playerId);
+  }
+
+  private async listFinishedMatches(
+    tenantId: number,
+    playerId: number,
+  ): Promise<PlayerMatchReportListItemDto[]> {
     const rows = await matchAttendanceRepository.findFinishedMatchesForPlayer(tenantId, playerId);
     const items: PlayerMatchReportListItemDto[] = [];
 
@@ -146,6 +170,16 @@ export class PlayerMatchReportService {
     matchId: number,
   ): Promise<PlayerMatchReportCardDto> {
     await this.assertParentAccess(tenantId, parentUserId, playerId);
+    return this.buildReportCard(tenantId, playerId, matchId);
+  }
+
+  async getReportCardForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    playerId: number,
+    matchId: number,
+  ): Promise<PlayerMatchReportCardDto> {
+    await this.assertViewerAccess(tenantId, viewerUserId, playerId);
     return this.buildReportCard(tenantId, playerId, matchId);
   }
 

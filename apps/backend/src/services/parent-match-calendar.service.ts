@@ -62,6 +62,35 @@ export class ParentMatchCalendarService {
       past,
     };
   }
+
+  async getCalendarForViewer(
+    tenantId: number,
+    viewerUserId: number,
+    options?: { playerId?: number; pastLimit?: number },
+  ): Promise<ParentMatchCalendarDto> {
+    if (options?.playerId != null) {
+      const owns = await playerRepository.isLinkedToViewer(
+        tenantId,
+        viewerUserId,
+        options.playerId,
+      );
+      if (!owns) {
+        throw new ForbiddenError('No tienes acceso a este jugador');
+      }
+    }
+
+    const [rows, timezone] = await Promise.all([
+      parentMatchCalendarRepository.findMatchesForViewer(tenantId, viewerUserId, options),
+      parentMatchCalendarRepository.getAcademyTimezone(tenantId),
+    ]);
+
+    const [upcoming, past] = await Promise.all([
+      Promise.all(rows.upcoming.map(mapRow)),
+      Promise.all(rows.past.map(mapRow)),
+    ]);
+
+    return { timezone, upcoming, past };
+  }
 }
 
 export const parentMatchCalendarService = new ParentMatchCalendarService();

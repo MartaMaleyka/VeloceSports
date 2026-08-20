@@ -1,4 +1,4 @@
-/** Roles con acceso al sistema (login). `player` es entidad de datos sin acceso en MVP. */
+/** Roles con acceso al sistema (login). Incluye `player` (panel adulto /dashboard/player). */
 export const UserRole = {
   SUPER_ADMIN: 'super_admin',
   ACADEMY_ADMIN: 'academy_admin',
@@ -15,6 +15,7 @@ export const LOGIN_ROLES = [
   UserRole.ACADEMY_ADMIN,
   UserRole.COACH,
   UserRole.PARENT,
+  UserRole.PLAYER,
 ] as const;
 
 export type LoginRole = (typeof LOGIN_ROLES)[number];

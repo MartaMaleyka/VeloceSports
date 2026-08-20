@@ -665,6 +665,15 @@ export class PlayerService extends CategoryService {
     }
     if (status === PlayerStatus.INACTIVE) {
       await playerRepository.deactivate(tenantId, playerId);
+      // Baja adulto: desactivar user (no borrar) para no CASCADE-borrar SELF en player_viewers.
+      const after = await playerRepository.findById(tenantId, playerId);
+      if (after?.user_id != null) {
+        await userRepository.updateStatusInTenant(
+          tenantId,
+          after.user_id,
+          UserStatus.INACTIVE,
+        );
+      }
       return;
     }
     if (beforeStatus !== status) {

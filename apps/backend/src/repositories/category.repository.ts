@@ -10,6 +10,7 @@ export interface CategoryRow extends RowDataPacket {
   name: string;
   age_min: number | null;
   age_max: number | null;
+  requires_guardian: number | null;
   status: CategoryStatus;
   created_at: Date;
   updated_at: Date;
@@ -54,7 +55,7 @@ export class CategoryRepository extends TenantScopedRepository {
     }
 
     const [rows] = await pool.execute<CategoryWithCoachRow[]>(
-      `SELECT c.id, c.tenant_id, c.name, c.age_min, c.age_max, c.status, c.created_at, c.updated_at,
+      `SELECT c.id, c.tenant_id, c.name, c.age_min, c.age_max, c.requires_guardian, c.status, c.created_at, c.updated_at,
               cc.coach_user_id, u.email AS coach_email
        FROM categories c
        LEFT JOIN coach_categories cc ON cc.category_id = c.id AND cc.tenant_id = c.tenant_id
@@ -70,7 +71,7 @@ export class CategoryRepository extends TenantScopedRepository {
     this.assertTenantId(tenantId);
     const pool = getPool();
     const [rows] = await pool.execute<CategoryWithCoachRow[]>(
-      `SELECT c.id, c.tenant_id, c.name, c.age_min, c.age_max, c.status, c.created_at, c.updated_at,
+      `SELECT c.id, c.tenant_id, c.name, c.age_min, c.age_max, c.requires_guardian, c.status, c.created_at, c.updated_at,
               cc.coach_user_id, u.email AS coach_email
        FROM categories c
        LEFT JOIN coach_categories cc ON cc.category_id = c.id AND cc.tenant_id = c.tenant_id

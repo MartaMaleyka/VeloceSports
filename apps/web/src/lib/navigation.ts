@@ -23,13 +23,14 @@ export interface NavLayout {
   sections: NavSection[];
 }
 
-const ROLE_NAV_ORDER: LoginRole[] = ['super_admin', 'academy_admin', 'coach', 'parent'];
+const ROLE_NAV_ORDER: LoginRole[] = ['super_admin', 'academy_admin', 'coach', 'parent', 'player'];
 
 const roleSlugMap: Record<LoginRole, string> = {
   super_admin: appPath('/dashboard/super-admin'),
   academy_admin: appPath('/dashboard/academy-admin'),
   coach: appPath('/dashboard/coach'),
   parent: appPath('/dashboard/parent'),
+  player: appPath('/dashboard/player'),
 };
 
 const roleKeys: Record<LoginRole, TranslationKey> = {
@@ -37,6 +38,7 @@ const roleKeys: Record<LoginRole, TranslationKey> = {
   academy_admin: 'roles.academy_admin',
   coach: 'roles.coach',
   parent: 'roles.parent',
+  player: 'roles.player',
 };
 
 export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
@@ -154,6 +156,36 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
     ];
   }
 
+  if (role === 'player') {
+    return [
+      { id: 'home', href: appPath('/dashboard/player'), label: t('nav.home', locale), sectionAccent: 'brand' },
+      {
+        id: 'profile',
+        href: appPath('/dashboard/player/profile'),
+        label: t('nav.playerProfile', locale),
+        sectionAccent: 'brand',
+      },
+      {
+        id: 'matches',
+        href: appPath('/dashboard/player/matches'),
+        label: t('nav.playerMatches', locale),
+        sectionAccent: 'matches',
+      },
+      {
+        id: 'calendar',
+        href: appPath('/dashboard/player/calendar'),
+        label: t('nav.playerCalendar', locale),
+        sectionAccent: 'brand',
+      },
+      {
+        id: 'reports',
+        href: appPath('/dashboard/player/reports'),
+        label: t('nav.playerReports', locale),
+        sectionAccent: 'audit',
+      },
+    ];
+  }
+
   return [
     {
       id: 'home',
@@ -228,7 +260,7 @@ export function getRoleLabel(role: LoginRole, locale: Locale): string {
   return t(roleKeys[role], locale);
 }
 
-export type DashboardContentKey = 'superAdmin' | 'academyAdmin' | 'coach' | 'parent';
+export type DashboardContentKey = 'superAdmin' | 'academyAdmin' | 'coach' | 'parent' | 'player';
 
 export function getDashboardTranslationPrefix(key: DashboardContentKey): `dashboard.${DashboardContentKey}` {
   return `dashboard.${key}`;

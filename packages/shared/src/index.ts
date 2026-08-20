@@ -28,3 +28,4 @@ export * from './academy-settings.js';
 export * from './tenant-reports.js';
 export * from './coach-player-analysis.js';
 export * from './user-role.js';
+export * from './player-viewers.js';

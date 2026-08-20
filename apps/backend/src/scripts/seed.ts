@@ -15,23 +15,72 @@ export const DEV_PASSWORD = 'DevPass123!';
 
 const PLAYERS_PER_CATEGORY = 21;
 
+type SeedCategory = {
+  name: string;
+  ageMin: number;
+  ageMax: number;
+  /** 1 = menores (PARENT); 0 = adultos (SELF login) */
+  requiresGuardian: 0 | 1;
+};
+
+type SeedCoach = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  /** Nombres de categorías a las que se asigna (OPERAR). */
+  categories: readonly string[];
+};
+
 const SEED = {
   plan: {
     name: 'Plan Desarrollo',
     description: 'Plan para entorno local de desarrollo',
-    maxPlayers: 200,
+    maxPlayers: 300,
     maxCategories: 20,
-    maxUsers: 200,
+    maxUsers: 300,
   },
   academy: { name: 'Academia Veloce Demo', slug: 'veloce-demo' },
-  categories: ['Sub-8', 'Sub-10', 'Sub-12'] as const,
+  categories: [
+    { name: 'Sub-8', ageMin: 6, ageMax: 8, requiresGuardian: 1 },
+    { name: 'Sub-10', ageMin: 9, ageMax: 10, requiresGuardian: 1 },
+    { name: 'Sub-12', ageMin: 11, ageMax: 12, requiresGuardian: 1 },
+    { name: 'Sub-18', ageMin: 16, ageMax: 17, requiresGuardian: 0 },
+    { name: 'Sub-19', ageMin: 17, ageMax: 18, requiresGuardian: 0 },
+    { name: 'Sub-20', ageMin: 18, ageMax: 19, requiresGuardian: 0 },
+    { name: 'Sub-21', ageMin: 19, ageMax: 20, requiresGuardian: 0 },
+  ] as const satisfies readonly SeedCategory[],
   users: {
     superAdmin: { email: 'super@dev.velocesport.local', role: UserRole.SUPER_ADMIN, tenantId: null },
     academyAdmin: { email: 'admin@dev.velocesport.local', role: UserRole.ACADEMY_ADMIN },
-    coach: { email: 'coach@dev.velocesport.local', role: UserRole.COACH },
-    /** Padre demo con 2 hijos vinculados */
+    /** Padre demo: vinculado a 2 jugadores Sub-8 para panel parent. */
     parentDual: { email: 'parent@dev.velocesport.local', role: UserRole.PARENT },
   },
+  coaches: [
+    {
+      email: 'coach@dev.velocesport.local',
+      firstName: 'Carlos',
+      lastName: 'Entrenador',
+      categories: ['Sub-8', 'Sub-10'],
+    },
+    {
+      email: 'coach-01@dev.velocesport.local',
+      firstName: 'Laura',
+      lastName: 'Coach',
+      categories: ['Sub-12', 'Sub-18'],
+    },
+    {
+      email: 'coach-02@dev.velocesport.local',
+      firstName: 'Diego',
+      lastName: 'Táctica',
+      categories: ['Sub-19', 'Sub-20'],
+    },
+    {
+      email: 'coach-03@dev.velocesport.local',
+      firstName: 'Sofía',
+      lastName: 'Porteros',
+      categories: ['Sub-20', 'Sub-21'],
+    },
+  ] as const satisfies readonly SeedCoach[],
 } as const;
 
 const FIRST_NAMES = [
@@ -141,17 +190,31 @@ async function getOrCreateUser(
   return result.insertId;
 }
 
-async function getOrCreateCategory(tenantId: number, name: string): Promise<number> {
+async function getOrCreateCategory(
+  tenantId: number,
+  spec: SeedCategory,
+): Promise<number> {
   const existing = await findOne<RowDataPacket & { id: number }>(
     'SELECT id FROM categories WHERE tenant_id = ? AND name = ? LIMIT 1',
-    [tenantId, name],
+    [tenantId, spec.name],
   );
-  if (existing) return existing.id;
 
   const pool = getPool();
+  if (existing) {
+    await pool.execute(
+      `UPDATE categories
+       SET age_min = ?, age_max = ?, requires_guardian = ?, status = 'active'
+       WHERE id = ? AND tenant_id = ?`,
+      [spec.ageMin, spec.ageMax, spec.requiresGuardian, existing.id, tenantId],
+    );
+    return existing.id;
+  }
+
   const [result] = await pool.execute<ResultSetHeader>(
-    'INSERT INTO categories (tenant_id, name, status) VALUES (?, ?, ?)',
-    [tenantId, name, 'active'],
+    `INSERT INTO categories
+       (tenant_id, name, age_min, age_max, requires_guardian, status)
+     VALUES (?, ?, ?, ?, ?, 'active')`,
+    [tenantId, spec.name, spec.ageMin, spec.ageMax, spec.requiresGuardian],
   );
   return result.insertId;
 }
@@ -200,12 +263,51 @@ async function linkParentPlayer(
   tenantId: number,
 ): Promise<void> {
   const pool = getPool();
+  // Dual-write PARENT: parent_players + player_viewers
   await pool.execute(
     `INSERT INTO parent_players (parent_user_id, player_id, tenant_id)
      VALUES (?, ?, ?)
      ON DUPLICATE KEY UPDATE parent_user_id = parent_user_id`,
     [parentUserId, playerId, tenantId],
   );
+  await pool.execute(
+    `INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship)
+     VALUES (?, ?, ?, 'PARENT')
+     ON DUPLICATE KEY UPDATE relationship = relationship`,
+    [tenantId, playerId, parentUserId],
+  );
+}
+
+/** Jugador adulto: user rol player + players.user_id + viewer SELF. */
+async function ensureAdultPlayerLogin(
+  tenantId: number,
+  playerId: number,
+  email: string,
+  firstName: string,
+  lastName: string,
+  passwordHash: string,
+): Promise<number> {
+  const userId = await getOrCreateUser(
+    email,
+    UserRole.PLAYER,
+    tenantId,
+    passwordHash,
+    firstName,
+    lastName,
+  );
+
+  const pool = getPool();
+  await pool.execute(
+    'UPDATE players SET user_id = ? WHERE id = ? AND tenant_id = ?',
+    [userId, playerId, tenantId],
+  );
+  await pool.execute(
+    `INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship)
+     VALUES (?, ?, ?, 'SELF')
+     ON DUPLICATE KEY UPDATE relationship = relationship`,
+    [tenantId, playerId, userId],
+  );
+  return userId;
 }
 
 function mysqlDatetimeDaysFromNow(days: number): string {
@@ -374,6 +476,164 @@ async function ensurePlayerObservation(
      VALUES (?, ?, ?, ?, ?)`,
     [tenantId, playerId, matchId, coachUserId, content],
   );
+}
+
+const DEMO_ACTION_CODES = [1, 2, 3, 5, 10, 11, 13] as const;
+
+const CATEGORY_OPPONENTS = [
+  'Academia Norte FC',
+  'Deportivo Pacífico',
+  'Atlético Colón',
+  'Sporting Junior',
+  'Estrella del Este',
+  'Club Albrook',
+] as const;
+
+/**
+ * Rellena cada categoría con partidos programados + finalizados,
+ * asistencia de todos los jugadores, jugadas y algunas observaciones.
+ */
+async function seedCategoryMatchActivity(
+  tenantId: number,
+  categoryId: number,
+  categoryName: string,
+  players: Array<{ id: number; firstName: string; lastName: string; jersey: number }>,
+  coachUserId: number,
+  adminUserId: number,
+  categoryIndex: number,
+): Promise<{ scheduled: number; finished: number; actions: number }> {
+  if (players.length === 0) return { scheduled: 0, finished: 0, actions: 0 };
+
+  let scheduled = 0;
+  let finished = 0;
+  let actions = 0;
+
+  const dayOffset = categoryIndex * 2;
+
+  const upcomingSpecs = [
+    {
+      opponent: CATEGORY_OPPONENTS[categoryIndex % CATEGORY_OPPONENTS.length]!,
+      datetime: mysqlDatetimeDaysFromNow(5 + dayOffset),
+      location: `Cancha ${categoryName}`,
+      matchType: MatchType.LEAGUE,
+    },
+    {
+      opponent: CATEGORY_OPPONENTS[(categoryIndex + 2) % CATEGORY_OPPONENTS.length]!,
+      datetime: mysqlDatetimeDaysFromNow(12 + dayOffset),
+      location: 'Complejo Deportivo Demo',
+      matchType: MatchType.FRIENDLY,
+    },
+  ] as const;
+
+  for (const spec of upcomingSpecs) {
+    const matchId = await getOrCreateMatch(
+      tenantId,
+      categoryId,
+      `${spec.opponent} (${categoryName})`,
+      spec.datetime,
+      adminUserId,
+      spec.location,
+      { matchType: spec.matchType, status: 'scheduled' },
+    );
+    scheduled += 1;
+    for (let i = 0; i < players.length; i += 1) {
+      const p = players[i]!;
+      await ensureMatchAttendance(
+        tenantId,
+        matchId,
+        p.id,
+        p.jersey,
+        i < 11 ? 'starter' : 'substitute',
+      );
+    }
+  }
+
+  const finishedSpecs = [
+    {
+      opponent: CATEGORY_OPPONENTS[(categoryIndex + 1) % CATEGORY_OPPONENTS.length]!,
+      datetime: mysqlDatetimeDaysAgo(7 + dayOffset),
+      location: `Estadio Demo ${categoryName}`,
+      matchType: MatchType.LEAGUE,
+    },
+    {
+      opponent: CATEGORY_OPPONENTS[(categoryIndex + 3) % CATEGORY_OPPONENTS.length]!,
+      datetime: mysqlDatetimeDaysAgo(21 + dayOffset),
+      location: 'Cancha Sintética Central',
+      matchType: MatchType.TOURNAMENT,
+    },
+    {
+      opponent: CATEGORY_OPPONENTS[(categoryIndex + 4) % CATEGORY_OPPONENTS.length]!,
+      datetime: mysqlDatetimeDaysAgo(35 + dayOffset),
+      location: 'Polideportivo Municipal',
+      matchType: MatchType.FRIENDLY,
+    },
+  ] as const;
+
+  for (let matchIdx = 0; matchIdx < finishedSpecs.length; matchIdx += 1) {
+    const spec = finishedSpecs[matchIdx]!;
+    const matchId = await getOrCreateMatch(
+      tenantId,
+      categoryId,
+      `${spec.opponent} (${categoryName})`,
+      spec.datetime,
+      adminUserId,
+      spec.location,
+      { matchType: spec.matchType, status: 'finished' },
+    );
+    finished += 1;
+
+    for (let i = 0; i < players.length; i += 1) {
+      const p = players[i]!;
+      await ensureMatchAttendance(
+        tenantId,
+        matchId,
+        p.id,
+        p.jersey,
+        i < 11 ? 'starter' : 'substitute',
+      );
+
+      // 2–4 jugadas por jugador por partido (deterministas / idempotentes)
+      const actionCount = 2 + ((i + matchIdx) % 3);
+      for (let a = 0; a < actionCount; a += 1) {
+        const code = DEMO_ACTION_CODES[(i + a + matchIdx) % DEMO_ACTION_CODES.length]!;
+        const minute = 5 + a * 11 + ((i * 3) % 7);
+        await ensureGameAction(
+          tenantId,
+          matchId,
+          p.id,
+          p.jersey,
+          code,
+          minute,
+          coachUserId,
+        );
+        actions += 1;
+      }
+
+      if (matchIdx === 0 && i % 3 === 0) {
+        await ensurePlayerObservation(
+          tenantId,
+          p.id,
+          coachUserId,
+          `${p.firstName} tuvo buen ritmo en ${categoryName} vs ${spec.opponent}. Seguir reforzando la toma de decisiones.`,
+          matchId,
+        );
+      }
+    }
+  }
+
+  // Una observación general por jugador (cada 2)
+  for (let i = 0; i < players.length; i += 2) {
+    const p = players[i]!;
+    await ensurePlayerObservation(
+      tenantId,
+      p.id,
+      coachUserId,
+      `${p.firstName} ${p.lastName} (#${p.jersey}) evoluciona bien en ${categoryName}. Mantener intensidad en entrenamientos.`,
+      null,
+    );
+  }
+
+  return { scheduled, finished, actions };
 }
 
 /** Demo rica para parent@dev: convocatorias, partidos programados y finalizados con jugadas. */
@@ -594,26 +854,64 @@ async function seed(): Promise<void> {
     'Ana',
     'Administradora',
   );
-  const coachId = await getOrCreateUser(
-    SEED.users.coach.email,
-    SEED.users.coach.role,
-    academyId,
-    passwordHash,
-    'Carlos',
-    'Entrenador',
-  );
 
-  const categoryIds: number[] = [];
-  for (const categoryName of SEED.categories) {
-    const categoryId = await getOrCreateCategory(academyId, categoryName);
-    categoryIds.push(categoryId);
-    await linkCoachCategory(coachId, categoryId, academyId);
+  const coachIdsByEmail = new Map<string, number>();
+  for (const coach of SEED.coaches) {
+    const coachId = await getOrCreateUser(
+      coach.email,
+      UserRole.COACH,
+      academyId,
+      passwordHash,
+      coach.firstName,
+      coach.lastName,
+    );
+    coachIdsByEmail.set(coach.email, coachId);
   }
 
-  const playerIds: number[] = [];
+  const categoryIdsByName = new Map<string, number>();
+  for (const category of SEED.categories) {
+    const categoryId = await getOrCreateCategory(academyId, category);
+    categoryIdsByName.set(category.name, categoryId);
+  }
+
+  // Apaga categorías legacy del seed anterior (Sub-8/10/12) sin borrar datos.
+  {
+    const pool = getPool();
+    const keepNames = SEED.categories.map((c) => c.name);
+    const placeholders = keepNames.map(() => '?').join(', ');
+    await pool.execute(
+      `UPDATE categories
+       SET status = 'inactive'
+       WHERE tenant_id = ?
+         AND name NOT IN (${placeholders})
+         AND status = 'active'`,
+      [academyId, ...keepNames],
+    );
+  }
+
+  for (const coach of SEED.coaches) {
+    const coachId = coachIdsByEmail.get(coach.email)!;
+    for (const categoryName of coach.categories) {
+      const categoryId = categoryIdsByName.get(categoryName);
+      if (categoryId == null) continue;
+      await linkCoachCategory(coachId, categoryId, academyId);
+    }
+  }
+
+  type SeededPlayer = {
+    id: number;
+    categoryName: string;
+    requiresGuardian: 0 | 1;
+    firstName: string;
+    lastName: string;
+    jersey: number;
+  };
+
+  const seededPlayers: SeededPlayer[] = [];
   let globalPlayerIndex = 0;
 
-  for (const categoryId of categoryIds) {
+  for (const category of SEED.categories) {
+    const categoryId = categoryIdsByName.get(category.name)!;
     for (let jersey = 1; jersey <= PLAYERS_PER_CATEGORY; jersey += 1) {
       const { firstName, lastName } = playerName(globalPlayerIndex);
       const playerId = await getOrCreatePlayer(
@@ -623,13 +921,20 @@ async function seed(): Promise<void> {
         firstName,
         lastName,
       );
-      playerIds.push(playerId);
+      seededPlayers.push({
+        id: playerId,
+        categoryName: category.name,
+        requiresGuardian: category.requiresGuardian,
+        firstName,
+        lastName,
+        jersey,
+      });
       globalPlayerIndex += 1;
     }
   }
 
-  const totalPlayers = playerIds.length;
-  const totalParents = totalPlayers - 1;
+  const youthPlayers = seededPlayers.filter((p) => p.requiresGuardian === 1);
+  const adultPlayers = seededPlayers.filter((p) => p.requiresGuardian === 0);
 
   const dualParentId = await getOrCreateUser(
     SEED.users.parentDual.email,
@@ -640,13 +945,19 @@ async function seed(): Promise<void> {
     'Acudiente',
   );
 
-  await linkParentPlayer(dualParentId, playerIds[0]!, academyId);
-  await linkParentPlayer(dualParentId, playerIds[1]!, academyId);
+  // parent@ → 2 jugadores Sub-8 (panel parent / menores)
+  const demoChild1 = seededPlayers.find((p) => p.categoryName === 'Sub-8' && p.jersey === 1)!;
+  const demoChild2 = seededPlayers.find((p) => p.categoryName === 'Sub-8' && p.jersey === 2)!;
+  await linkParentPlayer(dualParentId, demoChild1.id, academyId);
+  await linkParentPlayer(dualParentId, demoChild2.id, academyId);
 
-  for (let parentIndex = 1; parentIndex < totalParents; parentIndex += 1) {
-    const playerIndex = parentIndex + 1;
-    const email = parentEmailForIndex(parentIndex);
-    const { firstName, lastName } = playerName(parentIndex + 100);
+  // Categorías con requires_guardian=1: un padre por jugador (excepto los 2 de parent@).
+  let parentExtraIndex = 1;
+  for (let i = 0; i < youthPlayers.length; i += 1) {
+    const player = youthPlayers[i]!;
+    if (player.id === demoChild1.id || player.id === demoChild2.id) continue;
+    const email = parentEmailForIndex(parentExtraIndex);
+    const { firstName, lastName } = playerName(parentExtraIndex + 100);
     const parentId = await getOrCreateUser(
       email,
       UserRole.PARENT,
@@ -655,40 +966,115 @@ async function seed(): Promise<void> {
       firstName,
       `Acudiente ${lastName}`,
     );
-    await linkParentPlayer(parentId, playerIds[playerIndex]!, academyId);
+    await linkParentPlayer(parentId, player.id, academyId);
+    parentExtraIndex += 1;
+  }
+
+  const adultUserEmails: string[] = [];
+  for (const player of adultPlayers) {
+    const slug = player.categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const email = `player-${slug}-${String(player.jersey).padStart(2, '0')}@dev.velocesport.local`;
+    await ensureAdultPlayerLogin(
+      academyId,
+      player.id,
+      email,
+      player.firstName,
+      player.lastName,
+      passwordHash,
+    );
+    adultUserEmails.push(email);
   }
 
   await userRoleRepository.backfillFromUsers();
 
-  const sub8CategoryId = categoryIds[0]!;
+  const sub8CategoryId = categoryIdsByName.get('Sub-8')!;
+  const primaryCoachId = coachIdsByEmail.get(SEED.coaches[0]!.email)!;
 
   await seedParentDualDemoData(
     academyId,
     sub8CategoryId,
-    playerIds[0]!,
-    playerIds[1]!,
-    coachId,
+    demoChild1.id,
+    demoChild2.id,
+    primaryCoachId,
     adminId,
     dualParentId,
   );
 
+  let totalScheduled = 0;
+  let totalFinished = 0;
+  let totalActions = 0;
+
+  for (let catIndex = 0; catIndex < SEED.categories.length; catIndex += 1) {
+    const category = SEED.categories[catIndex]!;
+    const categoryId = categoryIdsByName.get(category.name)!;
+    const coachForCategory =
+      SEED.coaches.find((c) => c.categories.includes(category.name)) ?? SEED.coaches[0]!;
+    const coachUserId = coachIdsByEmail.get(coachForCategory.email)!;
+    const playersInCategory = seededPlayers
+      .filter((p) => p.categoryName === category.name)
+      .map((p) => ({
+        id: p.id,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        jersey: p.jersey,
+      }));
+
+    const stats = await seedCategoryMatchActivity(
+      academyId,
+      categoryId,
+      category.name,
+      playersInCategory,
+      coachUserId,
+      adminId,
+      catIndex,
+    );
+    totalScheduled += stats.scheduled;
+    totalFinished += stats.finished;
+    totalActions += stats.actions;
+  }
+
   console.log('\n✓ Seed de desarrollo completado (idempotente)\n');
   console.log('Academia:', SEED.academy.name, `(id: ${academyId})`);
-  console.log('Categorías:', SEED.categories.join(', '), `(${categoryIds.length})`);
-  console.log(`Jugadores: ${totalPlayers} (${PLAYERS_PER_CATEGORY} por categoría)`);
-  console.log(`Padres/acudientes: ${totalParents} (${SEED.users.parentDual.email} tiene 2 hijos)`);
-  console.log('\nCredenciales staff (contraseña para todos):', DEV_PASSWORD);
+  console.log(
+    'Categorías:',
+    SEED.categories.map((c) => `${c.name} (guardian=${c.requiresGuardian})`).join(', '),
+  );
+  console.log(
+    `Jugadores: ${seededPlayers.length} (${PLAYERS_PER_CATEGORY} por categoría; ${youthPlayers.length} con tutor + ${adultPlayers.length} con login player)`,
+  );
+  console.log(
+    `Partidos: ${totalScheduled} programados + ${totalFinished} finalizados · jugadas ~${totalActions}`,
+  );
+  console.log(
+    `Padres demo: ${SEED.users.parentDual.email} → 2 jugadores Sub-8 (panel parent)`,
+  );
+  console.log(`Usuarios player (SELF): ${adultUserEmails.length}`);
+  console.log('\nCredenciales (contraseña para todos):', DEV_PASSWORD);
   console.log('─────────────────────────────────────────────');
   console.log('super_admin   ', SEED.users.superAdmin.email);
   console.log('academy_admin ', SEED.users.academyAdmin.email);
-  console.log('coach         ', SEED.users.coach.email, '(asignado a las 3 categorías)');
+  for (const coach of SEED.coaches) {
+    console.log(
+      'coach         ',
+      coach.email.padEnd(36),
+      `→ ${coach.categories.join(', ')}`,
+    );
+  }
   console.log('─────────────────────────────────────────────');
-  console.log('Padre con 2 hijos:', SEED.users.parentDual.email);
-  console.log('  → 2 partidos programados (ambos hijos convocados en Sub-8)');
-  console.log('  → 2 partidos finalizados con asistencia, jugadas y observaciones');
-  console.log('Otros padres:     parent-01@ … parent-61@dev.velocesport.local');
+  console.log('Padre demo:     ', SEED.users.parentDual.email);
+  console.log(
+    'Jugador adulto: ',
+    adultUserEmails[0] ?? '(ninguno)',
+    adultUserEmails.length > 1 ? `… (+${adultUserEmails.length - 1} más)` : '',
+  );
+  console.log('  ej. Sub-18:   player-sub18-01@dev.velocesport.local');
   console.log('─────────────────────────────────────────────\n');
-  console.log('IDs staff:', { superAdminId, adminId, coachId, dualParentId });
+  console.log('IDs staff:', {
+    superAdminId,
+    adminId,
+    coaches: Object.fromEntries(coachIdsByEmail),
+    dualParentId,
+  });
 }
 
 seed()

@@ -26,6 +26,8 @@ interface PlayerPhotoModalProps {
     photoUrl?: string | null;
   };
   onChanged: (photoUrl: string | null) => void;
+  /** `self` = copy primera persona (panel jugador). Default guardian. */
+  audience?: 'guardian' | 'self';
 }
 
 function centerSquareCrop(mediaWidth: number, mediaHeight: number): Crop {
@@ -69,7 +71,13 @@ async function cropToBlob(image: HTMLImageElement, crop: PixelCrop): Promise<Blo
   });
 }
 
-export function PlayerPhotoModal({ open, onClose, player, onChanged }: PlayerPhotoModalProps) {
+export function PlayerPhotoModal({
+  open,
+  onClose,
+  player,
+  onChanged,
+  audience = 'guardian',
+}: PlayerPhotoModalProps) {
   const { t } = useTranslation();
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [src, setSrc] = useState<string | null>(null);
@@ -225,7 +233,13 @@ export function PlayerPhotoModal({ open, onClose, player, onChanged }: PlayerPho
           {player.photoUrl && !src && (
             confirmDelete ? (
               <div className="mr-auto flex flex-wrap items-center gap-2">
-                <span className="text-sm text-text-secondary">{t('players.photo.deleteConfirm')}</span>
+                <span className="text-sm text-text-secondary">
+                  {t(
+                    audience === 'self'
+                      ? 'players.photo.deleteConfirmSelf'
+                      : 'players.photo.deleteConfirm',
+                  )}
+                </span>
                 <Button
                   type="button"
                   variant="secondary"
