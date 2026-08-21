@@ -111,6 +111,11 @@ export interface CategoryDto {
   name: string;
   ageMin: number | null;
   ageMax: number | null;
+  /**
+   * NULL = automático (ageMax < 18 o ausente → requiere tutor).
+   * 1 = requiere tutor. 0 = jugador adulto (sin tutor).
+   */
+  requiresGuardian: 0 | 1 | null;
   status: CategoryStatus;
   coach: CategoryCoachDto | null;
   createdAt: string;
@@ -128,6 +133,7 @@ export interface CreateCategoryBody {
   name: string;
   ageMin?: number | null;
   ageMax?: number | null;
+  requiresGuardian?: 0 | 1 | null;
   coachUserId?: number | null;
 }
 
@@ -135,6 +141,7 @@ export interface UpdateCategoryBody {
   name?: string;
   ageMin?: number | null;
   ageMax?: number | null;
+  requiresGuardian?: 0 | 1 | null;
   coachUserId?: number | null;
 }
 
@@ -160,6 +167,8 @@ export interface PlayerDto {
   deactivatedAt: string | null;
   /** true si tiene game_actions o match_attendance — no se puede eliminar. */
   hasMatchHistory: boolean;
+  /** true si ya tiene cuenta propia (players.user_id / viewer SELF). */
+  hasSelfAccount: boolean;
   parents: PlayerParentDto[];
   createdAt: string;
   updatedAt: string;

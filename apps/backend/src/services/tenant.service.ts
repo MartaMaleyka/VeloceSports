@@ -328,12 +328,18 @@ export class TenantUserService {
   }
 }
 
+function toRequiresGuardianFlag(value: number | boolean | null): 0 | 1 | null {
+  if (value === null || value === undefined) return null;
+  return Number(value) ? 1 : 0;
+}
+
 function toCategoryDto(row: CategoryWithCoachRow): CategoryDto {
   return {
     id: row.id,
     name: row.name,
     ageMin: row.age_min,
     ageMax: row.age_max,
+    requiresGuardian: toRequiresGuardianFlag(row.requires_guardian),
     status: row.status,
     coach: row.coach_user_id
       ? { id: row.coach_user_id, email: row.coach_email ?? '' }
@@ -386,6 +392,7 @@ export class CategoryService extends TenantUserService {
       name: input.name.trim(),
       ageMin: input.ageMin ?? null,
       ageMax: input.ageMax ?? null,
+      requiresGuardian: input.requiresGuardian ?? null,
     });
 
     if (input.coachUserId) {
@@ -418,6 +425,7 @@ export class CategoryService extends TenantUserService {
       name: input.name?.trim(),
       ageMin: input.ageMin,
       ageMax: input.ageMax,
+      requiresGuardian: input.requiresGuardian,
     });
 
     if (input.coachUserId !== undefined) {
@@ -429,9 +437,11 @@ export class CategoryService extends TenantUserService {
     await auditService.log(ctx, 'category', categoryId, 'update', {
       name: before.name,
       coachUserId: before.coach_user_id,
+      requiresGuardian: before.requires_guardian,
     }, {
       name: after.name,
       coachUserId: after.coach?.id ?? null,
+      requiresGuardian: after.requiresGuardian,
     });
 
     return after;
@@ -494,6 +504,7 @@ async function toPlayerDto(
     photoUrl,
     deactivatedAt: toIso(row.deactivated_at),
     hasMatchHistory,
+    hasSelfAccount: row.user_id != null,
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),

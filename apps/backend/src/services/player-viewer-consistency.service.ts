@@ -1,19 +1,8 @@
+import { resolveRequiresGuardian } from '@velocesport/shared';
 import type { RowDataPacket } from 'mysql2/promise';
 import { getPool } from '../config/db.js';
 
-/**
- * requires_guardian efectivo:
- *   categories.requires_guardian ?? (age_max IS NULL OR age_max < 18)
- */
-export function resolveRequiresGuardian(input: {
-  requires_guardian: number | boolean | null;
-  age_max: number | null;
-}): boolean {
-  if (input.requires_guardian !== null && input.requires_guardian !== undefined) {
-    return Boolean(Number(input.requires_guardian));
-  }
-  return input.age_max == null || input.age_max < 18;
-}
+export { resolveRequiresGuardian };
 
 export interface AdultPlayerWithoutViewerRow {
   playerId: number;
@@ -53,11 +42,11 @@ export async function findAdultPlayersWithoutViewers(
   const invalid: AdultPlayerWithoutViewerRow[] = [];
   for (const row of rows) {
     const adult = !resolveRequiresGuardian({
-      requires_guardian:
+      requiresGuardian:
         row.requires_guardian === null || row.requires_guardian === undefined
           ? null
           : Number(row.requires_guardian),
-      age_max: row.age_max == null ? null : Number(row.age_max),
+      ageMax: row.age_max == null ? null : Number(row.age_max),
     });
     if (adult) {
       invalid.push({

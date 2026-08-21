@@ -3,6 +3,7 @@ import {
   UserRole,
   UserStatus,
   ViewerRelationship,
+  resolveRequiresGuardian,
   type InviteAdultPlayerBody,
   type InviteAdultPlayerResponseDto,
 } from '@velocesport/shared';
@@ -22,7 +23,6 @@ import type { AuthUser } from '../types/index.js';
 import { userHasRole } from '../utils/role-check.js';
 import { generateTemporaryPassword } from '../utils/strings.js';
 import { auditService } from './audit.service.js';
-import { resolveRequiresGuardian } from './player-viewer-consistency.service.js';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -48,8 +48,8 @@ export class AdultPlayerInviteService {
     if (!category) throw new ValidationError('Categoría no encontrada');
 
     const requiresGuardian = resolveRequiresGuardian({
-      requires_guardian: category.requires_guardian,
-      age_max: category.age_max,
+      requiresGuardian: category.requires_guardian,
+      ageMax: category.age_max,
     });
     if (requiresGuardian) {
       throw new ValidationError(

@@ -56,6 +56,7 @@ async function toPlayerDto(
         : String(row.deactivated_at)
       : null,
     hasMatchHistory: await playerRepository.hasMatchHistory(tenantId, row.id),
+    hasSelfAccount: row.user_id != null,
     parents,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),

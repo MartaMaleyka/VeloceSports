@@ -36,6 +36,7 @@ export async function cleanDatabase(): Promise<void> {
   await pool.query('TRUNCATE TABLE notifications');
   await pool.query('TRUNCATE TABLE parent_player_notification_preferences');
   await pool.query('TRUNCATE TABLE parent_notification_preferences');
+  await pool.query('TRUNCATE TABLE player_viewers');
   await pool.query('TRUNCATE TABLE parent_players');
   await pool.query('TRUNCATE TABLE game_actions');
   await pool.query('TRUNCATE TABLE player_observations');

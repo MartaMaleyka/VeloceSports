@@ -80,6 +80,7 @@ export const createCategoryBodySchema = z
     name: z.string().trim().min(1, 'El nombre es obligatorio').max(100),
     ageMin: z.number().int().min(0).max(99).nullable().optional(),
     ageMax: z.number().int().min(0).max(99).nullable().optional(),
+    requiresGuardian: z.union([z.literal(0), z.literal(1), z.null()]).optional(),
     coachUserId: z.number().int().positive().nullable().optional(),
   })
   .refine(
@@ -95,6 +96,7 @@ export const updateCategoryBodySchema = z
     name: z.string().trim().min(1).max(100).optional(),
     ageMin: z.number().int().min(0).max(99).nullable().optional(),
     ageMax: z.number().int().min(0).max(99).nullable().optional(),
+    requiresGuardian: z.union([z.literal(0), z.literal(1), z.null()]).optional(),
     coachUserId: z.number().int().positive().nullable().optional(),
   })
   .refine(

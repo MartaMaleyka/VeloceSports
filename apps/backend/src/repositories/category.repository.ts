@@ -26,6 +26,7 @@ export interface CreateCategoryInput {
   name: string;
   ageMin?: number | null;
   ageMax?: number | null;
+  requiresGuardian?: 0 | 1 | null;
   status?: CategoryStatus;
 }
 
@@ -33,6 +34,7 @@ export interface UpdateCategoryInput {
   name?: string;
   ageMin?: number | null;
   ageMax?: number | null;
+  requiresGuardian?: 0 | 1 | null;
 }
 
 export class CategoryRepository extends TenantScopedRepository {
@@ -115,13 +117,14 @@ export class CategoryRepository extends TenantScopedRepository {
     this.assertTenantId(input.tenantId);
     const executor = conn ?? getPool();
     const [result] = await executor.execute<ResultSetHeader>(
-      `INSERT INTO categories (tenant_id, name, age_min, age_max, status)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO categories (tenant_id, name, age_min, age_max, requires_guardian, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         input.tenantId,
         input.name,
         input.ageMin ?? null,
         input.ageMax ?? null,
+        input.requiresGuardian ?? null,
         input.status ?? 'active',
       ],
     );
@@ -145,6 +148,10 @@ export class CategoryRepository extends TenantScopedRepository {
     if (input.ageMax !== undefined) {
       fields.push('age_max = ?');
       params.push(input.ageMax);
+    }
+    if (input.requiresGuardian !== undefined) {
+      fields.push('requires_guardian = ?');
+      params.push(input.requiresGuardian);
     }
 
     if (fields.length === 0) return;
