@@ -96,6 +96,34 @@ describe('Tenant management API (academy_admin)', () => {
     });
   });
 
+  describe('requires_guardian de categoría', () => {
+    it('PATCH actualiza requiresGuardian sin cambiar nombre ni edades', async () => {
+      const created = await request(app)
+        .post('/api/tenant/categories')
+        .set('Authorization', `Bearer ${adminAToken}`)
+        .send({ name: 'Libre 16', ageMin: 16, ageMax: 16 })
+        .expect(201);
+      expect(created.body.data.requiresGuardian).toBeNull();
+      expect(created.body.data.ageMax).toBe(16);
+
+      const patched = await request(app)
+        .patch(`/api/tenant/categories/${created.body.data.id as number}`)
+        .set('Authorization', `Bearer ${adminAToken}`)
+        .send({ requiresGuardian: 0 })
+        .expect(200);
+      expect(patched.body.data.requiresGuardian).toBe(0);
+      expect(patched.body.data.name).toBe('Libre 16');
+      expect(patched.body.data.ageMax).toBe(16);
+
+      const auto = await request(app)
+        .patch(`/api/tenant/categories/${created.body.data.id as number}`)
+        .set('Authorization', `Bearer ${adminAToken}`)
+        .send({ requiresGuardian: null })
+        .expect(200);
+      expect(auto.body.data.requiresGuardian).toBeNull();
+    });
+  });
+
   describe('límites del plan', () => {
     let restrictedAcademyId: number;
     let restrictedAdminToken: string;

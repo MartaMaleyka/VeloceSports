@@ -45,14 +45,35 @@ function coachInitials(email: string): string {
 
 const PAGE_SIZE = 12;
 
+type GuardianMode = 'auto' | '0' | '1';
+
 interface CategoryFormState {
   name: string;
   ageMin: string;
   ageMax: string;
   coachUserId: string;
+  requiresGuardian: GuardianMode;
 }
 
-const emptyForm: CategoryFormState = { name: '', ageMin: '', ageMax: '', coachUserId: '' };
+const emptyForm: CategoryFormState = {
+  name: '',
+  ageMin: '',
+  ageMax: '',
+  coachUserId: '',
+  requiresGuardian: 'auto',
+};
+
+function guardianModeFromDto(value: 0 | 1 | null): GuardianMode {
+  if (value === 1) return '1';
+  if (value === 0) return '0';
+  return 'auto';
+}
+
+function guardianModeToPayload(value: GuardianMode): 0 | 1 | null {
+  if (value === '1') return 1;
+  if (value === '0') return 0;
+  return null;
+}
 
 function TenantCategoriesContent() {
   const { t } = useTranslation();
@@ -122,6 +143,7 @@ function TenantCategoriesContent() {
       ageMin: category.ageMin != null ? String(category.ageMin) : '',
       ageMax: category.ageMax != null ? String(category.ageMax) : '',
       coachUserId: category.coach ? String(category.coach.id) : '',
+      requiresGuardian: guardianModeFromDto(category.requiresGuardian),
     });
     setFormError(null);
     setModalOpen(true);
@@ -131,6 +153,7 @@ function TenantCategoriesContent() {
     name: form.name.trim(),
     ageMin: form.ageMin ? Number(form.ageMin) : null,
     ageMax: form.ageMax ? Number(form.ageMax) : null,
+    requiresGuardian: guardianModeToPayload(form.requiresGuardian),
     coachUserId: form.coachUserId ? Number(form.coachUserId) : null,
   });
 
@@ -176,6 +199,13 @@ function TenantCategoriesContent() {
       });
     }
   };
+
+  const guardianModeLabel = (c: CategoryDto) =>
+    c.requiresGuardian === 0
+      ? t('tenant.categories.requiresGuardian.adult')
+      : c.requiresGuardian === 1
+        ? t('tenant.categories.requiresGuardian.required')
+        : t('tenant.categories.requiresGuardian.auto');
 
   const ageRange = (c: CategoryDto) => {
     if (c.ageMin != null && c.ageMax != null) return `${c.ageMin}–${c.ageMax}`;
@@ -274,6 +304,9 @@ function TenantCategoriesContent() {
               <span className="rounded-full border border-border bg-bg-muted px-2.5 py-0.5 text-xs font-medium text-text-secondary">
                 {ageRange(category)}
               </span>
+              <span className="rounded-full border border-border bg-bg-muted px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+                {guardianModeLabel(category)}
+              </span>
             </div>
             <div className="mt-3">
               {category.coach ? (
@@ -301,6 +334,7 @@ function TenantCategoriesContent() {
               <TableRow>
                 <TableCell header>{t('tenant.categories.name')}</TableCell>
                 <TableCell header>{t('tenant.categories.ageRange')}</TableCell>
+                <TableCell header>{t('tenant.categories.requiresGuardian.label')}</TableCell>
                 <TableCell header>{t('tenant.categories.coach')}</TableCell>
                 <TableCell header>{t('tenant.categories.status')}</TableCell>
                 <TableCell header>{t('common.actions')}</TableCell>
@@ -311,6 +345,7 @@ function TenantCategoriesContent() {
                 <TableRow key={category.id}>
                   <TableCell>{category.name}</TableCell>
                   <TableCell>{ageRange(category)}</TableCell>
+                  <TableCell>{guardianModeLabel(category)}</TableCell>
                   <TableCell>{category.coach?.email ?? t('tenant.categories.noCoach')}</TableCell>
                   <TableCell>
                     <StatusBadge type="user" status={category.status} />
@@ -378,6 +413,27 @@ function TenantCategoriesContent() {
                 onChange={(e) => setForm((f) => ({ ...f, ageMax: e.target.value }))}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cat-guardian">{t('tenant.categories.requiresGuardian.label')}</Label>
+            <Select
+              id="cat-guardian"
+              value={form.requiresGuardian}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  requiresGuardian: e.target.value as GuardianMode,
+                }))
+              }
+              options={[
+                { value: 'auto', label: t('tenant.categories.requiresGuardian.auto') },
+                { value: '1', label: t('tenant.categories.requiresGuardian.required') },
+                { value: '0', label: t('tenant.categories.requiresGuardian.adult') },
+              ]}
+            />
+            <p className="text-sm text-text-secondary">
+              {t('tenant.categories.requiresGuardian.hint')}
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="cat-coach">{t('tenant.categories.coach')}</Label>
