@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type {
   CategoryDto,
+  InviteAdultPlayerResponseDto,
   PlayerDto,
   PlayersKpisDto,
   TenantSearchResultDto,
 } from '@velocesport/shared';
-import { PlayerStatus } from '@velocesport/shared';
+import { PlayerStatus, resolveRequiresGuardian } from '@velocesport/shared';
 import {
   Alert,
   Badge,
@@ -27,6 +28,7 @@ import {
   TableRow,
   ToastProvider,
   useToast,
+  cn,
 } from '@velocesport/design-system';
 import { Layers, Plus, User, UserRoundCheck, Users } from 'lucide-react';
 import { useTranslation, tenantPlayerStatusKey } from '@velocesport/i18n';
@@ -36,6 +38,7 @@ import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
 import { PlayerAvatar } from '../players/PlayerAvatar';
+import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
 
 const PAGE_SIZE = 12;
 
@@ -56,6 +59,8 @@ interface PlayerFormState {
   categoryId: string;
   status: string;
   linkedParents: TenantSearchResultDto[];
+  inviteAdult: boolean;
+  inviteEmail: string;
 }
 
 const emptyForm: PlayerFormState = {
@@ -67,7 +72,59 @@ const emptyForm: PlayerFormState = {
   categoryId: '',
   status: PlayerStatus.ACTIVE,
   linkedParents: [],
+  inviteAdult: false,
+  inviteEmail: '',
 };
+
+function isAdultCategory(category: CategoryDto | undefined): boolean {
+  if (!category) return false;
+  return !resolveRequiresGuardian({
+    requiresGuardian: category.requiresGuardian,
+    ageMax: category.ageMax,
+  });
+}
+
+function AdultAccountSwitch({
+  id,
+  checked,
+  disabled,
+  label,
+  onChange,
+}: {
+  id: string;
+  checked: boolean;
+  disabled?: boolean;
+  label: string;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <button
+      id={id}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'relative inline-flex h-11 w-14 shrink-0 items-center rounded-full border',
+        'transition-[background-color,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)]',
+        'focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)]',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        checked ? 'border-section-brand-border bg-action-primary' : 'border-border bg-bg-muted',
+      )}
+    >
+      <span
+        className={cn(
+          'inline-block h-5 w-5 rounded-full bg-bg-surface shadow-sm',
+          'transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-ease)]',
+          checked ? 'translate-x-7' : 'translate-x-1',
+        )}
+        aria-hidden="true"
+      />
+    </button>
+  );
+}
 
 function PlayerStatusBadge({ player }: { player: PlayerDto }) {
   const { t, locale } = useTranslation();
@@ -143,6 +200,10 @@ function TenantPlayersContent() {
   const [approveCategoryId, setApproveCategoryId] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [inviteCredentials, setInviteCredentials] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -185,6 +246,10 @@ function TenantPlayersContent() {
     setModalOpen(true);
   };
 
+  const selectedCategory = categories.find((c) => String(c.id) === form.categoryId);
+  const showAdultToggle = isAdultCategory(selectedCategory);
+  const alreadyInvited = Boolean(editing?.hasSelfAccount);
+
   const openEdit = (player: PlayerDto) => {
     setEditing(player);
     setForm({
@@ -199,6 +264,8 @@ function TenantPlayersContent() {
         id: p.id,
         label: p.email,
       })),
+      inviteAdult: player.hasSelfAccount,
+      inviteEmail: '',
     });
     setFormError(null);
     setModalOpen(true);
@@ -218,6 +285,18 @@ function TenantPlayersContent() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    const wantsInvite =
+      Boolean(editing) &&
+      showAdultToggle &&
+      form.inviteAdult &&
+      !alreadyInvited;
+
+    if (wantsInvite && !form.inviteEmail.trim()) {
+      setFormError(t('tenant.players.adultInvite.emailRequired'));
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = buildPayload();
@@ -231,6 +310,39 @@ function TenantPlayersContent() {
         await tenantFetch('players', { method: 'POST', body: JSON.stringify(payload) });
         showToast({ variant: 'success', message: t('tenant.players.successCreate') });
       }
+
+      if (wantsInvite && editing) {
+        try {
+          const invited = await tenantFetch<InviteAdultPlayerResponseDto>(
+            `players/${editing.id}/invite-adult`,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                email: form.inviteEmail.trim().toLowerCase(),
+                firstName: form.firstName.trim(),
+                lastName: form.lastName.trim(),
+              }),
+            },
+          );
+          setInviteCredentials({
+            email: invited.email,
+            password: invited.temporaryPassword,
+          });
+          showToast({ variant: 'success', message: t('tenant.players.adultInvite.success') });
+        } catch (inviteErr) {
+          const message =
+            inviteErr instanceof TenantApiError &&
+            inviteErr.code === 'CATEGORY_REQUIRES_GUARDIAN'
+              ? t('tenant.players.adultInvite.categoryRequiresGuardian')
+              : inviteErr instanceof TenantApiError
+                ? inviteErr.message
+                : t('tenant.errors.generic');
+          setFormError(message);
+          await load();
+          return;
+        }
+      }
+
       setModalOpen(false);
       await load();
     } catch (err) {
@@ -639,7 +751,17 @@ function TenantPlayersContent() {
             <Select
               id="p-category"
               value={form.categoryId}
-              onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+              onChange={(e) => {
+                const categoryId = e.target.value;
+                const nextCategory = categories.find((c) => String(c.id) === categoryId);
+                setForm((f) => ({
+                  ...f,
+                  categoryId,
+                  inviteAdult: isAdultCategory(nextCategory)
+                    ? f.inviteAdult
+                    : alreadyInvited,
+                }));
+              }}
               options={categoryOptions}
             />
           </div>
@@ -652,6 +774,49 @@ function TenantPlayersContent() {
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
                 options={statusOptions}
               />
+            </div>
+          )}
+          {showAdultToggle && (
+            <div className="space-y-3 rounded-md border border-border bg-bg-muted p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1">
+                  <Label htmlFor="p-invite-adult" className="mb-0">
+                    {t('tenant.players.adultInvite.toggle')}
+                  </Label>
+                  {alreadyInvited ? (
+                    <p className="text-sm text-text-secondary">
+                      {t('tenant.players.adultInvite.alreadyInvited')}
+                    </p>
+                  ) : !editing ? (
+                    <p className="text-sm text-text-secondary">
+                      {t('tenant.players.adultInvite.saveFirst')}
+                    </p>
+                  ) : null}
+                </div>
+                <AdultAccountSwitch
+                  id="p-invite-adult"
+                  checked={alreadyInvited || form.inviteAdult}
+                  disabled={!editing || alreadyInvited}
+                  label={t('tenant.players.adultInvite.toggle')}
+                  onChange={(inviteAdult) => setForm((f) => ({ ...f, inviteAdult }))}
+                />
+              </div>
+              {editing && form.inviteAdult && !alreadyInvited && (
+                <div className="space-y-2">
+                  <Label htmlFor="p-invite-email" required>
+                    {t('tenant.players.adultInvite.email')}
+                  </Label>
+                  <Input
+                    id="p-invite-email"
+                    type="email"
+                    autoComplete="off"
+                    value={form.inviteEmail}
+                    onChange={(e) => setForm((f) => ({ ...f, inviteEmail: e.target.value }))}
+                    placeholder={t('tenant.players.adultInvite.emailPlaceholder')}
+                    hasError={Boolean(formError)}
+                  />
+                </div>
+              )}
             </div>
           )}
           <TenantEntityAutocomplete
@@ -777,6 +942,15 @@ function TenantPlayersContent() {
         }
         cancelLabel={t('common.cancel')}
         loading={actionLoading}
+      />
+
+      <TemporaryPasswordModal
+        open={!!inviteCredentials}
+        onClose={() => setInviteCredentials(null)}
+        email={inviteCredentials?.email ?? ''}
+        password={inviteCredentials?.password ?? ''}
+        titleKey="tenant.players.adultInvite.tempPasswordTitle"
+        descriptionKey="tenant.players.adultInvite.tempPasswordDescription"
       />
     </>
   );
