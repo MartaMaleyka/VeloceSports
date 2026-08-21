@@ -1,4 +1,4 @@
-/** Isotipo temporal SquadVeloce (S + V/check + balón) para el sidebar.
+/** Isotipo temporal SquadVeloce (S + V/check + estrella de velocidad) para el sidebar.
  * Sustituir por isotype-*.svg oficiales cuando Marta los entregue.
  */
 export function SquadVeloceMonogram({ className }: { className?: string }) {
@@ -23,14 +23,17 @@ export function SquadVeloceMonogram({ className }: { className?: string }) {
         d="M18.2 22.5 24.8 32.8c.35.55 1.15.55 1.5 0L37.2 12.4c.28-.45-.04-1.05-.58-1.05h-3.1c-.28 0-.54.14-.69.38L25.5 25.2 21.1 18.4c-.16-.25-.44-.4-.74-.4h-1.55c-.62 0-.97.7-.61 1.2z"
         fill="var(--color-brand, #a3e635)"
       />
-      {/* Balón simplificado */}
-      <circle cx="16.2" cy="24.8" r="5.2" fill="currentColor" opacity="0.92" />
-      <circle cx="16.2" cy="24.8" r="5.2" stroke="var(--color-brand, #a3e635)" strokeWidth="1.1" fill="none" />
+      {/* Estrella de velocidad (deportes en general — sin balón) */}
       <path
-        d="M16.2 19.8v10M12.2 22.2l8 5.2M12.2 27.4l8-5.2"
-        stroke="var(--color-bg-canvas, #fff)"
-        strokeWidth="0.9"
+        d="M16.2 19.2l1.35 2.85 3.15.4-2.3 2.15.6 3.1-2.8-1.55-2.8 1.55.6-3.1-2.3-2.15 3.15-.4z"
+        fill="var(--color-brand, #a3e635)"
+      />
+      <path
+        d="M11.2 24.2h3.4M12.4 26.4h2.6"
+        stroke="var(--color-brand, #a3e635)"
+        strokeWidth="1.1"
         strokeLinecap="round"
+        opacity="0.85"
       />
     </svg>
   );

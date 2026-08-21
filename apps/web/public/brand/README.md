@@ -20,7 +20,7 @@ no quedó limpio.
 
 **Solución actual:** el sidebar usa el componente React
 `apps/web/src/components/brand/SquadVeloceMonogram.tsx` — SVG inline solo del
-isotipo (S + V/check + balón), sin wordmark, banda de íconos ni eslogan.
+isotipo (S + V/check + estrella de velocidad), sin wordmark, banda de íconos ni eslogan.
 Login/hero siguen con los PNG completos.
 
 ### Cuando lleguen los SVG del diseñador

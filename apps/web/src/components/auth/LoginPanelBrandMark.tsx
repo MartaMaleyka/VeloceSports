@@ -1,5 +1,5 @@
 /**
- * Stopgap: logo completo reducido (~90px) hasta disponer del SVG del isotipo SV+balón.
+ * Stopgap: logo completo reducido (~90px) hasta disponer del SVG del isotipo SV+estrella.
  * Sustituir por `/brand/isotype-*.svg` cuando lleguen los originales.
  */
 export default function LoginPanelBrandMark() {
