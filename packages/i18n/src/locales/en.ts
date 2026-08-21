@@ -1226,6 +1226,13 @@ export const en = {
       successStatus: 'Category status updated',
       activate: 'Activate',
       deactivate: 'Deactivate',
+      requiresGuardian: {
+        label: 'Guardian / adult player',
+        auto: 'Automatic (by age)',
+        required: 'Requires a guardian',
+        adult: 'Adult player (no guardian)',
+        hint: 'Automatic follows age: if max age is under 18 or unset, a guardian is required. “Adult player” enables the invite even when max age is under 18.',
+      },
       kpis: {
         total: 'Categories',
         limit: 'Limit: {limit}',
@@ -1300,6 +1307,20 @@ export const en = {
         pending: 'Pending',
         injured: 'Injured',
         retired: 'Retired',
+      },
+      adultInvite: {
+        toggle: 'This player manages their own account (adult player)',
+        saveFirst: 'Save the player first, then you can invite them as an adult.',
+        alreadyInvited: 'This player already has an access account. Another invite will not be created.',
+        email: 'Access email',
+        emailPlaceholder: 'email@example.com',
+        emailRequired: 'Enter an email to create the adult player account.',
+        success: 'Invite sent. Share the temporary password.',
+        categoryRequiresGuardian:
+          'Cannot invite as an adult: this category requires a guardian. Change the category setting or pick another category.',
+        tempPasswordTitle: 'Adult player account',
+        tempPasswordDescription:
+          'Share this email and the temporary password. The player must change it on first sign-in.',
       },
     },
     actionCatalog: {

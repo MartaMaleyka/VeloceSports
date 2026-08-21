@@ -1230,6 +1230,13 @@ export const es = {
       successStatus: 'Estado de categoría actualizado',
       activate: 'Activar',
       deactivate: 'Desactivar',
+      requiresGuardian: {
+        label: 'Tutor / jugador adulto',
+        auto: 'Automático (según edad)',
+        required: 'Requiere tutor',
+        adult: 'Jugador adulto (sin tutor)',
+        hint: 'Automático deriva de la edad: si la edad máxima es menor de 18 o no está definida, se exige tutor. “Jugador adulto” habilita la invitación aunque la edad máxima sea menor de 18.',
+      },
       kpis: {
         total: 'Categorías',
         limit: 'Límite: {limit}',
@@ -1304,6 +1311,20 @@ export const es = {
         pending: 'Pendiente',
         injured: 'Lesionado',
         retired: 'Retirado',
+      },
+      adultInvite: {
+        toggle: 'Este jugador gestiona su propia cuenta (jugador adulto)',
+        saveFirst: 'Guarda el jugador primero, luego podrás invitarlo como adulto.',
+        alreadyInvited: 'Ya tiene cuenta de acceso. No se creará otra invitación.',
+        email: 'Correo de acceso',
+        emailPlaceholder: 'correo@ejemplo.com',
+        emailRequired: 'Indica el correo para crear la cuenta del jugador adulto.',
+        success: 'Invitación enviada. Comparte la contraseña temporal.',
+        categoryRequiresGuardian:
+          'No se puede invitar como adulto: la categoría requiere tutor. Cambia el modo de la categoría o elige otra.',
+        tempPasswordTitle: 'Cuenta de jugador adulto',
+        tempPasswordDescription:
+          'Comparte este correo y la contraseña temporal. El jugador deberá cambiarla en su primer acceso.',
       },
     },
     actionCatalog: {
