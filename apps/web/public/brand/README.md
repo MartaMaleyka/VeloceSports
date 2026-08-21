@@ -10,7 +10,8 @@ Archivos en esta carpeta (provisionales):
 | `apple-touch-icon.png` | Icono iOS 180×180 |
 | `og-image.png` | Open Graph 1200×630 |
 
-Los **PNG son provisionales** y **no tienen canal alpha** (fondo sólido blanco/negro).
+Los PNG del logo light pueden tener fondo sólido; **`logo-dark.png` usa canal alpha**
+(fondo transparente) para encajar sobre el hero sin bloque negro.
 
 ## Sidebar — stopgap monograma SVG
 
