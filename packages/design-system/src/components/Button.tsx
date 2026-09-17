@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../utils/cn.js';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,6 +19,8 @@ const variantClasses: Record<ButtonVariant, string> = {
     'ds-btn-sport ds-btn-sport--secondary bg-bg-surface text-text-primary border border-section-brand-border hover:bg-section-brand-subtle hover:text-section-brand-fg',
   ghost:
     'ds-btn-sport bg-transparent text-action-primary hover:bg-action-primary-subtle border border-transparent',
+  destructive:
+    'ds-btn-sport border border-feedback-error/30 bg-feedback-error-subtle text-feedback-error hover:bg-feedback-error/15',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

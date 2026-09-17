@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MatchAttendanceDto } from '@velocesport/shared';
-import { Alert, Label, Select, Skeleton } from '@velocesport/design-system';
+import { Alert, EmptyState, Label, Select, Skeleton } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
@@ -55,7 +55,10 @@ export function MatchObservationsTab({ matchId }: MatchObservationsTabProps) {
 
   if (present.length === 0) {
     return (
-      <p className="text-sm text-text-secondary">{t('playerObservations.noPlayersPresent')}</p>
+      <EmptyState
+        title={t('matches.attendance.emptyTitle')}
+        description={t('playerObservations.noPlayersPresent')}
+      />
     );
   }
 

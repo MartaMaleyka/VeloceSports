@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Button } from '@velocesport/design-system';
+import { Button, cn } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 
 export interface RowAction {
@@ -80,7 +80,7 @@ export function RowActionsMenu({ primaryActions, menuActions = [] }: RowActionsM
         <Button
           key={action.id}
           type="button"
-          variant={action.destructive ? 'secondary' : 'ghost'}
+          variant={action.destructive ? 'destructive' : 'ghost'}
           size="md"
           className="min-h-touch px-3"
           onClick={action.onClick}
@@ -118,7 +118,10 @@ export function RowActionsMenu({ primaryActions, menuActions = [] }: RowActionsM
                   }}
                   type="button"
                   role="menuitem"
-                  className="flex min-h-touch w-full items-center px-4 text-left text-sm text-text-primary hover:bg-bg-muted focus-visible:bg-bg-muted focus-visible:outline-none"
+                  className={cn(
+                    'flex min-h-touch w-full items-center px-4 text-left text-sm hover:bg-bg-muted focus-visible:bg-bg-muted focus-visible:outline-none',
+                    action.destructive ? 'text-feedback-error' : 'text-text-primary',
+                  )}
                   onKeyDown={(e) => handleItemKeyDown(e, index)}
                   onClick={() => {
                     setOpen(false);

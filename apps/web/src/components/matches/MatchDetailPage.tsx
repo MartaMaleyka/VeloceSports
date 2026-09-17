@@ -5,7 +5,9 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmModal,
   LabeledValue,
+  Skeleton,
   ToastProvider,
   useToast,
 } from '@velocesport/design-system';
@@ -18,6 +20,14 @@ import { MatchObservationsTab } from './MatchObservationsTab';
 
 type DetailTab = 'overview' | 'attendance' | 'capture' | 'observations';
 
+const DETAIL_TABS: DetailTab[] = ['overview', 'attendance', 'capture', 'observations'];
+
+function initialTabFromHash(): DetailTab {
+  if (typeof window === 'undefined') return 'overview';
+  const hash = window.location.hash.replace('#', '');
+  return (DETAIL_TABS as string[]).includes(hash) ? (hash as DetailTab) : 'overview';
+}
+
 interface MatchDetailPageProps {
   matchId: number;
   listPath: string;
@@ -29,10 +39,23 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
   const [match, setMatch] = useState<MatchDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+  const [activeTab, setActiveTab] = useState<DetailTab>(initialTabFromHash);
+  const [activatedTabs, setActivatedTabs] = useState<Set<DetailTab>>(
+    () => new Set([initialTabFromHash()]),
+  );
   const [actionLoading, setActionLoading] = useState(false);
   const [captureAllowed, setCaptureAllowed] = useState<boolean | null>(null);
   const [devReopenLoading, setDevReopenLoading] = useState(false);
+  const [finishConfirmOpen, setFinishConfirmOpen] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+
+  const selectTab = useCallback((tab: DetailTab) => {
+    setActiveTab(tab);
+    setActivatedTabs((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `#${tab}`);
+    }
+  }, []);
 
   const isDev = import.meta.env.DEV;
   const matchRef = useRef<MatchDto | null>(null);
@@ -136,6 +159,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     try {
       await matchesFetch(`${match.id}/cancel`, { method: 'POST' });
       showToast({ variant: 'success', message: t('matches.successCancel') });
+      setCancelConfirmOpen(false);
       await load({ background: true });
     } catch (e) {
       showToast({
@@ -145,6 +169,11 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const finishMatch = async () => {
+    await changeStatus(MatchStatus.FINISHED);
+    setFinishConfirmOpen(false);
   };
 
   const devReopenMatch = async () => {
@@ -209,17 +238,27 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
               <Button type="button" disabled={actionLoading} onClick={() => void changeStatus(MatchStatus.IN_PROGRESS)}>
                 {t('matches.actions.start')}
               </Button>
-              <Button type="button" variant="secondary" disabled={actionLoading} onClick={() => void cancelMatch()}>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={actionLoading}
+                onClick={() => setCancelConfirmOpen(true)}
+              >
                 {t('matches.actions.cancel')}
               </Button>
             </>
           )}
           {match.status === MatchStatus.IN_PROGRESS && (
             <>
-              <Button type="button" disabled={actionLoading} onClick={() => void changeStatus(MatchStatus.FINISHED)}>
+              <Button type="button" disabled={actionLoading} onClick={() => setFinishConfirmOpen(true)}>
                 {t('matches.actions.finish')}
               </Button>
-              <Button type="button" variant="secondary" disabled={actionLoading} onClick={() => void cancelMatch()}>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={actionLoading}
+                onClick={() => setCancelConfirmOpen(true)}
+              >
                 {t('matches.actions.cancel')}
               </Button>
             </>
@@ -273,7 +312,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
               key={tab.id}
               type="button"
               disabled={tab.disabled}
-              onClick={() => !tab.disabled && setActiveTab(tab.id)}
+              onClick={() => !tab.disabled && selectTab(tab.id)}
               className={`min-h-touch shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-section-brand-subtle text-section-brand-fg shadow-sm'
@@ -288,7 +327,10 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
           ))}
         </nav>
 
-        {activeTab === 'overview' && (
+        {/* Los paneles de asistencia/captura/observaciones se mantienen montados
+            (ocultos con CSS) al cambiar de tab: evita perder cambios sin guardar,
+            reiniciar la voz en modo continuo, o volver a mostrar skeletons de carga. */}
+        <div className={activeTab === 'overview' ? '' : 'hidden'}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
               <LabeledValue label={t('matches.datetime')} value={formatDatetime(match.matchDatetime)} />
@@ -318,30 +360,63 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {activatedTabs.has('attendance') && (
+          <div className={activeTab === 'attendance' ? '' : 'hidden'}>
+            <MatchAttendancePanel
+              key={match.id}
+              matchId={match.id}
+              matchLocked={matchLocked}
+              reportCardListPath={listPath}
+            />
+          </div>
         )}
 
-        {activeTab === 'attendance' && (
-          <MatchAttendancePanel
-            key={match.id}
-            matchId={match.id}
-            matchLocked={matchLocked}
-            reportCardListPath={listPath}
-          />
+        {activeTab === 'capture' && captureAllowed === null && (
+          <Skeleton className="h-64 rounded-xl" />
         )}
 
-        {activeTab === 'capture' && captureAllowed && (
-          <MatchCapturePanel
-            key={`${match.id}-${match.status}`}
-            matchId={match.id}
-            match={match}
-            onMatchUpdated={handleMatchUpdated}
-          />
+        {activatedTabs.has('capture') && captureAllowed && (
+          <div className={activeTab === 'capture' ? '' : 'hidden'}>
+            <MatchCapturePanel
+              key={`${match.id}-${match.status}`}
+              matchId={match.id}
+              match={match}
+              onMatchUpdated={handleMatchUpdated}
+            />
+          </div>
         )}
 
-        {activeTab === 'observations' && (
-          <MatchObservationsTab key={match.id} matchId={match.id} />
+        {activatedTabs.has('observations') && (
+          <div className={activeTab === 'observations' ? '' : 'hidden'}>
+            <MatchObservationsTab key={match.id} matchId={match.id} />
+          </div>
         )}
       </div>
+
+      <ConfirmModal
+        open={finishConfirmOpen}
+        onClose={() => setFinishConfirmOpen(false)}
+        onConfirm={() => void finishMatch()}
+        title={t('matches.capture.finishConfirmTitle')}
+        description={t('matches.capture.finishConfirmBody')}
+        confirmLabel={t('matches.actions.finish')}
+        cancelLabel={t('common.cancel')}
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        open={cancelConfirmOpen}
+        onClose={() => setCancelConfirmOpen(false)}
+        onConfirm={() => void cancelMatch()}
+        title={t('matches.cancelConfirmTitle')}
+        description={t('matches.cancelConfirmBody')}
+        confirmLabel={t('matches.actions.cancel')}
+        cancelLabel={t('common.cancel')}
+        loading={actionLoading}
+        variant="destructive"
+      />
     </div>
   );
 }

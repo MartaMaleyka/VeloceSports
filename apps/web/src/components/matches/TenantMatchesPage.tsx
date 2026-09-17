@@ -9,6 +9,7 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmModal,
   DataCard,
   DataCardFooter,
   DataView,
@@ -151,6 +152,9 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof MatchFormState, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<MatchDto | null>(null);
+  const [finishTarget, setFinishTarget] = useState<MatchDto | null>(null);
+  const [statusActionLoading, setStatusActionLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -292,6 +296,28 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
     }
   };
 
+  const confirmFinish = async () => {
+    if (!finishTarget) return;
+    setStatusActionLoading(true);
+    try {
+      await changeStatus(finishTarget, MatchStatus.FINISHED);
+      setFinishTarget(null);
+    } finally {
+      setStatusActionLoading(false);
+    }
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelTarget) return;
+    setStatusActionLoading(true);
+    try {
+      await cancelMatch(cancelTarget);
+      setCancelTarget(null);
+    } finally {
+      setStatusActionLoading(false);
+    }
+  };
+
   const matchActions = (match: MatchDto) => {
     const actions: Array<{ id: string; label: string; onClick: () => void; destructive?: boolean }> = [
       {
@@ -316,7 +342,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
       actions.push({
         id: 'cancel',
         label: t('matches.actions.cancel'),
-        onClick: () => void cancelMatch(match),
+        onClick: () => setCancelTarget(match),
         destructive: true,
       });
     }
@@ -325,12 +351,12 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
       actions.push({
         id: 'finish',
         label: t('matches.actions.finish'),
-        onClick: () => void changeStatus(match, MatchStatus.FINISHED),
+        onClick: () => setFinishTarget(match),
       });
       actions.push({
         id: 'cancel',
         label: t('matches.actions.cancel'),
-        onClick: () => void cancelMatch(match),
+        onClick: () => setCancelTarget(match),
         destructive: true,
       });
     }
@@ -615,6 +641,29 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={!!finishTarget}
+        onClose={() => setFinishTarget(null)}
+        onConfirm={() => void confirmFinish()}
+        title={t('matches.capture.finishConfirmTitle')}
+        description={t('matches.capture.finishConfirmBody')}
+        confirmLabel={t('matches.actions.finish')}
+        cancelLabel={t('common.cancel')}
+        loading={statusActionLoading}
+      />
+
+      <ConfirmModal
+        open={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={() => void confirmCancel()}
+        title={t('matches.cancelConfirmTitle')}
+        description={t('matches.cancelConfirmBody')}
+        confirmLabel={t('matches.actions.cancel')}
+        cancelLabel={t('common.cancel')}
+        loading={statusActionLoading}
+        variant="destructive"
+      />
     </>
   );
 }

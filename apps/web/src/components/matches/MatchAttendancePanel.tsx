@@ -92,6 +92,33 @@ export default function MatchAttendancePanel({
 
   const collisionJerseys = useMemo(() => detectJerseyCollisions(entries), [entries]);
 
+  const sortedEntries = useMemo(
+    () =>
+      [...entries].sort((a, b) => {
+        const lastName = a.playerLastName.localeCompare(b.playerLastName, 'es');
+        if (lastName !== 0) return lastName;
+        return a.playerFirstName.localeCompare(b.playerFirstName, 'es');
+      }),
+    [entries],
+  );
+
+  const allPresent = entries.length > 0 && entries.every((e) => e.attended);
+
+  const markAllPresent = () => {
+    setEntries((prev) =>
+      prev.map((entry) =>
+        entry.attended
+          ? entry
+          : {
+              ...entry,
+              attended: true,
+              matchJerseyNumber: entry.matchJerseyNumber ?? entry.defaultJerseyNumber,
+            },
+      ),
+    );
+    setDirty(true);
+  };
+
   const updateEntry = (playerId: number, patch: Partial<LocalEntry>) => {
     setEntries((prev) =>
       prev.map((entry) => {
@@ -191,11 +218,9 @@ export default function MatchAttendancePanel({
   return (
     <div className="space-y-4 pb-24">
       {!canEdit && !matchLocked && (
-        <p className="text-xs text-text-muted">{t('matches.attendance.readOnlyHint')}</p>
+        <Alert variant="info">{t('matches.attendance.readOnlyHint')}</Alert>
       )}
-      {matchLocked && (
-        <p className="text-xs text-text-muted">{t('matches.attendance.lockedHint')}</p>
-      )}
+      {matchLocked && <Alert variant="info">{t('matches.attendance.lockedHint')}</Alert>}
 
       <StatCardGrid className="lg:grid-cols-3">
         <StatCard
@@ -221,8 +246,16 @@ export default function MatchAttendancePanel({
         </Alert>
       )}
 
+      {!readOnly && !allPresent && (
+        <div className="flex justify-end">
+          <Button type="button" variant="secondary" size="sm" onClick={markAllPresent}>
+            {t('matches.attendance.markAllPresent')}
+          </Button>
+        </div>
+      )}
+
       <ul className="divide-y divide-border rounded-lg border border-border bg-bg-surface">
-        {entries.map((entry) => {
+        {sortedEntries.map((entry) => {
           const jerseyConflict =
             entry.attended &&
             entry.matchJerseyNumber != null &&

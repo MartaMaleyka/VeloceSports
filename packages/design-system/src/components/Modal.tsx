@@ -85,7 +85,7 @@ export interface ConfirmModalProps {
   confirmLabel: string;
   cancelLabel: string;
   loading?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'destructive';
 }
 
 export function ConfirmModal({
@@ -97,6 +97,7 @@ export function ConfirmModal({
   confirmLabel,
   cancelLabel,
   loading,
+  variant = 'primary',
 }: ConfirmModalProps) {
   return (
     <Modal
@@ -109,7 +110,7 @@ export function ConfirmModal({
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
             {cancelLabel}
           </Button>
-          <Button type="button" onClick={onConfirm} loading={loading}>
+          <Button type="button" variant={variant} onClick={onConfirm} loading={loading}>
             {confirmLabel}
           </Button>
         </>
