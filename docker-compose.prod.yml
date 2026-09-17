@@ -39,6 +39,10 @@ services:
       MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-127.0.0.1}
       MINIO_PUBLIC_PORT: ${MINIO_PUBLIC_PORT:-9100}
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_TIMEOUT_MS: ${OLLAMA_TIMEOUT_MS:-120000}
     healthcheck:
       test:
         [
@@ -54,6 +58,28 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+      ollama:
+        condition: service_started
+    networks:
+      - velocesport
+
+  # Agente de interpretación de estadísticas: modelo local, sin datos a terceros.
+  # Tras el primer `docker compose up -d ollama`, descargar el modelo una vez con:
+  #   docker exec velocesport-ollama ollama pull llama3.1:8b
+  # El backend funciona igual sin este servicio (usa el respaldo determinístico);
+  # ollama es una dependencia "blanda" (service_started, no service_healthy).
+  ollama:
+    image: ollama/ollama:latest
+    container_name: velocesport-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ['CMD-SHELL', 'ollama list || exit 1']
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
     networks:
       - velocesport
 
@@ -143,6 +169,7 @@ services:
 volumes:
   mysql_data:
   minio_data:
+  ollama_data:
 
 networks:
   velocesport:
