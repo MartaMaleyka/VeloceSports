@@ -223,6 +223,7 @@ function AcademyReportsContent() {
   return (
     <div className="space-y-6">
       <div
+        data-tour="reports-hint"
         role="status"
         className="flex gap-3 rounded-md border border-feedback-info/30 bg-feedback-info-subtle p-4 text-sm text-text-primary"
       >
@@ -230,7 +231,7 @@ function AcademyReportsContent() {
         <div className="min-w-0 flex-1">{t('reports.hint')}</div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div data-tour="reports-cards-grid" className="grid gap-4 sm:grid-cols-2">
         {REPORT_TYPES.map((reportType) => {
           const filters = filtersByReport[reportType];
           const csvKey: ExportKey = `${reportType}-csv`;
@@ -358,6 +359,11 @@ function AcademyReportsContent() {
               <DataCardFooter className="flex-col sm:flex-row">
                 <Button
                   type="button"
+                  data-tour={
+                    reportType === TenantReportType.PLAYERS
+                      ? 'reports-export-pdf-button'
+                      : undefined
+                  }
                   className="w-full sm:flex-1"
                   disabled={exporting !== null}
                   loading={busyPdf}

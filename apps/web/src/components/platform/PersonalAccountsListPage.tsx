@@ -147,7 +147,7 @@ function PersonalAccountsContent() {
 
   const renderAccountCard = (account: AcademyListItemDto) => (
     <DataCard className="ds-card-interactive">
-      <div className="flex items-start justify-between gap-3">
+      <div data-tour="personal-accounts-list-account-info" className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate font-display text-lg font-semibold tracking-tight text-text-primary">
             {account.name}
@@ -162,7 +162,9 @@ function PersonalAccountsContent() {
         </p>
       )}
       <DataCardFooter>
-        <RowActionsMenu {...accountActions(account)} />
+        <div data-tour="personal-accounts-list-row-actions">
+          <RowActionsMenu {...accountActions(account)} />
+        </div>
       </DataCardFooter>
     </DataCard>
   );
@@ -189,8 +191,10 @@ function PersonalAccountsContent() {
         {visible.map((account) => (
           <TableRow key={account.id}>
             <TableCell>
-              <span className="font-medium">{account.name}</span>
-              <p className="text-xs text-text-muted">{account.slug}</p>
+              <div data-tour="personal-accounts-list-account-info">
+                <span className="font-medium">{account.name}</span>
+                <p className="text-xs text-text-muted">{account.slug}</p>
+              </div>
             </TableCell>
             <TableCell>{formatDate(account.createdAt, locale)}</TableCell>
             <TableCell>
@@ -200,7 +204,9 @@ function PersonalAccountsContent() {
               )}
             </TableCell>
             <TableCell>
-              <RowActionsMenu {...accountActions(account)} />
+              <div data-tour="personal-accounts-list-row-actions">
+                <RowActionsMenu {...accountActions(account)} />
+              </div>
             </TableCell>
           </TableRow>
         ))}
@@ -209,12 +215,14 @@ function PersonalAccountsContent() {
   );
 
   const kpiHeader = (
-    <StatCardGrid columns={4}>
-      <StatCard icon={<Users className="h-5 w-5" aria-hidden="true" />} value={kpis.total} label={t('platform.personalAccounts.kpis.total')} />
-      <StatCard icon={<Clock3 className="h-5 w-5" aria-hidden="true" />} value={kpis.pending} label={t('platform.personalAccounts.kpis.pending')} variant="warning" />
-      <StatCard icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />} value={kpis.approved} label={t('platform.personalAccounts.kpis.approved')} variant="success" />
-      <StatCard icon={<XCircle className="h-5 w-5" aria-hidden="true" />} value={kpis.rejected} label={t('platform.personalAccounts.kpis.rejected')} />
-    </StatCardGrid>
+    <div data-tour="personal-accounts-list-kpis">
+      <StatCardGrid columns={4}>
+        <StatCard icon={<Users className="h-5 w-5" aria-hidden="true" />} value={kpis.total} label={t('platform.personalAccounts.kpis.total')} />
+        <StatCard icon={<Clock3 className="h-5 w-5" aria-hidden="true" />} value={kpis.pending} label={t('platform.personalAccounts.kpis.pending')} variant="warning" />
+        <StatCard icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />} value={kpis.approved} label={t('platform.personalAccounts.kpis.approved')} variant="success" />
+        <StatCard icon={<XCircle className="h-5 w-5" aria-hidden="true" />} value={kpis.rejected} label={t('platform.personalAccounts.kpis.rejected')} />
+      </StatCardGrid>
+    </div>
   );
 
   return (

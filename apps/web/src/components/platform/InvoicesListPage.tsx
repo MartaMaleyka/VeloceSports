@@ -336,31 +336,33 @@ function InvoicesListContent() {
   );
 
   const kpiHeader = kpis && !loading && !error ? (
-    <StatCardGrid columns={4}>
-      <StatCard
-        icon={<DollarSign className="h-5 w-5" aria-hidden="true" />}
-        value={formatMoney(kpis.totalBilled, kpis.currency, locale)}
-        label={t('platform.billing.kpis.totalBilled')}
-      />
-      <StatCard
-        icon={<Clock3 className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.pendingCount}
-        label={t('platform.billing.kpis.pending')}
-        variant="warning"
-      />
-      <StatCard
-        icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.overdueCount}
-        label={t('platform.billing.kpis.overdue')}
-        variant="error"
-      />
-      <StatCard
-        icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.paidCount}
-        label={t('platform.billing.kpis.paid')}
-        variant="success"
-      />
-    </StatCardGrid>
+    <div data-tour="invoices-list-kpis">
+      <StatCardGrid columns={4}>
+        <StatCard
+          icon={<DollarSign className="h-5 w-5" aria-hidden="true" />}
+          value={formatMoney(kpis.totalBilled, kpis.currency, locale)}
+          label={t('platform.billing.kpis.totalBilled')}
+        />
+        <StatCard
+          icon={<Clock3 className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.pendingCount}
+          label={t('platform.billing.kpis.pending')}
+          variant="warning"
+        />
+        <StatCard
+          icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.overdueCount}
+          label={t('platform.billing.kpis.overdue')}
+          variant="error"
+        />
+        <StatCard
+          icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.paidCount}
+          label={t('platform.billing.kpis.paid')}
+          variant="success"
+        />
+      </StatCardGrid>
+    </div>
   ) : undefined;
 
   const createForm = showCreate ? (
@@ -394,7 +396,7 @@ function InvoicesListContent() {
   ) : null;
 
   const monthFilterBar = (
-    <div className="mb-4 max-w-xs">
+    <div data-tour="invoices-list-month-filter" className="mb-4 max-w-xs">
       <Label htmlFor="monthFilter">{t('platform.billing.filterMonth')}</Label>
       <Input
         id="monthFilter"
@@ -465,10 +467,22 @@ function InvoicesListContent() {
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" loading={processingOverdue} onClick={() => void processOverdue()}>
+            <Button
+              type="button"
+              variant="secondary"
+              loading={processingOverdue}
+              onClick={() => void processOverdue()}
+              data-tour="invoices-list-process-overdue-button"
+            >
               {t('platform.billing.processOverdue')}
             </Button>
-            <Button type="button" onClick={() => setShowCreate(true)}>{t('platform.billing.create')}</Button>
+            <Button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              data-tour="invoices-list-create-button"
+            >
+              {t('platform.billing.create')}
+            </Button>
           </div>
         }
         renderCard={renderCard}

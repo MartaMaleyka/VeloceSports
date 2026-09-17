@@ -1840,4 +1840,226 @@ export const en = {
     appDescription: 'Platform for youth football academies',
     loginTitle: 'Sign in — SquadVeloce',
   },
+  tour: {
+    dialogLabel: 'Screen guide',
+    stepCount: 'Step {current} of {total}',
+    back: 'Back',
+    next: 'Next',
+    finish: 'Got it',
+    skip: 'Skip',
+    replay: 'How does this screen work?',
+    superAdmin: {
+      home: {
+        hero: { title: 'Your control center', body: 'See the whole platform at a glance: academies, users and revenue.' },
+        kpis: { title: 'Key metrics', body: 'Active academies, total users, MRR and delinquency, all at a glance.' },
+        billing: { title: "This month's billing", body: 'How much you billed, collected, and what\'s still pending this month.' },
+        attention: { title: 'Needs attention', body: 'Academies suspended for billing and overdue invoices that need follow-up.' },
+        quickLinks: { title: 'Quick links', body: 'Jump straight to plans, academies, billing or the audit log from here.' },
+      },
+      invoicesList: {
+        kpis: { title: 'Invoices overview', body: 'Total billed, pending, overdue and paid for the selected month.' },
+        monthFilter: { title: 'Change the month', body: 'Pick the billing period you want to review.' },
+        processOverdue: { title: 'Process overdue', body: 'Flags unpaid invoices as overdue and auto-suspends academies when it applies.' },
+        create: { title: 'Create an invoice', body: 'Create a manual invoice for an academy and a specific period.' },
+      },
+      auditLog: {
+        kpis: { title: 'Total activity', body: "How many events were logged and what's the most frequent action." },
+        filters: { title: 'Filter the log', body: 'Search by academy, user, entity, action or date range.' },
+        viewDetail: { title: 'See the detail', body: 'Open an event to see exactly what changed and who did it.' },
+      },
+      plansList: {
+        kpis: { title: 'Plans overview', body: 'How many plans you have in total, active and inactive.' },
+        planDetails: { title: 'Price and limits', body: "Each plan shows its price and the limits the academy will see." },
+        create: { title: 'Create a plan', body: 'Set the price, limits and status to offer it to academies.' },
+        rowActions: { title: 'Edit or deactivate', body: "Update the plan's details or deactivate it so it's no longer available." },
+      },
+      planForm: {
+        name: { title: 'Plan name', body: 'This is how academies will see it when choosing a plan.' },
+        pricing: { title: 'Set the price', body: 'Annual fee and the per-player price billed every month.' },
+        limits: { title: 'Plan limits', body: 'How many players, categories, users and matches it includes.' },
+        submit: { title: 'Save the plan', body: "Create or update the plan so it's available right away." },
+      },
+      academiesList: {
+        kpis: { title: 'Overall status', body: 'Total academies, active, suspended and platform users.' },
+        create: { title: 'Register an academy', body: "Create the account, assign a plan and generate the admin's access." },
+        rowActions: { title: 'Manage each academy', body: 'Approve requests, edit details, or suspend and reactivate access.' },
+        billingStatus: { title: 'Billing status', body: 'See if the academy is current, overdue, or suspended for billing.' },
+      },
+      academyForm: {
+        name: { title: 'Academy name', body: 'This is how it will be identified across the platform.' },
+        plan: { title: 'Choose a plan', body: 'Sets the limits and the price that will be billed to it.' },
+        billingAnchor: { title: 'Billing anchor day', body: "The day of the month its monthly invoice is generated." },
+        submit: { title: 'Save changes', body: 'Creates the academy or updates its details, whichever applies.' },
+      },
+      academyDetail: {
+        header: { title: 'Academy details', body: 'Plan, estimated billing, and its current and next billing periods.' },
+        edit: { title: 'Edit the academy', body: 'Change the name, slug, plan or billing day.' },
+        userKpis: { title: 'Academy users', body: 'Total users, plan limit, admins, coaches and parents.' },
+        createUser: { title: 'Add a user', body: 'Create an admin, coach or parent right from here.' },
+      },
+      superAdmins: {
+        kpis: { title: 'Active super admins', body: 'How many accounts have full access to the platform.' },
+        createForm: { title: 'Invite a super admin', body: 'Grant full platform access with just their email.' },
+        rowActions: { title: 'Activate or deactivate', body: "Remove a super admin's access without deleting their account." },
+      },
+      personalAccountsList: {
+        kpis: { title: 'Account requests', body: 'Total, pending, approved and rejected.' },
+        accountInfo: { title: 'Request details', body: "The account's name, request date and current status." },
+        rowActions: { title: 'Approve or reject', body: 'Review the request and decide whether to grant the account access.' },
+      },
+    },
+    academyAdmin: {
+      home: {
+        hero: { title: "Your academy at a glance", body: "Here you'll see your academy's name and top numbers: active players, categories, and upcoming matches." },
+        kpis: { title: 'Key metrics', body: "A quick summary of players, categories, users, matches, and your billing plan." },
+        attention: { title: 'What needs your attention', body: 'Important pending items will show up here, like players awaiting approval or invoices due.' },
+        quickLinks: { title: 'Quick links', body: 'Jump straight to users, categories, players, matches, and billing from here.' },
+      },
+      billing: {
+        planSummary: { title: 'Your current plan', body: "See your plan's name, price, and billing status here." },
+        periodInfo: { title: 'Billing dates', body: 'Check your billing anchor day, current and next periods, and the due date.' },
+        invoicesList: { title: 'Invoice history', body: 'Review your past invoices and download a PDF of any of them.' },
+      },
+      users: {
+        kpis: { title: "Your academy's users", body: 'Total users and how many you have per role: admins, coaches, and parents.' },
+        create: { title: 'Invite a user', body: 'Create accounts for coaches, parents, or other admins from here.' },
+        list: { title: 'Search and filter users', body: 'Find users by name or email, filter by role or status, and manage each one.' },
+      },
+      categories: {
+        kpis: { title: 'Your categories', body: 'How many categories you have in total, and how many still have no coach assigned.' },
+        create: { title: 'Create a category', body: 'Set the age range, whether a guardian is required, and assign a coach.' },
+        list: { title: 'Search and filter categories', body: 'Find categories by name, filter by status, and edit each one.' },
+      },
+      actions: {
+        kpis: { title: 'Action catalog', body: 'How many actions are active, which ones notify parents, and their breakdown by impact.' },
+        create: { title: 'Create an action', body: 'Set a code, name, impact, and whether it should notify parents when logged.' },
+        list: { title: 'Search and filter actions', body: 'Find actions by name or code, and filter by impact or status.' },
+      },
+      players: {
+        kpis: { title: 'Your players', body: 'Active players, those pending approval, and how many categories group them.' },
+        create: { title: 'Add a player', body: 'Register a new player and link them to their parents or guardians.' },
+        list: { title: 'Search and filter players', body: 'Find players by name, filter by status or category, and approve requests.' },
+      },
+      settings: {
+        profile: { title: "Your academy's profile", body: "Update your academy's name, logo, and contact details." },
+        regional: { title: 'Timezone and language', body: 'Adjust the timezone, language, and currency your academy uses.' },
+        notifications: { title: 'Notifications', body: "Turn notifications to your academy's users on or off." },
+        readonly: { title: 'Platform-managed data', body: 'Your plan, status, and usage limits are managed by the platform; contact us to change them.' },
+      },
+      reports: {
+        hint: { title: "Your academy's reports", body: 'Generate exportable reports for players, users, categories, and matches.' },
+        cardsGrid: { title: 'Filter before exporting', body: 'Each card has its own filters; adjust them before generating the report.' },
+        exportPdf: { title: 'Export as PDF or CSV', body: 'Download the report in whichever format you prefer.' },
+      },
+    },
+    coach: {
+      home: {
+        hero: { title: 'Your daily overview', body: "A quick glance at your categories and what's coming up." },
+        kpis: { title: 'Key stats', body: 'Categories, upcoming matches, matches played this month, and live ones.' },
+        attention: { title: 'What needs your attention', body: 'Live or upcoming matches that need action from you.' },
+        quickLinks: { title: 'Quick links', body: 'Jump straight to categories, players, or matches from here.' },
+      },
+      categories: {
+        grid: { title: 'Your categories', body: 'Each card summarizes a category you coach.' },
+        card: { title: 'A look at each category', body: "Tap a card to see that category's full roster." },
+        playerCount: { title: 'Called-up players', body: 'How many players the category has, and who they are, at a glance.' },
+      },
+      players: {
+        categoryFilter: { title: 'Filter by category', body: 'Show only the players from the category you pick.' },
+        grid: { title: 'Your roster', body: 'All the players called up across your categories.' },
+        card: { title: 'Quick player card', body: "Each player's photo, jersey number, and category." },
+        viewMatches: { title: 'View their matches', body: "Takes you to this player's category matches." },
+      },
+      analysis: {
+        filters: { title: 'Filter the analysis', body: 'Combine category, match, dates, action type, and impact.' },
+        summary: { title: 'Results summary', body: 'How many players, actions, and matches match the current filter.' },
+        actions: { title: 'View and export', body: 'Switch between cards and table, or export the report as PDF or CSV.' },
+        chart: { title: 'Player ranking', body: 'The players with the most actions under the applied filter.' },
+        playerList: { title: 'Compare players', body: 'Tap a player to see their detailed analysis.' },
+      },
+      analysisPlayerDetail: {
+        back: { title: 'Back to comparison', body: 'Returns to the player analysis list.' },
+        header: { title: 'Player profile', body: 'Player info and the applied date or match filter.' },
+        stats: { title: 'Performance summary', body: 'Matches, minutes, total actions, and their most frequent action.' },
+        matches: { title: 'Match history', body: 'Every match played, with minutes and recorded actions.' },
+        observations: { title: 'Coaching staff notes', body: 'Notes left by you or other coaches about this player.' },
+      },
+    },
+    parent: {
+      home: {
+        hero: { title: 'Your main dashboard', body: "Here you'll see a quick summary for your children: matches, minutes, and stats." },
+        childTabs: { title: 'Pick a child', body: 'If you have more than one registered, switch here to see their info.' },
+        periodFilter: { title: 'Filter by period', body: 'Pick a month or view the full history to adjust the stats below.' },
+        dashboardPanel: { title: 'Summary and stats', body: "Matches, minutes, and actions for your child will show up here as they're recorded." },
+      },
+      calendar: {
+        overview: { title: 'Match calendar', body: "Check upcoming matches and review past ones; from here you can open each match's report card." },
+      },
+      notifications: {
+        page: { title: 'Your notifications', body: "Control which alerts you get about your children's matches from here." },
+        globalToggle: { title: 'Turn everything on or off', body: 'This switch controls whether you get in-app notifications. Turn it on or off anytime.' },
+        emailNote: { title: 'More channels coming soon', body: 'For now notifications arrive in-app; email alerts are coming soon.' },
+      },
+      children: {
+        page: { title: 'Your children', body: 'Manage your registered players: check their status and add a new one if needed.' },
+        list: { title: 'Status and actions', body: 'Each card shows the approval status and lets you edit their info or view their match report cards.' },
+      },
+      childMatches: {
+        back: { title: 'Back to your children', body: "Use this button to return to your children's list anytime." },
+        list: { title: 'Matches and reports', body: 'Your child\'s matches show up here; open "View card" to check each one\'s detailed report.' },
+      },
+    },
+    player: {
+      home: {
+        hero: { title: 'Your player summary', body: 'See your photo, category and jersey number here. This is how the academy recognizes you.' },
+        goProfile: { title: 'Go to your profile', body: 'Tap here to check and update your personal details.' },
+        goMatches: { title: 'Check your matches', body: 'Find your match history and report cards here.' },
+        goReports: { title: 'Read your reports', body: 'See the notes your coaches leave about your progress.' },
+      },
+      profile: {
+        avatar: { title: 'Change your photo', body: 'Tap your photo anytime you want to update it.' },
+        info: { title: 'Jersey and category', body: "Your academy assigns these, so you can't edit them here." },
+        editForm: { title: 'Edit your details', body: 'Update your name, birth date and position whenever you need to.' },
+        save: { title: 'Save your changes', body: "Don't forget to tap here after editing your information." },
+      },
+      matches: {
+        list: { title: 'Your match history', body: "Here you'll see every match your coach has recorded a report card for." },
+        viewReport: { title: 'See your report card', body: 'Tap this button to review your actions in that match.' },
+      },
+      calendar: {
+        root: { title: 'Your match calendar', body: "See your upcoming matches and the ones you've already played." },
+        tabs: { title: 'Upcoming and recent', body: "Switch between your upcoming matches and the ones you've already played." },
+        relativeLabel: { title: 'Countdown to your match', body: "We'll tell you how many days are left until your next match." },
+      },
+      reports: {
+        intro: { title: 'Notes from your coaches', body: 'Read what they think about your progress in every match.' },
+        observations: { title: 'Your observations history', body: "Find general comments and match-specific ones, all organized here." },
+      },
+    },
+    shared: {
+      matchesList: {
+        kpis: { title: 'Match overview', body: 'See upcoming matches, matches in progress, and matches played this month at a glance.' },
+        search: { title: 'Search for a match', body: 'Type the opponent, category, or location to find a match quickly.' },
+        statusFilter: { title: 'Filter by status', body: 'Show only scheduled, in-progress, finished, or cancelled matches.' },
+        categoryFilter: { title: 'Filter by category', body: 'Narrow the list to a single category when you manage several teams.' },
+        createButton: { title: 'Create a match', body: 'Schedule a new match with opponent, category, date, and location.' },
+      },
+      matchDetail: {
+        header: { title: 'Match details', body: 'See the opponent, category, match type, and current status here.' },
+        summary: { title: 'General summary', body: 'Check the date, location, playing periods, and who created the match from the Overview tab.' },
+        clock: { title: 'Match clock', body: 'Control the current minute and period: pause, resume, or move to the next period.' },
+        players: { title: 'Pick the player', body: 'Tap a player on the pitch to start recording a play for them.' },
+        actions: { title: 'Record the play', body: 'With the player selected, tap the action (goal, foul, assist...) to record it instantly.' },
+        lastPlay: { title: 'Last recorded play', body: 'Confirm what you just logged here. You have a few seconds to undo it if you make a mistake.' },
+        voice: { title: 'Voice capture', body: 'Turn on the mic and say the jersey number and action ("5, goal") to record plays hands-free.' },
+      },
+      matchReportCard: {
+        header: { title: 'Player card', body: 'Photo, jersey number, and match details: opponent, category, and date.' },
+        chart: { title: 'Match performance', body: "Switch between radar and bars above to see the player's actions by dimension." },
+        motivation: { title: 'Featured message', body: "A motivational phrase based on the player's strongest point in this match." },
+        footer: { title: 'Minutes and sharing', body: 'Check minutes played and share the card with a link.' },
+        observations: { title: "Coach's observations", body: "The coach's notes about this player appear here, both general and match-specific." },
+      },
+    },
+  },
 } as const;

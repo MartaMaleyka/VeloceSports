@@ -118,7 +118,10 @@ function MatchCalendarCard({
           <div className="flex flex-wrap items-center gap-2">
             <span className="ds-club-pill">{item.categoryName}</span>
             {relativeLabel && (
-              <span className="inline-flex rounded-full border border-section-brand-border bg-section-brand-subtle px-2.5 py-0.5 text-xs font-semibold text-section-brand-fg">
+              <span
+                className="inline-flex rounded-full border border-section-brand-border bg-section-brand-subtle px-2.5 py-0.5 text-xs font-semibold text-section-brand-fg"
+                data-tour={variant === 'upcoming' ? 'calendar-relative-label' : undefined}
+              >
                 {relativeLabel}
               </span>
             )}
@@ -212,7 +215,7 @@ export default function PlayerCalendarPage() {
   const visible = tab === 'upcoming' ? upcoming : past;
 
   return (
-    <div className="ds-stagger-enter space-y-5">
+    <div className="ds-stagger-enter space-y-5" data-tour="calendar-root">
       {isEmpty ? (
         <EmptyState
           title={t('dashboard.player.calendar.emptyTitle')}
@@ -226,6 +229,7 @@ export default function PlayerCalendarPage() {
             style={{ ['--stagger-index' as string]: 0 }}
             role="tablist"
             aria-label={t('dashboard.player.calendar.title')}
+            data-tour="calendar-tabs"
           >
             {(
               [

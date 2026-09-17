@@ -164,13 +164,17 @@ export default function CoachAnalysisPlayerDetailPage({
             window.location.href = backHref;
           }}
           className="inline-flex items-center gap-2"
+          data-tour="analysisDetail-back"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           {t('dashboard.coach.analysis.backToCompare')}
         </Button>
       </div>
 
-      <header className="ds-card-interactive relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-8">
+      <header
+        className="ds-card-interactive relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-8"
+        data-tour="analysisDetail-header"
+      >
         <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
         <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center">
           <PlayerAvatar
@@ -195,6 +199,7 @@ export default function CoachAnalysisPlayerDetailPage({
         </div>
       </header>
 
+      <div data-tour="analysisDetail-stats">
       <StatCardGrid columns={4}>
         <StatCard
           icon={<Trophy className="h-5 w-5" />}
@@ -223,6 +228,7 @@ export default function CoachAnalysisPlayerDetailPage({
           }
         />
       </StatCardGrid>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {evolutionData.length > 0 && (
@@ -316,7 +322,7 @@ export default function CoachAnalysisPlayerDetailPage({
         </section>
       )}
 
-      <section className="space-y-3">
+      <section className="space-y-3" data-tour="analysisDetail-matches">
         <h3 className="font-display text-lg font-bold text-text-primary">
           {t('dashboard.coach.analysis.detail.matchesTitle')}
         </h3>
@@ -357,7 +363,7 @@ export default function CoachAnalysisPlayerDetailPage({
         )}
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-3" data-tour="analysisDetail-observations">
         <h3 className="inline-flex items-center gap-2 font-display text-lg font-bold text-text-primary">
           <MessageSquareText className="h-5 w-5 text-action-primary" aria-hidden="true" />
           {t('dashboard.coach.analysis.detail.observationsTitle')}

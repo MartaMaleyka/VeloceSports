@@ -230,7 +230,10 @@ function AcademyBillingContent() {
 
   const header = summary && !loading ? (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-6">
+      <div
+        data-tour="billing-plan-summary"
+        className="relative overflow-hidden rounded-xl border border-border bg-bg-surface p-5 sm:p-6"
+      >
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-subtle via-transparent to-transparent"
           aria-hidden="true"
@@ -267,7 +270,7 @@ function AcademyBillingContent() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-tour="billing-period-info" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <PeriodInfoCard
           icon={<Calendar className={iconClass} />}
           label={t('platform.billing.summary.anchorDay')}
@@ -303,30 +306,32 @@ function AcademyBillingContent() {
   ) : undefined;
 
   return (
-    <DataView
-      items={invoices}
-      isSourceEmpty={invoices.length === 0}
-      getItemKey={(inv) => inv.id}
-      loading={loading}
-      error={error}
-      onRetry={() => void load()}
-      retryLabel={t('common.retry')}
-      header={header}
-      subHeader={alerts ?? undefined}
-      resultsLabel={resultsLabel}
-      viewMode={viewMode}
-      onViewModeChange={setViewMode}
-      viewCardsLabel={t('dataView.viewCards')}
-      viewTableLabel={t('dataView.viewTable')}
-      renderCard={renderCard}
-      renderTable={renderTable}
-      emptyTitle={t('platform.billing.empty')}
-      page={page}
-      pageSize={PAGE_SIZE}
-      onPageChange={setPage}
-      pagePrevLabel={t('dataView.pagePrev')}
-      pageNextLabel={t('dataView.pageNext')}
-    />
+    <div data-tour="billing-invoices-list">
+      <DataView
+        items={invoices}
+        isSourceEmpty={invoices.length === 0}
+        getItemKey={(inv) => inv.id}
+        loading={loading}
+        error={error}
+        onRetry={() => void load()}
+        retryLabel={t('common.retry')}
+        header={header}
+        subHeader={alerts ?? undefined}
+        resultsLabel={resultsLabel}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        viewCardsLabel={t('dataView.viewCards')}
+        viewTableLabel={t('dataView.viewTable')}
+        renderCard={renderCard}
+        renderTable={renderTable}
+        emptyTitle={t('platform.billing.empty')}
+        page={page}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        pagePrevLabel={t('dataView.pagePrev')}
+        pageNextLabel={t('dataView.pageNext')}
+      />
+    </div>
   );
 }
 

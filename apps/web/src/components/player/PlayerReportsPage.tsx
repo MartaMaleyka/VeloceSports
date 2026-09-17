@@ -57,10 +57,15 @@ export default function PlayerReportsPage() {
       <p
         className="ds-stagger-item text-sm text-text-secondary"
         style={{ ['--stagger-index' as string]: 0 }}
+        data-tour="reports-intro"
       >
         {t('dashboard.player.reports.intro')}
       </p>
-      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
+      <div
+        className="ds-stagger-item"
+        style={{ ['--stagger-index' as string]: 1 }}
+        data-tour="reports-observations"
+      >
         <PlayerObservationsPanel
           mode="player"
           playerId={profile.id}

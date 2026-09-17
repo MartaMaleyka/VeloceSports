@@ -234,29 +234,32 @@ function TenantCategoriesContent() {
   ];
 
   const kpiHeader = kpis ? (
-    <StatCardGrid columns={3}>
-      <StatCard
-        icon={<Layers className="h-5 w-5" />}
-        label={t('tenant.categories.kpis.total')}
-        value={String(kpis.totalCategories)}
-        delta={t('tenant.categories.kpis.limit', { limit: kpis.planLimit })}
-      />
-      <StatCard
-        icon={<UserCheck className="h-5 w-5" />}
-        label={t('tenant.categories.kpis.withCoach')}
-        value={String(kpis.withCoach)}
-      />
-      <StatCard
-        icon={<UserX className="h-5 w-5" />}
-        label={t('tenant.categories.kpis.withoutCoach')}
-        value={String(kpis.withoutCoach)}
-        variant={kpis.withoutCoach > 0 ? 'warning' : 'default'}
-      />
-    </StatCardGrid>
+    <div data-tour="categories-kpis">
+      <StatCardGrid columns={3}>
+        <StatCard
+          icon={<Layers className="h-5 w-5" />}
+          label={t('tenant.categories.kpis.total')}
+          value={String(kpis.totalCategories)}
+          delta={t('tenant.categories.kpis.limit', { limit: kpis.planLimit })}
+        />
+        <StatCard
+          icon={<UserCheck className="h-5 w-5" />}
+          label={t('tenant.categories.kpis.withCoach')}
+          value={String(kpis.withCoach)}
+        />
+        <StatCard
+          icon={<UserX className="h-5 w-5" />}
+          label={t('tenant.categories.kpis.withoutCoach')}
+          value={String(kpis.withoutCoach)}
+          variant={kpis.withoutCoach > 0 ? 'warning' : 'default'}
+        />
+      </StatCardGrid>
+    </div>
   ) : null;
 
   return (
     <>
+      <div data-tour="categories-list">
       <DataView
         items={filtered}
         isSourceEmpty={categories.length === 0}
@@ -287,7 +290,12 @@ function TenantCategoriesContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate} className="gap-1.5">
+          <Button
+            type="button"
+            data-tour="categories-create-button"
+            onClick={openCreate}
+            className="gap-1.5"
+          >
             <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.categories.create')}
           </Button>
@@ -369,6 +377,7 @@ function TenantCategoriesContent() {
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
+      </div>
 
       <Modal
         open={modalOpen}

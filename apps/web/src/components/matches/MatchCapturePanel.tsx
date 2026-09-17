@@ -914,6 +914,7 @@ export default function MatchCapturePanel({
       <div className="sticky top-0 z-30 -mx-4 shrink-0 border-b border-border bg-bg-surface/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:py-3">
         {lastCaptured && canEditActions && (
           <div
+            data-tour="match-detail-capture-last-play"
             className={cn(
               'mb-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold md:text-sm',
               impactChipClasses(lastCaptured.action.impact),
@@ -929,19 +930,21 @@ export default function MatchCapturePanel({
           </div>
         )}
         {isLiveMode && match.clock ? (
-          <MatchClockBar
-            period={matchClock.period}
-            minute={matchClock.minute}
-            running={matchClock.running}
-            periodsCount={periodCount}
-            canAdvancePeriod={matchClock.canAdvancePeriod}
-            commandLoading={matchClock.commandLoading}
-            captureLocked={captureLocked}
-            onPause={matchClock.pause}
-            onResume={matchClock.resume}
-            onNextPeriod={matchClock.nextPeriod}
-            onAdjustMinute={matchClock.adjustMinute}
-          />
+          <div data-tour="match-detail-capture-clock">
+            <MatchClockBar
+              period={matchClock.period}
+              minute={matchClock.minute}
+              running={matchClock.running}
+              periodsCount={periodCount}
+              canAdvancePeriod={matchClock.canAdvancePeriod}
+              commandLoading={matchClock.commandLoading}
+              captureLocked={captureLocked}
+              onPause={matchClock.pause}
+              onResume={matchClock.resume}
+              onNextPeriod={matchClock.nextPeriod}
+              onAdjustMinute={matchClock.adjustMinute}
+            />
+          </div>
         ) : isCorrectionMode ? (
           <div className="flex flex-row items-end gap-2 sm:gap-3">
             <div className="min-w-0 flex-1">
@@ -1142,6 +1145,7 @@ export default function MatchCapturePanel({
         <div className="flex min-h-0 flex-1 flex-col md:flex-row md:overflow-hidden">
           {(canEditActions || presentPlayers.length > 0) && (
             <section
+              data-tour="match-detail-capture-players"
               className="min-h-0 flex-1 overflow-y-auto md:min-w-0 md:basis-1/2 md:pr-2"
               aria-label={t('matches.capture.playersSection')}
             >
@@ -1182,6 +1186,7 @@ export default function MatchCapturePanel({
 
           {canEditActions && (
             <aside
+              data-tour="match-detail-capture-actions"
               className={cn(
                 'min-h-0 border-border bg-bg-surface',
                 boardFullscreen
@@ -1530,14 +1535,16 @@ const CaptureActionGrid = memo(function CaptureActionGrid({
             {t('matches.capture.actionsSection')}
           </h3>
           {voiceMic ? (
-            <VoiceMicButton
-              isListening={voiceMic.isListening}
-              continuousActive={voiceMic.continuousActive}
-              supported={voiceMic.supported}
-              reducedMotion={voiceMic.reducedMotion}
-              onToggle={voiceMic.onToggle}
-              className="!min-h-7 !min-w-7 h-7 w-7 text-sm"
-            />
+            <div data-tour="match-detail-capture-voice">
+              <VoiceMicButton
+                isListening={voiceMic.isListening}
+                continuousActive={voiceMic.continuousActive}
+                supported={voiceMic.supported}
+                reducedMotion={voiceMic.reducedMotion}
+                onToggle={voiceMic.onToggle}
+                className="!min-h-7 !min-w-7 h-7 w-7 text-sm"
+              />
+            </div>
           ) : (
             <button
               type="button"

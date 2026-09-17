@@ -93,6 +93,7 @@ export default function PlayerHomePage() {
       <section
         className="ds-stagger-item overflow-hidden rounded-xl border border-border bg-bg-surface"
         style={{ ['--stagger-index' as string]: 0 }}
+        data-tour="home-hero"
       >
         <div className="border-b border-border bg-section-brand-subtle/40 px-4 py-5 sm:px-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-section-brand-fg">
@@ -123,6 +124,7 @@ export default function PlayerHomePage() {
               type="button"
               variant="secondary"
               className="min-h-touch"
+              data-tour="home-go-profile"
               onClick={() => {
                 window.location.href = appPath('/dashboard/player/profile');
               }}
@@ -133,6 +135,7 @@ export default function PlayerHomePage() {
               type="button"
               variant="secondary"
               className="min-h-touch"
+              data-tour="home-go-matches"
               onClick={() => {
                 window.location.href = appPath('/dashboard/player/matches');
               }}
@@ -143,6 +146,7 @@ export default function PlayerHomePage() {
               type="button"
               variant="secondary"
               className="min-h-touch"
+              data-tour="home-go-reports"
               onClick={() => {
                 window.location.href = appPath('/dashboard/player/reports');
               }}

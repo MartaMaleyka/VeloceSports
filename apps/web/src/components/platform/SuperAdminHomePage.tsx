@@ -147,6 +147,7 @@ function SuperAdminHomeContent() {
   return (
     <div className="ds-stagger-enter space-y-8">
       <div
+        data-tour="home-hero"
         className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
         style={{ ['--stagger-index' as string]: 0 }}
       >
@@ -182,7 +183,11 @@ function SuperAdminHomeContent() {
         </div>
       </div>
 
-      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
+      <div
+        data-tour="home-kpis"
+        className="ds-stagger-item"
+        style={{ ['--stagger-index' as string]: 1 }}
+      >
         <StatCardGrid columns={3}>
           <StatCard
             icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
@@ -245,6 +250,7 @@ function SuperAdminHomeContent() {
       </div>
 
       <div
+        data-tour="home-billing-summary"
         className="ds-stagger-item grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         style={{ ['--stagger-index' as string]: 2 }}
       >
@@ -298,7 +304,11 @@ function SuperAdminHomeContent() {
         />
       </div>
 
-      <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 4 }}>
+      <section
+        data-tour="home-attention"
+        className="ds-stagger-item space-y-4"
+        style={{ ['--stagger-index' as string]: 4 }}
+      >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.superAdmin.home.attentionTitle')}
         </h2>
@@ -408,7 +418,11 @@ function SuperAdminHomeContent() {
         </div>
       </section>
 
-      <section className="ds-stagger-item" style={{ ['--stagger-index' as string]: 6 }}>
+      <section
+        data-tour="home-quick-links"
+        className="ds-stagger-item"
+        style={{ ['--stagger-index' as string]: 6 }}
+      >
         <h2 className="mb-4 font-display text-lg font-semibold text-text-primary">
           {t('dashboard.superAdmin.home.quickLinks')}
         </h2>

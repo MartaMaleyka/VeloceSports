@@ -110,7 +110,12 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
         )}
         <div>
           <Label htmlFor="name" required>{t('platform.academies.form.name')}</Label>
-          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            data-tour="academy-form-name-input"
+          />
         </div>
         <div>
           <Label htmlFor="slug">{t('platform.academies.form.slug')}</Label>
@@ -124,6 +129,7 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
             value={planId}
             onChange={(e) => setPlanId(e.target.value)}
             options={plans.map((p) => ({ value: String(p.id), label: p.name }))}
+            data-tour="academy-form-plan-select"
           />
         </div>
         <div>
@@ -135,6 +141,7 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
             max={31}
             value={billingAnchorDay}
             onChange={(e) => setBillingAnchorDay(e.target.value)}
+            data-tour="academy-form-billing-anchor"
           />
           <p className="mt-1 text-xs text-text-muted">{t('platform.academies.form.billingAnchorDayHint')}</p>
         </div>
@@ -146,7 +153,7 @@ function AcademyFormContent({ academyId }: AcademyFormPageProps) {
           </div>
         )}
         <div className="flex flex-wrap gap-3">
-          <Button type="submit" loading={submitting}>
+          <Button type="submit" loading={submitting} data-tour="academy-form-submit-button">
             {isEdit ? t('platform.academies.form.submitEdit') : t('platform.academies.form.submitCreate')}
           </Button>
           <Button type="button" variant="secondary" onClick={() => { window.location.href = appPath('/dashboard/super-admin/academies'); }}>

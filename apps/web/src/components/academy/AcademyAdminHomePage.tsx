@@ -208,6 +208,7 @@ function AcademyAdminHomeContent() {
   return (
     <div className="ds-stagger-enter space-y-8">
       <div
+        data-tour="home-hero"
         className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
         style={{ ['--stagger-index' as string]: 0 }}
       >
@@ -241,7 +242,11 @@ function AcademyAdminHomeContent() {
         </div>
       </div>
 
-      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
+      <div
+        data-tour="home-kpis"
+        className="ds-stagger-item"
+        style={{ ['--stagger-index' as string]: 1 }}
+      >
         <StatCardGrid columns={3}>
           <StatCard
             icon={<Users className={iconClass} />}
@@ -305,7 +310,11 @@ function AcademyAdminHomeContent() {
         </StatCardGrid>
       </div>
 
-      <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 2 }}>
+      <section
+        data-tour="home-attention"
+        className="ds-stagger-item space-y-4"
+        style={{ ['--stagger-index' as string]: 2 }}
+      >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.attentionTitle')}
         </h2>
@@ -405,7 +414,11 @@ function AcademyAdminHomeContent() {
         </DataCard>
       </div>
 
-      <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 5 }}>
+      <section
+        data-tour="home-quick-links"
+        className="ds-stagger-item space-y-4"
+        style={{ ['--stagger-index' as string]: 5 }}
+      >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.quickLinksTitle')}
         </h2>

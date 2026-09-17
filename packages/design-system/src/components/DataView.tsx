@@ -31,14 +31,20 @@ export interface DataViewProps<T> {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  /** Marca `data-tour` opcional para el input de búsqueda (tours guiados) */
+  searchTourId?: string;
   statusFilter?: string;
   onStatusFilterChange?: (value: string) => void;
   statusFilterOptions?: SelectOption[];
   statusFilterLabel?: string;
+  /** Marca `data-tour` opcional para el filtro de estado (tours guiados) */
+  statusFilterTourId?: string;
   secondaryFilter?: string;
   onSecondaryFilterChange?: (value: string) => void;
   secondaryFilterOptions?: SelectOption[];
   secondaryFilterLabel?: string;
+  /** Marca `data-tour` opcional para el filtro secundario (tours guiados) */
+  secondaryFilterTourId?: string;
   resultCount?: number;
   resultsLabel?: string;
   toolbarExtra?: ReactNode;
@@ -77,14 +83,17 @@ export function DataView<T>({
   searchValue,
   onSearchChange,
   searchPlaceholder,
+  searchTourId,
   statusFilter,
   onStatusFilterChange,
   statusFilterOptions,
   statusFilterLabel,
+  statusFilterTourId,
   secondaryFilter,
   onSecondaryFilterChange,
   secondaryFilterOptions,
   secondaryFilterLabel,
+  secondaryFilterTourId,
   resultCount,
   resultsLabel,
   toolbarExtra,
@@ -180,7 +189,7 @@ export function DataView<T>({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           {onSearchChange && (
-            <div className="w-full sm:max-w-xs">
+            <div className="w-full sm:max-w-xs" data-tour={searchTourId}>
               <Input
                 type="search"
                 value={searchValue ?? ''}
@@ -191,7 +200,7 @@ export function DataView<T>({
             </div>
           )}
           {onStatusFilterChange && statusFilterOptions && (
-            <div className="w-full sm:w-auto sm:min-w-[160px]">
+            <div className="w-full sm:w-auto sm:min-w-[160px]" data-tour={statusFilterTourId}>
               {statusFilterLabel && (
                 <label className="mb-1 block text-xs font-medium text-text-muted sm:sr-only">
                   {statusFilterLabel}
@@ -206,7 +215,7 @@ export function DataView<T>({
             </div>
           )}
           {onSecondaryFilterChange && secondaryFilterOptions && (
-            <div className="w-full sm:w-auto sm:min-w-[160px]">
+            <div className="w-full sm:w-auto sm:min-w-[160px]" data-tour={secondaryFilterTourId}>
               {secondaryFilterLabel && (
                 <label className="mb-1 block text-xs font-medium text-text-muted sm:sr-only">
                   {secondaryFilterLabel}

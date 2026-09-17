@@ -191,7 +191,7 @@ function PlansListContent() {
             </span>
           </div>
         )}
-        <div className={cn('p-1', isPopular && 'pt-8')}>
+        <div data-tour="plans-list-plan-details" className={cn('p-1', isPopular && 'pt-8')}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-display text-2xl font-bold tracking-tight text-text-primary">
@@ -214,7 +214,9 @@ function PlansListContent() {
           </div>
         </div>
         <DataCardFooter>
-          <RowActionsMenu {...planActions(plan)} />
+          <div data-tour="plans-list-row-actions">
+            <RowActionsMenu {...planActions(plan)} />
+          </div>
         </DataCardFooter>
       </DataCard>
     );
@@ -292,7 +294,9 @@ function PlansListContent() {
               <StatusBadge type="plan" status={plan.status} />
             </TableCell>
             <TableCell>
-              <RowActionsMenu {...planActions(plan)} />
+              <div data-tour="plans-list-row-actions">
+                <RowActionsMenu {...planActions(plan)} />
+              </div>
             </TableCell>
           </TableRow>
         ))}
@@ -301,24 +305,26 @@ function PlansListContent() {
   );
 
   const kpiHeader = (
-    <StatCardGrid>
-      <StatCard
-        icon={<Layers className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.total}
-        label={t('platform.plans.kpis.total')}
-      />
-      <StatCard
-        icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.active}
-        label={t('platform.plans.kpis.active')}
-        variant="success"
-      />
-      <StatCard
-        icon={<XCircle className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.inactive}
-        label={t('platform.plans.kpis.inactive')}
-      />
-    </StatCardGrid>
+    <div data-tour="plans-list-kpis">
+      <StatCardGrid>
+        <StatCard
+          icon={<Layers className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.total}
+          label={t('platform.plans.kpis.total')}
+        />
+        <StatCard
+          icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.active}
+          label={t('platform.plans.kpis.active')}
+          variant="success"
+        />
+        <StatCard
+          icon={<XCircle className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.inactive}
+          label={t('platform.plans.kpis.inactive')}
+        />
+      </StatCardGrid>
+    </div>
   );
 
   return (
@@ -356,6 +362,7 @@ function PlansListContent() {
             onClick={() => {
               window.location.href = appPath('/dashboard/super-admin/plans/new');
             }}
+            data-tour="plans-list-create-button"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             {t('platform.plans.create')}

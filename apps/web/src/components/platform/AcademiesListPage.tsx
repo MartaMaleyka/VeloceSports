@@ -314,7 +314,7 @@ function AcademiesListContent() {
             )}
           </div>
           <p className="mt-0.5 text-xs text-text-muted">{academy.slug}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div data-tour="academies-list-billing-status" className="mt-3 flex flex-wrap gap-2">
             <Badge
               variant="default"
               accent="plans"
@@ -335,7 +335,9 @@ function AcademiesListContent() {
         </div>
       </div>
       <DataCardFooter>
-        <RowActionsMenu {...academyActions(academy)} />
+        <div data-tour="academies-list-row-actions">
+          <RowActionsMenu {...academyActions(academy)} />
+        </div>
       </DataCardFooter>
     </DataCard>
   );
@@ -411,10 +413,14 @@ function AcademiesListContent() {
               )}
             </TableCell>
             <TableCell>
-              <BillingStatusBadge status={academy.billingStatus} />
+              <div data-tour="academies-list-billing-status">
+                <BillingStatusBadge status={academy.billingStatus} />
+              </div>
             </TableCell>
             <TableCell>
-              <RowActionsMenu {...academyActions(academy)} />
+              <div data-tour="academies-list-row-actions">
+                <RowActionsMenu {...academyActions(academy)} />
+              </div>
             </TableCell>
           </TableRow>
         ))}
@@ -423,30 +429,32 @@ function AcademiesListContent() {
   );
 
   const kpiHeader = (
-    <StatCardGrid columns={4}>
-      <StatCard
-        icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.total}
-        label={t('platform.academies.kpis.total')}
-      />
-      <StatCard
-        icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.active}
-        label={t('platform.academies.kpis.active')}
-        variant="success"
-      />
-      <StatCard
-        icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.suspendedInactive}
-        label={t('platform.academies.kpis.suspendedInactive')}
-        variant="warning"
-      />
-      <StatCard
-        icon={<Users className="h-5 w-5" aria-hidden="true" />}
-        value={kpis.platformUsers}
-        label={t('platform.academies.kpis.platformUsers')}
-      />
-    </StatCardGrid>
+    <div data-tour="academies-list-kpis">
+      <StatCardGrid columns={4}>
+        <StatCard
+          icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.total}
+          label={t('platform.academies.kpis.total')}
+        />
+        <StatCard
+          icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.active}
+          label={t('platform.academies.kpis.active')}
+          variant="success"
+        />
+        <StatCard
+          icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.suspendedInactive}
+          label={t('platform.academies.kpis.suspendedInactive')}
+          variant="warning"
+        />
+        <StatCard
+          icon={<Users className="h-5 w-5" aria-hidden="true" />}
+          value={kpis.platformUsers}
+          label={t('platform.academies.kpis.platformUsers')}
+        />
+      </StatCardGrid>
+    </div>
   );
 
   return (
@@ -501,6 +509,7 @@ function AcademiesListContent() {
             onClick={() => {
               window.location.href = appPath('/dashboard/super-admin/academies/new');
             }}
+            data-tour="academies-list-create-button"
           >
             <Building2 className="h-4 w-4" aria-hidden="true" />
             <Plus className="h-4 w-4" aria-hidden="true" />

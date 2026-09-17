@@ -237,7 +237,7 @@ export function PlayerObservationsPanel({
   }
 
   return (
-    <section className={cn('space-y-4', className)}>
+    <section className={cn('space-y-4', className)} data-tour="report-card-observations">
       <header>
         <h3 className="text-base font-semibold text-text-primary">
           {t('playerObservations.title')}

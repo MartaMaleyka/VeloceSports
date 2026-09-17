@@ -110,13 +110,19 @@ function PlanFormContent({ planId }: PlanFormPageProps) {
       )}
       <div>
         <Label htmlFor="name" required>{t('platform.plans.form.name')}</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} hasError={!!fieldErrors.name} />
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          hasError={!!fieldErrors.name}
+          data-tour="plan-form-name-input"
+        />
       </div>
       <div>
         <Label htmlFor="description">{t('platform.plans.form.description')}</Label>
         <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div data-tour="plan-form-pricing" className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="annualFee" required>{t('platform.plans.form.annualFee')}</Label>
           <Input
@@ -142,7 +148,7 @@ function PlanFormContent({ planId }: PlanFormPageProps) {
           <p className="mt-1 text-xs text-text-muted">{t('platform.plans.form.pricePerPlayerHint')}</p>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div data-tour="plan-form-limits" className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="maxPlayers" required>{t('platform.plans.form.maxPlayers')}</Label>
           <Input id="maxPlayers" type="number" min="0" value={maxPlayers} onChange={(e) => setMaxPlayers(e.target.value)} />
@@ -173,7 +179,7 @@ function PlanFormContent({ planId }: PlanFormPageProps) {
         />
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" loading={submitting}>
+        <Button type="submit" loading={submitting} data-tour="plan-form-submit-button">
           {isEdit ? t('platform.plans.form.submitEdit') : t('platform.plans.form.submitCreate')}
         </Button>
         <Button type="button" variant="secondary" onClick={() => { window.location.href = appPath('/dashboard/super-admin/plans'); }}>

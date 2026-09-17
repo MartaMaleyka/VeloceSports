@@ -242,7 +242,10 @@ function AcademySettingsContent() {
           </Alert>
         )}
 
-        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+        <section
+          data-tour="settings-profile-section"
+          className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8"
+        >
           <h2 className="font-display text-lg font-semibold text-text-primary">
             {t('academySettings.sections.profile')}
           </h2>
@@ -309,7 +312,10 @@ function AcademySettingsContent() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8">
+        <section
+          data-tour="settings-regional-section"
+          className="rounded-lg border border-border bg-bg-surface p-5 sm:p-8"
+        >
           <h2 className="font-display text-lg font-semibold text-text-primary">
             {t('academySettings.sections.regional')}
           </h2>
@@ -366,6 +372,7 @@ function AcademySettingsContent() {
           <div className="mt-6 flex items-center gap-3">
             <input
               id="as-notifications-enabled"
+              data-tour="settings-notifications-toggle"
               type="checkbox"
               className="h-5 w-5 rounded border-border text-action-primary"
               checked={form.notificationsEnabled}
@@ -429,6 +436,7 @@ function AcademySettingsContent() {
       </form>
 
       <section
+        data-tour="settings-readonly-section"
         className="rounded-lg border border-dashed border-border bg-bg-muted/40 p-5 sm:p-8"
         aria-labelledby="readonly-settings-heading"
       >

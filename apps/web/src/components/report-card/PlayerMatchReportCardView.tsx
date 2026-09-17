@@ -98,7 +98,7 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
         />
         <div className="relative p-5 sm:p-6">
           {/* Cabecera cromo */}
-          <header className="mb-6 text-center">
+          <header className="mb-6 text-center" data-tour="report-card-header">
             <div className="relative mx-auto mb-4 inline-flex">
               <PlayerAvatar
                 player={{
@@ -153,6 +153,7 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
 
           {/* Gráfico */}
           <section
+            data-tour="report-card-chart"
             className="mb-6 rounded-xl border border-border bg-bg-muted/40 p-3 sm:p-4"
             role="tabpanel"
             aria-label={
@@ -256,14 +257,17 @@ export default function PlayerMatchReportCardView({ data }: PlayerMatchReportCar
           </section>
 
           {/* Frase motivacional */}
-          <blockquote className="mb-6 rounded-xl border border-section-brand-border bg-section-brand-subtle/50 px-4 py-4 text-center">
+          <blockquote
+            data-tour="report-card-motivation"
+            className="mb-6 rounded-xl border border-section-brand-border bg-section-brand-subtle/50 px-4 py-4 text-center"
+          >
             <p className="text-base font-semibold leading-snug text-text-primary">
               {t(motivationKey)}
             </p>
           </blockquote>
 
           {/* Minutos + compartir */}
-          <footer className="space-y-4">
+          <footer className="space-y-4" data-tour="report-card-footer">
             <div>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="text-text-secondary">{t('reportCard.minutesPlayed')}</span>

@@ -278,7 +278,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
       </div>
 
       <div className="rounded-lg border border-border bg-bg-surface p-4 sm:p-6">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3" data-tour="match-detail-header">
           <div>
             <h2 className="font-display text-2xl font-bold text-text-primary sm:text-3xl">
               {match.opponent}
@@ -331,7 +331,7 @@ function MatchDetailContent({ matchId, listPath }: MatchDetailPageProps) {
             (ocultos con CSS) al cambiar de tab: evita perder cambios sin guardar,
             reiniciar la voz en modo continuo, o volver a mostrar skeletons de carga. */}
         <div className={activeTab === 'overview' ? '' : 'hidden'}>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2" data-tour="match-detail-summary">
             <div className="ds-card-interactive rounded-lg border border-border bg-bg-surface p-4">
               <LabeledValue label={t('matches.datetime')} value={formatDatetime(match.matchDatetime)} />
             </div>

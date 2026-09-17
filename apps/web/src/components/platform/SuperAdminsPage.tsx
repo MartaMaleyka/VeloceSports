@@ -205,7 +205,9 @@ function SuperAdminsContent() {
         </LabeledValue>
       </div>
       <DataCardFooter>
-        <RowActionsMenu {...userActions(user)} />
+        <div data-tour="super-admins-row-actions">
+          <RowActionsMenu {...userActions(user)} />
+        </div>
       </DataCardFooter>
     </DataCard>
   );
@@ -258,7 +260,9 @@ function SuperAdminsContent() {
             </TableCell>
             <TableCell className="text-text-secondary">{formatLastLogin(user.lastLoginAt)}</TableCell>
             <TableCell>
-              <RowActionsMenu {...userActions(user)} />
+              <div data-tour="super-admins-row-actions">
+                <RowActionsMenu {...userActions(user)} />
+              </div>
             </TableCell>
           </TableRow>
         ))}
@@ -267,24 +271,27 @@ function SuperAdminsContent() {
   );
 
   const kpiHeader = !loading && !error ? (
-    <StatCardGrid className="sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-      <StatCard
-        icon={<SuperAdminIcon />}
-        value={activeCount}
-        label={t('platform.superAdmins.kpis.active')}
-        variant="success"
-      />
-      <StatCard
-        icon={<SuperAdminIcon />}
-        value={users.length}
-        label={t('platform.superAdmins.kpis.total')}
-        accent="super-admins"
-      />
-    </StatCardGrid>
+    <div data-tour="super-admins-kpis">
+      <StatCardGrid className="sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+        <StatCard
+          icon={<SuperAdminIcon />}
+          value={activeCount}
+          label={t('platform.superAdmins.kpis.active')}
+          variant="success"
+        />
+        <StatCard
+          icon={<SuperAdminIcon />}
+          value={users.length}
+          label={t('platform.superAdmins.kpis.total')}
+          accent="super-admins"
+        />
+      </StatCardGrid>
+    </div>
   ) : undefined;
 
   const createForm = (
     <form
+      data-tour="super-admins-create-form"
       onSubmit={(e) => void handleSubmit(e)}
       className="grid gap-4 rounded-lg border border-section-super-admins-border bg-section-super-admins-subtle/40 p-4 sm:grid-cols-[1fr_auto]"
     >

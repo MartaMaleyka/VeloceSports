@@ -485,6 +485,7 @@ export function ParentHomePage() {
   return (
     <div className="ds-stagger-enter space-y-8">
       <div
+        data-tour="home-hero"
         className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
         style={{ ['--stagger-index' as string]: 0 }}
       >
@@ -516,6 +517,7 @@ export function ParentHomePage() {
       </div>
 
       <div
+        data-tour="home-child-tabs"
         className={cn(
           'ds-stagger-item grid gap-3',
           children.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2',
@@ -571,6 +573,7 @@ export function ParentHomePage() {
       <div className="ds-stagger-item space-y-2" style={{ ['--stagger-index' as string]: 2 }}>
         <p className="text-sm font-medium text-text-secondary">{t('parentDashboard.periodLabel')}</p>
         <div
+          data-tour="home-period-filter"
           className="inline-flex max-w-full flex-wrap gap-1 rounded-full border border-border bg-bg-muted/50 p-1"
           role="group"
           aria-label={t('parentDashboard.periodLabel')}
@@ -602,6 +605,7 @@ export function ParentHomePage() {
       {selectedChildId != null && (
         <div
           key={`${selectedChildId}-${period}`}
+          data-tour="home-dashboard-panel"
           className="ds-stagger-item"
           style={{ ['--stagger-index' as string]: 3 }}
         >

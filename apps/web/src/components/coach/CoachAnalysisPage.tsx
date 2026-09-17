@@ -346,7 +346,7 @@ function CoachAnalysisPageInner() {
         </div>
       </div>
 
-      <section className="rounded-xl border border-border bg-bg-surface">
+      <section className="rounded-xl border border-border bg-bg-surface" data-tour="analysis-filters">
         <button
           type="button"
           className="flex w-full min-h-touch items-center justify-between gap-3 px-4 py-3 text-left sm:px-5 md:pointer-events-none"
@@ -513,14 +513,14 @@ function CoachAnalysisPageInner() {
       </section>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-text-secondary" aria-live="polite">
+        <p className="text-sm text-text-secondary" aria-live="polite" data-tour="analysis-summary">
           {t('dashboard.coach.analysis.feedback', {
             players: meta.playerCount,
             actions: meta.totalActions,
             matches: meta.matchCount,
           })}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2" data-tour="analysis-actions">
           {!isMobile && (
             <ViewToggle
               value={viewMode}
@@ -577,10 +577,15 @@ function CoachAnalysisPageInner() {
         />
       ) : (
         <>
-          <CoachAnalysisTopChart title={chartTitle} data={topChartData} />
+          <div data-tour="analysis-chart">
+            <CoachAnalysisTopChart title={chartTitle} data={topChartData} />
+          </div>
 
           {viewMode === 'cards' || isMobile ? (
-            <ul className="ds-stagger-enter grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <ul
+              className="ds-stagger-enter grid grid-cols-1 gap-3 sm:grid-cols-2"
+              data-tour="analysis-player-list"
+            >
               {paged.map((player) => (
                 <li key={player.playerId} className="ds-stagger-item">
                   <button

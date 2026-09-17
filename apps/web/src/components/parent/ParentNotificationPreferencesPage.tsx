@@ -121,7 +121,7 @@ export default function ParentNotificationPreferencesPage() {
   if (!prefs) return null;
 
   return (
-    <div className="ds-stagger-enter mx-auto max-w-lg space-y-6">
+    <div data-tour="notifications-page" className="ds-stagger-enter mx-auto max-w-lg space-y-6">
       {error && (
         <Alert variant="error" title={t('parent.errors.title')}>
           {error}
@@ -129,6 +129,7 @@ export default function ParentNotificationPreferencesPage() {
       )}
 
       <section
+        data-tour="notifications-global-toggle"
         className={cn(
           'ds-stagger-item rounded-xl border p-5 sm:p-6 transition-[background-color,border-color] duration-[var(--motion-duration-fast)]',
           prefs.inAppEnabled
@@ -200,6 +201,7 @@ export default function ParentNotificationPreferencesPage() {
       )}
 
       <p
+        data-tour="notifications-email-note"
         className="ds-stagger-item flex items-start gap-2 rounded-lg border border-border bg-bg-muted/40 px-3 py-3 text-xs text-text-muted"
         style={{ ['--stagger-index' as string]: 2 }}
       >

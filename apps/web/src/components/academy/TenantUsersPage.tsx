@@ -347,33 +347,36 @@ function TenantUsersContent() {
   ];
 
   const kpiHeader = kpis ? (
-    <StatCardGrid columns={4}>
-      <StatCard
-        icon={<Users className="h-5 w-5" />}
-        label={t('tenant.users.kpis.total')}
-        value={String(kpis.totalUsers)}
-        delta={t('tenant.users.kpis.limit', { limit: kpis.planLimit })}
-      />
-      <StatCard
-        icon={<ShieldCheck className="h-5 w-5" />}
-        label={t('roles.academy_admin')}
-        value={String(kpis.byRole.academy_admin)}
-      />
-      <StatCard
-        icon={<ClipboardList className="h-5 w-5" />}
-        label={t('roles.coach')}
-        value={String(kpis.byRole.coach)}
-      />
-      <StatCard
-        icon={<Users className="h-5 w-5" />}
-        label={t('roles.parent')}
-        value={String(kpis.byRole.parent)}
-      />
-    </StatCardGrid>
+    <div data-tour="users-kpis">
+      <StatCardGrid columns={4}>
+        <StatCard
+          icon={<Users className="h-5 w-5" />}
+          label={t('tenant.users.kpis.total')}
+          value={String(kpis.totalUsers)}
+          delta={t('tenant.users.kpis.limit', { limit: kpis.planLimit })}
+        />
+        <StatCard
+          icon={<ShieldCheck className="h-5 w-5" />}
+          label={t('roles.academy_admin')}
+          value={String(kpis.byRole.academy_admin)}
+        />
+        <StatCard
+          icon={<ClipboardList className="h-5 w-5" />}
+          label={t('roles.coach')}
+          value={String(kpis.byRole.coach)}
+        />
+        <StatCard
+          icon={<Users className="h-5 w-5" />}
+          label={t('roles.parent')}
+          value={String(kpis.byRole.parent)}
+        />
+      </StatCardGrid>
+    </div>
   ) : null;
 
   return (
     <>
+      <div data-tour="users-list">
       <DataView
         items={filtered}
         isSourceEmpty={users.length === 0}
@@ -414,7 +417,12 @@ function TenantUsersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate} className="gap-1.5">
+          <Button
+            type="button"
+            data-tour="users-create-button"
+            onClick={openCreate}
+            className="gap-1.5"
+          >
             <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.users.createSubmit')}
           </Button>
@@ -482,6 +490,7 @@ function TenantUsersContent() {
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
+      </div>
 
       <Modal
         open={createOpen}

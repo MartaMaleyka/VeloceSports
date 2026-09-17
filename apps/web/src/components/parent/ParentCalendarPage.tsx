@@ -47,9 +47,11 @@ export default function ParentCalendarPage() {
   }
 
   return (
-    <ParentMatchCalendarPanel
-      hideTitle
-      showPlayerNames={activeChildrenCount > 1}
-    />
+    <div data-tour="calendar-overview">
+      <ParentMatchCalendarPanel
+        hideTitle
+        showPlayerNames={activeChildrenCount > 1}
+      />
+    </div>
   );
 }

@@ -290,45 +290,48 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
 
   const userKpiHeader =
     academy && !loading ? (
-      <StatCardGrid>
-        <StatCard
-          icon={<Users className="h-5 w-5" aria-hidden="true" />}
-          value={userKpis.total}
-          label={t('platform.academies.users.kpis.total')}
-        />
-        <StatCard
-          icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
-          value={
-            planLimit !== null
-              ? t('platform.academies.users.kpis.limitUsage', {
-                  current: academy.userCount,
-                  max: planLimit,
-                })
-              : '—'
-          }
-          label={t('platform.academies.users.kpis.limit')}
-          variant={atUserLimit ? 'warning' : 'default'}
-        />
-        <StatCard
-          icon={<Users className="h-5 w-5" aria-hidden="true" />}
-          value={userKpis.admins}
-          label={t('platform.academies.users.kpis.admins')}
-        />
-        <StatCard
-          icon={<Users className="h-5 w-5" aria-hidden="true" />}
-          value={userKpis.coaches}
-          label={t('platform.academies.users.kpis.coaches')}
-        />
-        <StatCard
-          icon={<Users className="h-5 w-5" aria-hidden="true" />}
-          value={userKpis.parents}
-          label={t('platform.academies.users.kpis.parents')}
-        />
-      </StatCardGrid>
+      <div data-tour="academy-detail-user-kpis">
+        <StatCardGrid>
+          <StatCard
+            icon={<Users className="h-5 w-5" aria-hidden="true" />}
+            value={userKpis.total}
+            label={t('platform.academies.users.kpis.total')}
+          />
+          <StatCard
+            icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
+            value={
+              planLimit !== null
+                ? t('platform.academies.users.kpis.limitUsage', {
+                    current: academy.userCount,
+                    max: planLimit,
+                  })
+                : '—'
+            }
+            label={t('platform.academies.users.kpis.limit')}
+            variant={atUserLimit ? 'warning' : 'default'}
+          />
+          <StatCard
+            icon={<Users className="h-5 w-5" aria-hidden="true" />}
+            value={userKpis.admins}
+            label={t('platform.academies.users.kpis.admins')}
+          />
+          <StatCard
+            icon={<Users className="h-5 w-5" aria-hidden="true" />}
+            value={userKpis.coaches}
+            label={t('platform.academies.users.kpis.coaches')}
+          />
+          <StatCard
+            icon={<Users className="h-5 w-5" aria-hidden="true" />}
+            value={userKpis.parents}
+            label={t('platform.academies.users.kpis.parents')}
+          />
+        </StatCardGrid>
+      </div>
     ) : undefined;
 
   const createUserForm = (
     <form
+      data-tour="academy-detail-create-user-form"
       onSubmit={(e) => void handleCreateUser(e)}
       className="grid gap-4 rounded-lg border border-border bg-bg-surface p-4 sm:grid-cols-3"
     >
@@ -389,7 +392,10 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
   return (
     <div className="space-y-8">
       {academy && (
-        <section className="ds-brand-card ds-card-interactive border-l-[3px] border-section-brand-fg p-5 sm:p-6">
+        <section
+          data-tour="academy-detail-header"
+          className="ds-brand-card ds-card-interactive border-l-[3px] border-section-brand-fg p-5 sm:p-6"
+        >
           <div className="flex flex-wrap items-start gap-4">
             <div
               className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient font-display text-xl font-bold text-text-on-primary shadow-brand"
@@ -425,6 +431,7 @@ function AcademyDetailContent({ academyId }: AcademyDetailPageProps) {
                         `/dashboard/super-admin/academies/${academy.id}/edit`,
                       );
                     }}
+                    data-tour="academy-detail-edit-button"
                   >
                     {t('common.edit')}
                   </Button>

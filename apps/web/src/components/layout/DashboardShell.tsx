@@ -17,6 +17,10 @@ import { resolveCoachPage, type CoachPageId } from '../../lib/coach-pages';
 import { resolveParentPage, type ParentPageId } from '../../lib/parent-pages';
 import { resolvePlayerPage, type PlayerPageId } from '../../lib/player-pages';
 import type { ComponentType } from 'react';
+import { getTourDefinition, getTourKey } from '../tour/tourRegistry';
+import { useGuidedTour } from '../tour/useGuidedTour';
+import { GuidedTour } from '../tour/GuidedTour';
+import { GuidedTourButton } from '../tour/GuidedTourButton';
 
 function resolveDashboardPage(
   contentKey: DashboardContentKey,
@@ -41,6 +45,7 @@ function resolveDashboardPage(
 }
 
 interface DashboardShellInnerProps {
+  userId: number;
   roles: LoginRole[];
   primaryRole: LoginRole;
   activeNavId: string;
@@ -55,6 +60,7 @@ interface DashboardShellInnerProps {
 }
 
 function DashboardShellInner({
+  userId,
   roles,
   primaryRole,
   activeNavId,
@@ -85,8 +91,13 @@ function DashboardShellInner({
   const sectionAccent = headerSectionAccent ?? sectionAccentFromNavId(activeNavId);
   const showParentBell = roles.includes('parent');
 
+  const tourSteps = getTourDefinition(contentKey, pageId);
+  const tourKey = pageId ? getTourKey(contentKey, pageId) : null;
+  const tour = useGuidedTour(userId, tourKey, tourSteps);
+
   const headerActions = (
     <div className="flex items-center gap-2">
+      {tourSteps && <GuidedTourButton onClick={tour.restart} />}
       {showParentBell && <ParentNotificationBell />}
       <PreferenceToggles />
     </div>
@@ -133,8 +144,11 @@ function DashboardShellInner({
             </button>
             <span className="text-sm font-medium text-text-primary">{t('common.appName')}</span>
           </div>
-          <PreferenceToggles />
-          {showParentBell && <ParentNotificationBell />}
+          <div className="flex items-center gap-2">
+            {tourSteps && <GuidedTourButton onClick={tour.restart} />}
+            <PreferenceToggles />
+            {showParentBell && <ParentNotificationBell />}
+          </div>
         </div>
 
         <ModuleHeader
@@ -180,12 +194,23 @@ function DashboardShellInner({
           )}
         </main>
       </div>
+
+      {tour.isOpen && tourSteps && (
+        <GuidedTour
+          steps={tourSteps}
+          stepIndex={tour.stepIndex}
+          onNext={tour.next}
+          onPrev={tour.prev}
+          onSkip={tour.skip}
+        />
+      )}
     </div>
   );
 }
 
 export interface DashboardShellProps {
   initialLocale: Locale;
+  userId: number;
   role: LoginRole;
   roles?: LoginRole[];
   activeNavId: string;
@@ -201,6 +226,7 @@ export interface DashboardShellProps {
 
 export default function DashboardShell({
   initialLocale,
+  userId,
   role,
   roles,
   activeNavId,
@@ -217,6 +243,7 @@ export default function DashboardShell({
   return (
     <I18nProvider initialLocale={initialLocale}>
       <DashboardShellInner
+        userId={userId}
         roles={sessionRoles}
         primaryRole={role}
         activeNavId={activeNavId}

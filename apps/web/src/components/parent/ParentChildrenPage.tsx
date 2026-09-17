@@ -199,13 +199,14 @@ function ParentChildrenContent() {
   }));
 
   return (
-    <>
+    <div data-tour="children-page">
       {pendingCount > 0 && (
         <Alert variant="info" title={t('parent.children.pendingBannerTitle')} className="mb-6">
           {t('parent.children.pendingBanner', { count: pendingCount })}
         </Alert>
       )}
 
+      <div data-tour="children-list">
       <DataView
         items={children}
         isSourceEmpty={children.length === 0}
@@ -354,6 +355,7 @@ function ParentChildrenContent() {
         emptyActionLabel={t('parent.children.enroll')}
         onEmptyAction={openEnroll}
       />
+      </div>
 
       <Modal
         open={modalOpen}
@@ -451,7 +453,7 @@ function ParentChildrenContent() {
           }}
         />
       )}
-    </>
+    </div>
   );
 }
 

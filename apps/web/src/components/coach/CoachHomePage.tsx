@@ -131,6 +131,7 @@ export default function CoachHomePage() {
       <div
         className="ds-stagger-item ds-academy-hero px-5 py-8 sm:px-8 sm:py-10"
         style={{ ['--stagger-index' as string]: 0 }}
+        data-tour="home-hero"
       >
         <div className="ds-academy-hero__speed-pattern" aria-hidden="true" />
         <div className="relative z-[1]">
@@ -146,7 +147,11 @@ export default function CoachHomePage() {
         </div>
       </div>
 
-      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
+      <div
+        className="ds-stagger-item"
+        style={{ ['--stagger-index' as string]: 1 }}
+        data-tour="home-kpis"
+      >
         <StatCardGrid columns={2}>
           <StatCard
             icon={<Layers className="h-5 w-5" />}
@@ -213,7 +218,11 @@ export default function CoachHomePage() {
         </section>
       )}
 
-      <section className="ds-stagger-item space-y-4" style={{ ['--stagger-index' as string]: 3 }}>
+      <section
+        className="ds-stagger-item space-y-4"
+        style={{ ['--stagger-index' as string]: 3 }}
+        data-tour="home-attention"
+      >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.coach.home.attentionTitle')}
         </h2>
@@ -260,6 +269,7 @@ export default function CoachHomePage() {
       <section
         className="ds-stagger-item grid gap-4 sm:grid-cols-3"
         style={{ ['--stagger-index' as string]: 4 }}
+        data-tour="home-quick-links"
       >
         {[
           { href: `${BASE}/categories`, title: t('dashboard.coach.categories.title') },

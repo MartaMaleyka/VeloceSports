@@ -67,7 +67,12 @@ function ParentChildMatchesContent({
   if (playerId <= 0) {
     return (
       <div className="space-y-4">
-        <Button type="button" variant="secondary" onClick={() => { window.location.href = backPath; }}>
+        <Button
+          type="button"
+          variant="secondary"
+          data-tour="childMatches-back"
+          onClick={() => { window.location.href = backPath; }}
+        >
           ← {t('reportCard.backToChildren')}
         </Button>
         <Alert variant="error" title={t('reportCard.errors.title')}>
@@ -79,10 +84,16 @@ function ParentChildMatchesContent({
 
   return (
     <div className="space-y-4">
-      <Button type="button" variant="secondary" onClick={() => { window.location.href = backPath; }}>
+      <Button
+        type="button"
+        variant="secondary"
+        data-tour="childMatches-back"
+        onClick={() => { window.location.href = backPath; }}
+      >
         ← {t('reportCard.backToChildren')}
       </Button>
 
+      <div data-tour="childMatches-list">
       <DataView
         items={matches}
         isSourceEmpty={matches.length === 0}
@@ -161,6 +172,7 @@ function ParentChildMatchesContent({
         emptyTitle={t('reportCard.emptyMatches')}
         emptyDescription={t('reportCard.emptyMatchesDescription')}
       />
+      </div>
     </div>
   );
 }

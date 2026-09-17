@@ -127,6 +127,7 @@ function PlayerProfilePageInner() {
             onClick={() => setPhotoOpen(true)}
             className="group relative min-h-touch min-w-touch rounded-full focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus-ring)]"
             aria-label={t('dashboard.player.profile.changePhoto')}
+            data-tour="profile-avatar"
           >
             <PlayerAvatar
               player={profile}
@@ -159,7 +160,7 @@ function PlayerProfilePageInner() {
             <Badge variant="default">{t(tenantPlayerStatusKey(profile.status))}</Badge>
           </div>
 
-          <dl className="grid gap-3 sm:grid-cols-2">
+          <dl className="grid gap-3 sm:grid-cols-2" data-tour="profile-info">
             <div className="rounded-lg border border-border bg-bg-subtle/60 px-3 py-2.5">
               <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
                 {t('dashboard.player.profile.jersey')}
@@ -189,6 +190,7 @@ function PlayerProfilePageInner() {
       <section
         className="ds-stagger-item rounded-xl border border-border bg-bg-surface p-4 sm:p-6"
         style={{ ['--stagger-index' as string]: 1 }}
+        data-tour="profile-edit-form"
       >
         <div className="mb-4 space-y-1">
           <h3 className="font-display text-lg font-semibold text-text-primary">
@@ -250,7 +252,12 @@ function PlayerProfilePageInner() {
           </div>
 
           <div className="flex flex-wrap gap-3 pt-1">
-            <Button type="submit" className="min-h-touch" disabled={submitting}>
+            <Button
+              type="submit"
+              className="min-h-touch"
+              disabled={submitting}
+              data-tour="profile-save"
+            >
               {submitting ? t('common.saving') : t('dashboard.player.profile.save')}
             </Button>
           </div>

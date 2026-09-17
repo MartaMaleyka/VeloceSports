@@ -375,33 +375,35 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   }));
 
   const kpiHeader = kpis ? (
-    <StatCardGrid columns={3}>
-      <StatCard
-        icon={<Calendar className="h-5 w-5" />}
-        label={t('matches.kpis.upcoming')}
-        value={kpis.upcomingCount}
-      />
-      <StatCard
-        icon={
-          <span className="relative inline-flex">
-            <CircleDot className="h-5 w-5" />
-            {kpis.inProgressCount > 0 && (
-              <span
-                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-action-primary ds-pulse-dot"
-                aria-hidden="true"
-              />
-            )}
-          </span>
-        }
-        label={t('matches.kpis.inProgress')}
-        value={kpis.inProgressCount}
-      />
-      <StatCard
-        icon={<CheckCircle2 className="h-5 w-5" />}
-        label={t('matches.kpis.playedMonth')}
-        value={kpis.playedThisMonth}
-      />
-    </StatCardGrid>
+    <div data-tour="matches-list-kpis">
+      <StatCardGrid columns={3}>
+        <StatCard
+          icon={<Calendar className="h-5 w-5" />}
+          label={t('matches.kpis.upcoming')}
+          value={kpis.upcomingCount}
+        />
+        <StatCard
+          icon={
+            <span className="relative inline-flex">
+              <CircleDot className="h-5 w-5" />
+              {kpis.inProgressCount > 0 && (
+                <span
+                  className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-action-primary ds-pulse-dot"
+                  aria-hidden="true"
+                />
+              )}
+            </span>
+          }
+          label={t('matches.kpis.inProgress')}
+          value={kpis.inProgressCount}
+        />
+        <StatCard
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          label={t('matches.kpis.playedMonth')}
+          value={kpis.playedThisMonth}
+        />
+      </StatCardGrid>
+    </div>
   ) : null;
 
   return (
@@ -418,6 +420,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder={t('matches.searchPlaceholder')}
+        searchTourId="matches-list-search"
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         statusFilterLabel={t('matches.filterStatus')}
@@ -425,6 +428,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
           { value: '', label: t('tenant.filters.all') },
           ...MATCH_STATUSES.map((s) => ({ value: s, label: t(matchStatusKey(s)) })),
         ]}
+        statusFilterTourId="matches-list-status-filter"
         secondaryFilter={categoryFilter}
         onSecondaryFilterChange={setCategoryFilter}
         secondaryFilterLabel={t('matches.filterCategory')}
@@ -432,9 +436,11 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
           { value: '', label: t('tenant.filters.all') },
           ...categories.map((c) => ({ value: String(c.id), label: c.name })),
         ]}
+        secondaryFilterTourId="matches-list-category-filter"
         toolbarExtra={
           <Button
             type="button"
+            data-tour="matches-list-create-button"
             onClick={openCreate}
             disabled={categories.length === 0}
             className="gap-1.5"

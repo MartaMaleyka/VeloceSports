@@ -1844,4 +1844,226 @@ export const es = {
     appDescription: 'Plataforma para academias de fútbol formativo',
     loginTitle: 'Iniciar sesión — SquadVeloce',
   },
+  tour: {
+    dialogLabel: 'Guía de la pantalla',
+    stepCount: 'Paso {current} de {total}',
+    back: 'Atrás',
+    next: 'Siguiente',
+    finish: 'Entendido',
+    skip: 'Omitir',
+    replay: '¿Cómo funciona esta pantalla?',
+    superAdmin: {
+      home: {
+        hero: { title: 'Tu panel general', body: 'Aquí ves el estado completo de la plataforma: academias, usuarios e ingresos.' },
+        kpis: { title: 'Métricas clave', body: 'Academias activas, usuarios totales, MRR y morosidad, todo en un vistazo.' },
+        billing: { title: 'Facturación del mes', body: 'Cuánto facturaste, cuánto cobraste y cuánto sigue pendiente este mes.' },
+        attention: { title: 'Requiere atención', body: 'Academias suspendidas por pago y facturas vencidas que necesitan seguimiento.' },
+        quickLinks: { title: 'Accesos rápidos', body: 'Salta directo a planes, academias, facturación o auditoría desde aquí.' },
+      },
+      invoicesList: {
+        kpis: { title: 'Resumen de facturas', body: 'Total facturado, pendientes, vencidas y pagadas del mes seleccionado.' },
+        monthFilter: { title: 'Cambia el mes', body: 'Elige el período de facturación que quieres revisar.' },
+        processOverdue: { title: 'Procesa vencidas', body: 'Marca como vencidas las facturas impagas y suspende automáticamente si aplica.' },
+        create: { title: 'Genera una factura', body: 'Crea una factura manual para una academia y un período específico.' },
+      },
+      auditLog: {
+        kpis: { title: 'Actividad total', body: 'Cuántos eventos se registraron y cuál es la acción más frecuente.' },
+        filters: { title: 'Filtra el registro', body: 'Busca por academia, usuario, entidad, acción o rango de fechas.' },
+        viewDetail: { title: 'Mira el detalle', body: 'Abre un evento para ver exactamente qué cambió y quién lo hizo.' },
+      },
+      plansList: {
+        kpis: { title: 'Resumen de planes', body: 'Cuántos planes tienes en total, activos e inactivos.' },
+        planDetails: { title: 'Precio y límites', body: 'Cada plan muestra su precio y los límites que verá la academia.' },
+        create: { title: 'Crea un plan', body: 'Define precio, límites y estado para ofrecerlo a las academias.' },
+        rowActions: { title: 'Edita o desactiva', body: 'Cambia los datos del plan o desactívalo para que ya no esté disponible.' },
+      },
+      planForm: {
+        name: { title: 'Nombre del plan', body: 'Así lo verán las academias al elegirlo.' },
+        pricing: { title: 'Define el precio', body: 'Cuota anual y precio por jugador que se factura cada mes.' },
+        limits: { title: 'Límites del plan', body: 'Cuántos jugadores, categorías, usuarios y partidos incluye.' },
+        submit: { title: 'Guarda el plan', body: 'Crea o actualiza el plan para que quede disponible de inmediato.' },
+      },
+      academiesList: {
+        kpis: { title: 'Estado general', body: 'Academias totales, activas, suspendidas y usuarios en la plataforma.' },
+        create: { title: 'Registra una academia', body: 'Crea la cuenta, asigna un plan y genera el acceso del admin.' },
+        rowActions: { title: 'Gestiona cada academia', body: 'Aprueba solicitudes, edita datos o suspende y reactiva el acceso.' },
+        billingStatus: { title: 'Estado de pago', body: 'Ve si la academia está al día, atrasada o suspendida por facturación.' },
+      },
+      academyForm: {
+        name: { title: 'Nombre de la academia', body: 'Así se identificará en toda la plataforma.' },
+        plan: { title: 'Elige un plan', body: 'Define los límites y el precio que se le facturará.' },
+        billingAnchor: { title: 'Día de corte', body: 'El día del mes en que se genera su factura mensual.' },
+        submit: { title: 'Guarda los cambios', body: 'Crea la academia o actualiza sus datos según corresponda.' },
+      },
+      academyDetail: {
+        header: { title: 'Datos de la academia', body: 'Plan, facturación estimada y sus períodos de cobro actual y siguiente.' },
+        edit: { title: 'Edita la academia', body: 'Cambia el nombre, el slug, el plan o el día de facturación.' },
+        userKpis: { title: 'Usuarios de la academia', body: 'Total de usuarios, límite del plan, admins, entrenadores y padres.' },
+        createUser: { title: 'Agrega un usuario', body: 'Crea un admin, entrenador o padre directamente desde aquí.' },
+      },
+      superAdmins: {
+        kpis: { title: 'Súper admins activos', body: 'Cuántas cuentas tienen acceso total a la plataforma.' },
+        createForm: { title: 'Invita un súper admin', body: 'Dale acceso total a la plataforma con solo su correo.' },
+        rowActions: { title: 'Activa o desactiva', body: 'Quita el acceso de un súper admin sin borrar su cuenta.' },
+      },
+      personalAccountsList: {
+        kpis: { title: 'Solicitudes de cuentas', body: 'Total, pendientes, aprobadas y rechazadas.' },
+        accountInfo: { title: 'Datos de la solicitud', body: 'Nombre de la cuenta, fecha de la solicitud y su estado actual.' },
+        rowActions: { title: 'Aprueba o rechaza', body: 'Revisa la solicitud y decide si le das acceso a la cuenta.' },
+      },
+    },
+    academyAdmin: {
+      home: {
+        hero: { title: 'Tu academia de un vistazo', body: 'Aquí ves el nombre de tu academia y sus números principales: jugadores activos, categorías y próximos partidos.' },
+        kpis: { title: 'Métricas clave', body: 'Un resumen rápido de jugadores, categorías, usuarios, partidos y tu plan de facturación.' },
+        attention: { title: 'Qué necesita tu atención', body: 'Aquí aparecerán pendientes importantes, como jugadores por aprobar o facturas por pagar.' },
+        quickLinks: { title: 'Accesos rápidos', body: 'Desde aquí saltas directo a usuarios, categorías, jugadores, partidos y facturación.' },
+      },
+      billing: {
+        planSummary: { title: 'Tu plan actual', body: 'Aquí ves el nombre de tu plan, su precio y el estado de tu facturación.' },
+        periodInfo: { title: 'Fechas de facturación', body: 'Consulta el día de corte, el periodo actual, el siguiente y la fecha de pago.' },
+        invoicesList: { title: 'Historial de facturas', body: 'Revisa tus facturas anteriores y descarga el PDF de cualquiera de ellas.' },
+      },
+      users: {
+        kpis: { title: 'Usuarios de tu academia', body: 'Total de usuarios y cuántos tienes por rol: administradores, entrenadores y padres.' },
+        create: { title: 'Invita a un usuario', body: 'Crea cuentas para entrenadores, padres u otros administradores desde aquí.' },
+        list: { title: 'Busca y filtra usuarios', body: 'Encuentra usuarios por nombre o correo, filtra por rol o estado, y gestiona cada uno.' },
+      },
+      categories: {
+        kpis: { title: 'Tus categorías', body: 'Cuántas categorías tienes en total y cuántas todavía no tienen entrenador asignado.' },
+        create: { title: 'Crea una categoría', body: 'Define el rango de edad, si requiere tutor y asigna un entrenador.' },
+        list: { title: 'Busca y filtra categorías', body: 'Encuentra categorías por nombre, filtra por estado y edita cada una.' },
+      },
+      actions: {
+        kpis: { title: 'Catálogo de acciones', body: 'Cuántas acciones tienes activas, cuáles notifican a los padres y su distribución por impacto.' },
+        create: { title: 'Crea una acción', body: 'Define un código, nombre, impacto y si debe notificar a los padres al registrarse.' },
+        list: { title: 'Busca y filtra acciones', body: 'Encuentra acciones por nombre o código, y filtra por impacto o estado.' },
+      },
+      players: {
+        kpis: { title: 'Tus jugadores', body: 'Jugadores activos, pendientes de aprobación y cuántas categorías los agrupan.' },
+        create: { title: 'Agrega un jugador', body: 'Registra un nuevo jugador y vincúlalo con sus padres o tutores.' },
+        list: { title: 'Busca y filtra jugadores', body: 'Encuentra jugadores por nombre, filtra por estado o categoría, y aprueba solicitudes.' },
+      },
+      settings: {
+        profile: { title: 'Perfil de tu academia', body: 'Actualiza el nombre, logo y datos de contacto de tu academia.' },
+        regional: { title: 'Zona horaria e idioma', body: 'Ajusta la zona horaria, el idioma y la moneda que usa tu academia.' },
+        notifications: { title: 'Notificaciones', body: 'Activa o desactiva el envío de notificaciones a los usuarios de tu academia.' },
+        readonly: { title: 'Datos gestionados por la plataforma', body: 'Tu plan, estado y límites de uso los administra la plataforma; contáctanos para cambiarlos.' },
+      },
+      reports: {
+        hint: { title: 'Reportes de tu academia', body: 'Genera reportes exportables de jugadores, usuarios, categorías y partidos.' },
+        cardsGrid: { title: 'Filtra antes de exportar', body: 'Cada tarjeta tiene sus propios filtros; ajústalos antes de generar el reporte.' },
+        exportPdf: { title: 'Exporta en PDF o CSV', body: 'Descarga el reporte en el formato que prefieras.' },
+      },
+    },
+    coach: {
+      home: {
+        hero: { title: 'Tu resumen del día', body: 'Aquí ves un vistazo rápido de tus categorías y lo que se viene.' },
+        kpis: { title: 'Indicadores clave', body: 'Categorías, partidos por jugar, jugados este mes y en curso.' },
+        attention: { title: 'Qué necesita tu atención', body: 'Partidos en vivo o próximos a jugarse que requieren una acción tuya.' },
+        quickLinks: { title: 'Accesos directos', body: 'Entra rápido a categorías, jugadores o partidos desde aquí.' },
+      },
+      categories: {
+        grid: { title: 'Tus categorías', body: 'Cada tarjeta resume una categoría que entrenas.' },
+        card: { title: 'Un vistazo por categoría', body: 'Toca una tarjeta para ver la plantilla completa de esa categoría.' },
+        playerCount: { title: 'Jugadores convocados', body: 'Cuántos jugadores tiene la categoría y quiénes son, en un vistazo.' },
+      },
+      players: {
+        categoryFilter: { title: 'Filtra por categoría', body: 'Muestra solo los jugadores de la categoría que elijas.' },
+        grid: { title: 'Tu plantilla', body: 'Todos los jugadores convocados en tus categorías.' },
+        card: { title: 'Ficha rápida del jugador', body: 'Foto, dorsal y categoría de cada jugador.' },
+        viewMatches: { title: 'Ver sus partidos', body: 'Te lleva a los partidos de la categoría de este jugador.' },
+      },
+      analysis: {
+        filters: { title: 'Filtra el análisis', body: 'Combina categoría, partido, fechas, tipo de acción e impacto.' },
+        summary: { title: 'Resumen de resultados', body: 'Cuántos jugadores, acciones y partidos entran en el filtro actual.' },
+        actions: { title: 'Vista y exportación', body: 'Cambia entre tarjetas y tabla, o exporta el reporte en PDF o CSV.' },
+        chart: { title: 'Ranking de jugadores', body: 'Los jugadores con más acciones según el filtro aplicado.' },
+        playerList: { title: 'Compara jugadores', body: 'Toca a un jugador para ver su análisis detallado.' },
+      },
+      analysisPlayerDetail: {
+        back: { title: 'Volver a la comparativa', body: 'Regresa al listado de análisis de jugadores.' },
+        header: { title: 'Ficha del jugador', body: 'Datos del jugador y el filtro de fechas o partido aplicado.' },
+        stats: { title: 'Resumen de rendimiento', body: 'Partidos, minutos, acciones totales y su acción más frecuente.' },
+        matches: { title: 'Historial de partidos', body: 'Cada partido jugado, con minutos y acciones registradas.' },
+        observations: { title: 'Observaciones del cuerpo técnico', body: 'Notas que tú u otros entrenadores dejaron sobre este jugador.' },
+      },
+    },
+    parent: {
+      home: {
+        hero: { title: 'Tu panel principal', body: 'Aquí verás un resumen rápido de tus hijos: partidos, minutos y estadísticas.' },
+        childTabs: { title: 'Elige un hijo', body: 'Si tienes más de uno registrado, cambia aquí para ver su información.' },
+        periodFilter: { title: 'Filtra por periodo', body: 'Elige un mes o revisa todo el historial para ajustar las estadísticas de abajo.' },
+        dashboardPanel: { title: 'Resumen y estadísticas', body: 'Aquí aparecerán los partidos, minutos y acciones de tu hijo/a a medida que se registren.' },
+      },
+      calendar: {
+        overview: { title: 'Calendario de partidos', body: 'Consulta los próximos partidos y revisa los ya jugados; desde ahí puedes abrir la tarjeta de reporte de cada uno.' },
+      },
+      notifications: {
+        page: { title: 'Tus notificaciones', body: 'Desde aquí controlas qué avisos recibes sobre los partidos de tus hijos.' },
+        globalToggle: { title: 'Activar o desactivar todo', body: 'Este interruptor controla si recibes notificaciones dentro de la app. Actívalo o desactívalo cuando quieras.' },
+        emailNote: { title: 'Más canales próximamente', body: 'Por ahora las notificaciones llegan dentro de la app; pronto sumaremos aviso por correo.' },
+      },
+      children: {
+        page: { title: 'Tus hijos', body: 'Administra a los jugadores registrados: revisa su estado y agrega uno nuevo si lo necesitas.' },
+        list: { title: 'Estado y acciones', body: 'Cada tarjeta muestra el estado de aprobación y te permite editar los datos o ver las tarjetas de reporte de sus partidos.' },
+      },
+      childMatches: {
+        back: { title: 'Volver a tus hijos', body: 'Usa este botón para regresar al listado de hijos en cualquier momento.' },
+        list: { title: 'Partidos y reportes', body: 'Aquí aparecen los partidos de tu hijo/a; abre "Ver tarjeta" para revisar el reporte detallado de cada uno.' },
+      },
+    },
+    player: {
+      home: {
+        hero: { title: 'Tu resumen de jugador', body: 'Aquí ves tu foto, tu categoría y tu dorsal. Así te reconocen en la academia.' },
+        goProfile: { title: 'Ve a tu perfil', body: 'Entra aquí para revisar y actualizar tus datos personales.' },
+        goMatches: { title: 'Revisa tus partidos', body: 'Aquí encuentras el historial de tus partidos y tus fichas.' },
+        goReports: { title: 'Lee tus reportes', body: 'Descubre los comentarios que tus entrenadores dejan sobre tu progreso.' },
+      },
+      profile: {
+        avatar: { title: 'Cambia tu foto', body: 'Toca tu foto cuando quieras actualizarla.' },
+        info: { title: 'Dorsal y categoría', body: 'Estos datos los asigna tu academia, por eso no puedes editarlos aquí.' },
+        editForm: { title: 'Edita tus datos', body: 'Actualiza tu nombre, fecha de nacimiento y posición cuando lo necesites.' },
+        save: { title: 'Guarda los cambios', body: 'No olvides tocar aquí después de editar tu información.' },
+      },
+      matches: {
+        list: { title: 'Tu historial de partidos', body: 'Aquí verás cada partido con ficha capturada por tu entrenador.' },
+        viewReport: { title: 'Ve tu ficha', body: 'Toca este botón para revisar tus acciones en ese partido.' },
+      },
+      calendar: {
+        root: { title: 'Tu calendario de partidos', body: 'Aquí ves tus próximos partidos y los que ya jugaste.' },
+        tabs: { title: 'Próximos y recientes', body: 'Cambia entre tus próximos partidos y los que ya jugaste.' },
+        relativeLabel: { title: 'Cuenta regresiva al partido', body: 'Te decimos cuánto falta para tu próximo partido.' },
+      },
+      reports: {
+        intro: { title: 'Comentarios de tus entrenadores', body: 'Aquí lees lo que piensan sobre tu progreso en cada partido.' },
+        observations: { title: 'Historial de observaciones', body: 'Encuentra los comentarios generales y los de cada partido, organizados aquí.' },
+      },
+    },
+    shared: {
+      matchesList: {
+        kpis: { title: 'Resumen de partidos', body: 'Aquí ves de un vistazo los próximos partidos, los que están en curso y los jugados este mes.' },
+        search: { title: 'Busca un partido', body: 'Escribe el rival, la categoría o el lugar para encontrar un partido rápido.' },
+        statusFilter: { title: 'Filtra por estado', body: 'Muestra solo los partidos programados, en curso, finalizados o cancelados.' },
+        categoryFilter: { title: 'Filtra por categoría', body: 'Limita la lista a una sola categoría cuando manejas varios equipos.' },
+        createButton: { title: 'Crea un partido', body: 'Programa un partido nuevo con rival, categoría, fecha y lugar.' },
+      },
+      matchDetail: {
+        header: { title: 'Datos del partido', body: 'Aquí ves el rival, la categoría, el tipo de partido y su estado actual.' },
+        summary: { title: 'Resumen general', body: 'Consulta fecha, lugar, periodos de juego y quién creó el partido desde la pestaña Resumen.' },
+        clock: { title: 'Cronómetro del partido', body: 'Controla el minuto y el periodo en juego: puedes pausar, reanudar o pasar al siguiente periodo.' },
+        players: { title: 'Elige al jugador', body: 'Toca un jugador en cancha para empezar a registrarle una jugada.' },
+        actions: { title: 'Registra la jugada', body: 'Con el jugador seleccionado, toca la acción (gol, falta, asistencia...) para registrarla al instante.' },
+        lastPlay: { title: 'Última jugada registrada', body: 'Confirma aquí lo que acabas de anotar. Tienes unos segundos para deshacerla si te equivocas.' },
+        voice: { title: 'Registro por voz', body: 'Activa el micrófono y di el dorsal y la acción ("5, gol") para registrar jugadas sin tocar la pantalla.' },
+      },
+      matchReportCard: {
+        header: { title: 'Ficha del jugador', body: 'Foto, dorsal y datos del partido: rival, categoría y fecha.' },
+        chart: { title: 'Rendimiento en el partido', body: 'Cambia entre radar y barras arriba para ver las acciones del jugador por dimensión.' },
+        motivation: { title: 'Mensaje destacado', body: 'Una frase motivacional según el punto fuerte del jugador en este partido.' },
+        footer: { title: 'Minutos y compartir', body: 'Revisa los minutos jugados y comparte la ficha con un enlace.' },
+        observations: { title: 'Observaciones del coach', body: 'Aquí aparecen las notas del coach sobre este jugador, generales y de este partido.' },
+      },
+    },
+  },
 } as const;

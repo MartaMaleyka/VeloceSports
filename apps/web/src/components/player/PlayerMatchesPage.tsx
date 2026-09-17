@@ -48,6 +48,7 @@ export default function PlayerMatchesPage() {
   const reportPath = (matchId: number) => appPath(`/dashboard/player/matches/${matchId}`);
 
   return (
+    <div data-tour="matches-list">
     <DataView
       items={matches}
       isSourceEmpty={matches.length === 0}
@@ -82,6 +83,7 @@ export default function PlayerMatchesPage() {
             <Button
               type="button"
               className="min-h-touch"
+              data-tour="matches-view-report"
               onClick={() => {
                 window.location.href = reportPath(match.matchId);
               }}
@@ -133,5 +135,6 @@ export default function PlayerMatchesPage() {
         </div>
       )}
     />
+    </div>
   );
 }

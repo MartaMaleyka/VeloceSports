@@ -508,24 +508,26 @@ function TenantPlayersContent() {
   ];
 
   const kpiHeader = kpis ? (
-    <StatCardGrid columns={3}>
-      <StatCard
-        icon={<User className="h-5 w-5" />}
-        label={t('tenant.players.kpis.active')}
-        value={kpis.activePlayers}
-        delta={t('tenant.players.kpis.limit', { limit: kpis.planLimit })}
-      />
-      <StatCard
-        icon={<UserRoundCheck className="h-5 w-5" />}
-        label={t('tenant.players.kpis.pending')}
-        value={kpis.pendingCount}
-      />
-      <StatCard
-        icon={<Layers className="h-5 w-5" />}
-        label={t('tenant.players.kpis.categories')}
-        value={kpis.byCategory.length}
-      />
-    </StatCardGrid>
+    <div data-tour="players-kpis">
+      <StatCardGrid columns={3}>
+        <StatCard
+          icon={<User className="h-5 w-5" />}
+          label={t('tenant.players.kpis.active')}
+          value={kpis.activePlayers}
+          delta={t('tenant.players.kpis.limit', { limit: kpis.planLimit })}
+        />
+        <StatCard
+          icon={<UserRoundCheck className="h-5 w-5" />}
+          label={t('tenant.players.kpis.pending')}
+          value={kpis.pendingCount}
+        />
+        <StatCard
+          icon={<Layers className="h-5 w-5" />}
+          label={t('tenant.players.kpis.categories')}
+          value={kpis.byCategory.length}
+        />
+      </StatCardGrid>
+    </div>
   ) : null;
 
   return (
@@ -541,6 +543,7 @@ function TenantPlayersContent() {
         </Alert>
       )}
 
+      <div data-tour="players-list">
       <DataView
         items={filtered}
         isSourceEmpty={players.length === 0}
@@ -580,7 +583,12 @@ function TenantPlayersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate} className="gap-1.5">
+          <Button
+            type="button"
+            data-tour="players-create-button"
+            onClick={openCreate}
+            className="gap-1.5"
+          >
             <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.players.create')}
           </Button>
@@ -683,6 +691,7 @@ function TenantPlayersContent() {
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
+      </div>
 
       <Modal
         open={modalOpen}

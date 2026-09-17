@@ -172,6 +172,7 @@ export default function CoachPlayersPage() {
         style={{ ['--stagger-index' as string]: 0 }}
         role="group"
         aria-label={t('dashboard.coach.players.filterAll')}
+        data-tour="players-category-filter"
       >
         <button
           type="button"
@@ -213,14 +214,17 @@ export default function CoachPlayersPage() {
           icon={<Users className="h-10 w-10" aria-hidden="true" />}
         />
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-tour="players-grid">
           {filtered.map((player, index) => (
             <li
               key={player.playerId}
               className="ds-stagger-item"
               style={{ ['--stagger-index' as string]: Math.min(index + 1, 12) }}
             >
-              <article className="ds-card-interactive rounded-xl border border-border bg-bg-surface p-5">
+              <article
+                className="ds-card-interactive rounded-xl border border-border bg-bg-surface p-5"
+                data-tour={index === 0 ? 'players-card' : undefined}
+              >
                 <header className="flex items-start gap-3">
                   <PlayerAvatar
                     player={{
@@ -244,6 +248,7 @@ export default function CoachPlayersPage() {
                     type="button"
                     variant="secondary"
                     className="w-full sm:w-auto"
+                    data-tour={index === 0 ? 'players-view-matches' : undefined}
                     onClick={() => {
                       window.location.href = `${MATCHES_BASE}?categoryId=${player.categoryId}`;
                     }}

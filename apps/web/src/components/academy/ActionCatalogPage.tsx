@@ -268,31 +268,34 @@ function ActionCatalogContent() {
   ];
 
   const kpiHeader = kpis ? (
-    <StatCardGrid>
-      <StatCard
-        icon={<ListChecks className="h-5 w-5" />}
-        label={t('tenant.actionCatalog.kpis.active')}
-        value={kpis.activeCount}
-      />
-      <StatCard
-        icon={<Bell className="h-5 w-5" />}
-        label={t('tenant.actionCatalog.kpis.notifiable')}
-        value={kpis.notifiableCount}
-      />
-      <StatCard
-        icon={<Activity className="h-5 w-5" />}
-        label={t('tenant.actionCatalog.kpis.byImpact')}
-        value={`${kpis.positiveCount} / ${kpis.negativeCount} / ${kpis.neutralCount}`}
-        delta={t('tenant.actionCatalog.kpis.byImpactHint')}
-        animateValue={false}
-      />
-    </StatCardGrid>
+    <div data-tour="actions-kpis">
+      <StatCardGrid>
+        <StatCard
+          icon={<ListChecks className="h-5 w-5" />}
+          label={t('tenant.actionCatalog.kpis.active')}
+          value={kpis.activeCount}
+        />
+        <StatCard
+          icon={<Bell className="h-5 w-5" />}
+          label={t('tenant.actionCatalog.kpis.notifiable')}
+          value={kpis.notifiableCount}
+        />
+        <StatCard
+          icon={<Activity className="h-5 w-5" />}
+          label={t('tenant.actionCatalog.kpis.byImpact')}
+          value={`${kpis.positiveCount} / ${kpis.negativeCount} / ${kpis.neutralCount}`}
+          delta={t('tenant.actionCatalog.kpis.byImpactHint')}
+          animateValue={false}
+        />
+      </StatCardGrid>
+    </div>
   ) : null;
 
   const codeImpactLocked = Boolean(editing?.isUsed);
 
   return (
     <>
+      <div data-tour="actions-list">
       <DataView
         items={filtered}
         isSourceEmpty={actions.length === 0}
@@ -323,7 +326,12 @@ function ActionCatalogContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button type="button" onClick={openCreate} className="gap-1.5">
+          <Button
+            type="button"
+            data-tour="actions-create-button"
+            onClick={openCreate}
+            className="gap-1.5"
+          >
             <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
             {t('tenant.actionCatalog.create')}
           </Button>
@@ -407,6 +415,7 @@ function ActionCatalogContent() {
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
+      </div>
 
       <Modal
         open={modalOpen}

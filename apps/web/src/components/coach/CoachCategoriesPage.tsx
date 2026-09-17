@@ -160,7 +160,7 @@ export default function CoachCategoriesPage() {
 
   return (
     <div className="ds-stagger-enter space-y-6">
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ul className="grid gap-4 sm:grid-cols-2" data-tour="categories-grid">
         {cards.map((card, index) => {
           const extra = Math.max(0, card.playerCount - card.previewInitials.length);
           const href = `${PLAYERS_BASE}?categoryId=${card.id}`;
@@ -172,6 +172,7 @@ export default function CoachCategoriesPage() {
             >
               <a
                 href={href}
+                data-tour={index === 0 ? 'categories-card' : undefined}
                 className={cn(
                   'ds-card-interactive group relative block rounded-xl border border-border border-l-[3px] border-l-action-primary bg-bg-surface p-5 no-underline sm:p-6',
                 )}
@@ -183,7 +184,10 @@ export default function CoachCategoriesPage() {
                   </p>
                 </div>
 
-                <div className="mt-5 flex items-end justify-between gap-4">
+                <div
+                  className="mt-5 flex items-end justify-between gap-4"
+                  data-tour={index === 0 ? 'categories-player-count' : undefined}
+                >
                   <div>
                     <PlayerCountValue value={card.playerCount} />
                     <p className="mt-1 text-sm font-medium text-text-secondary">

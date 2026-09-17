@@ -175,22 +175,27 @@ function AuditLogContent() {
     !!dateTo;
 
   const kpiHeader = (
-    <StatCardGrid>
-      <StatCard
-        label={t('platform.audit.kpis.totalEvents')}
-        value={kpis?.totalEvents ?? '—'}
-        icon={<ScrollText className="h-5 w-5" aria-hidden="true" />}
-      />
-      <StatCard
-        label={t('platform.audit.kpis.topAction')}
-        value={topActionLabel}
-        icon={<Sparkles className="h-5 w-5" aria-hidden="true" />}
-      />
-    </StatCardGrid>
+    <div data-tour="audit-log-kpis">
+      <StatCardGrid>
+        <StatCard
+          label={t('platform.audit.kpis.totalEvents')}
+          value={kpis?.totalEvents ?? '—'}
+          icon={<ScrollText className="h-5 w-5" aria-hidden="true" />}
+        />
+        <StatCard
+          label={t('platform.audit.kpis.topAction')}
+          value={topActionLabel}
+          icon={<Sparkles className="h-5 w-5" aria-hidden="true" />}
+        />
+      </StatCardGrid>
+    </div>
   );
 
   const filtersPanel = (
-    <div className="grid gap-4 rounded-lg border border-section-audit-border bg-section-audit-subtle/40 p-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      data-tour="audit-log-filters"
+      className="grid gap-4 rounded-lg border border-section-audit-border bg-section-audit-subtle/40 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
       <div>
         <Label htmlFor="auditTenant">{t('platform.audit.filterAcademy')}</Label>
         <Select
@@ -284,7 +289,12 @@ function AuditLogContent() {
         <LabeledValue label={t('platform.audit.filterAcademy')}>{tenantLabel(entry)}</LabeledValue>
       </div>
       <DataCardFooter>
-        <Button type="button" variant="secondary" onClick={() => setDetailEntry(entry)}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setDetailEntry(entry)}
+          data-tour="audit-log-view-detail-button"
+        >
           {t('platform.audit.viewDetail')}
         </Button>
       </DataCardFooter>
@@ -322,7 +332,12 @@ function AuditLogContent() {
             </TableCell>
             <TableCell>{targetLabel(entry)}</TableCell>
             <TableCell className="text-right">
-              <Button type="button" variant="secondary" onClick={() => setDetailEntry(entry)}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setDetailEntry(entry)}
+                data-tour="audit-log-view-detail-button"
+              >
                 {t('platform.audit.viewDetail')}
               </Button>
             </TableCell>
