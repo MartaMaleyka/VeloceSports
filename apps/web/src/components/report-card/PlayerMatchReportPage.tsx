@@ -11,6 +11,7 @@ import {
   PlayerApiError,
 } from '../../lib/report-card-api';
 import PlayerMatchReportCardView from './PlayerMatchReportCardView';
+import PlayerMatchInsightPanel from './PlayerMatchInsightPanel';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 import { resolveNumericRouteId } from '../../lib/route-params';
 import { appPath } from '../../lib/app-path';
@@ -97,6 +98,11 @@ function PlayerMatchReportContent({
         ← {apiMode === 'player' ? t('reportCard.backToMatches') : t('reportCard.back')}
       </Button>
       <PlayerMatchReportCardView data={data} />
+      <PlayerMatchInsightPanel
+        playerId={apiMode === 'player' ? data.player.id : playerId}
+        matchId={matchId}
+        apiMode={apiMode}
+      />
       {apiMode === 'parent' ? (
         <PlayerObservationsPanel
           mode="parent"

@@ -6,6 +6,8 @@ import { requireRole } from '../middlewares/rbac.js';
 import { tenant } from '../middlewares/tenant.js';
 import { validate } from '../middlewares/validate.js';
 import { updateSelfPlayerBodySchema } from '../validators/player-portal.validator.js';
+import { regenerateInsightBodySchema } from '../validators/player-match-insight.validator.js';
+import { playerInsightRateLimiter } from '../middlewares/rateLimit.js';
 import { z } from 'zod';
 
 const matchIdParamSchema = z.object({
@@ -38,6 +40,14 @@ router.get(
   '/matches/:matchId/report-card',
   validate(matchIdParamSchema, 'params'),
   (req, res, next) => playerPortalController.getReportCard(req, res, next),
+);
+
+router.post(
+  '/matches/:matchId/insight',
+  playerInsightRateLimiter,
+  validate(matchIdParamSchema, 'params'),
+  validate(regenerateInsightBodySchema),
+  (req, res, next) => playerPortalController.getOrGenerateInsight(req, res, next),
 );
 
 router.get('/observations', (req, res, next) =>

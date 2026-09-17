@@ -14,6 +14,7 @@ export interface AcademyDashboardPlayersDto {
   retiredCount: number;
   totalCount: number;
   planLimit: number;
+  linkedToParentCount: number;
   byCategory: AcademyDashboardPlayerCategoryCountDto[];
 }
 

@@ -47,6 +47,17 @@ const envSchema = z.object({
   /** Host/puerto que ve el navegador en las URLs firmadas (si difiere del endpoint interno). */
   MINIO_PUBLIC_ENDPOINT: z.string().min(1).optional(),
   MINIO_PUBLIC_PORT: z.coerce.number().int().positive().optional(),
+
+  /** Agente de interpretación de estadísticas — modelo local vía Ollama (sin datos a terceros). */
+  OLLAMA_ENABLED: z
+    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+    .default(true)
+    .transform((v) => v === true || v === 'true' || v === '1'),
+  OLLAMA_BASE_URL: z.string().min(1).default('http://127.0.0.1:11434'),
+  OLLAMA_MODEL: z.string().min(1).default('llama3.1:8b'),
+  OLLAMA_TIMEOUT_MS: z.coerce.number().int().positive().default(45_000),
+  PLAYER_INSIGHT_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  PLAYER_INSIGHT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1230,6 +1230,16 @@ export const en = {
       goalkeeping: 'Golden hands! You protected the goal like a pro.',
       discipline: 'Clean and focused play! Great attitude on the pitch.',
     },
+    insight: {
+      title: 'AI analysis',
+      description: 'Interprets this match\'s stats and suggests what to improve and how, in your own language.',
+      generate: 'Generate AI analysis',
+      generating: 'Generating...',
+      generatingHint: 'The first time can take up to half a minute.',
+      regenerate: 'Regenerate',
+      generatedAt: 'Generated on {date}',
+      errorGeneric: 'We could not generate the analysis. Try again.',
+    },
   },
   tenant: {
     errors: {
@@ -1839,6 +1849,36 @@ export const en = {
   meta: {
     appDescription: 'Platform for youth football academies',
     loginTitle: 'Sign in — SquadVeloce',
+  },
+  onboarding: {
+    checklist: {
+      progress: '{done} of {total} completed',
+      dismiss: 'Hide this list',
+      allDone: "You've completed all the first steps!",
+    },
+    academyAdmin: {
+      title: 'Getting started with your academy',
+      category: {
+        title: 'Create your first category',
+        description: 'Set the age range and assign a coach.',
+      },
+      player: {
+        title: 'Add a player',
+        description: 'Register your first player and link them to their parents.',
+      },
+      parentLink: {
+        title: 'Link a player to their parent or guardian',
+        description: 'For underage players, connect their account with a parent or guardian.',
+      },
+      coach: {
+        title: 'Invite a coach',
+        description: 'Give a coach access so they can capture matches.',
+      },
+      match: {
+        title: 'Schedule your first match',
+        description: 'Set up a match with opponent, category, date, and location.',
+      },
+    },
   },
   tour: {
     dialogLabel: 'Screen guide',

@@ -183,7 +183,7 @@ function DashboardShellInner({
           )}
           {Page ? (
             <Suspense fallback={<p className="text-text-secondary">{t('common.loading')}</p>}>
-              <Page {...pageProps} />
+              <Page {...pageProps} userId={userId} />
             </Suspense>
           ) : pageId ? (
             <Alert variant="error" title={t('reportCard.errors.title')}>

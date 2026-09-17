@@ -4,6 +4,7 @@ import { playerRepository, type PlayerWithCategoryRow } from '../repositories/pl
 import { userRepository } from '../repositories/user.repository.js';
 import { parentDashboardService } from './parent-dashboard.service.js';
 import { playerMatchReportService } from './player-match-report.service.js';
+import { playerMatchInsightService } from './player-match-insight.service.js';
 import { playerObservationService } from './player-observation.service.js';
 import { parentMatchCalendarService } from './parent-match-calendar.service.js';
 import { playerPhotoService } from './player-photo.service.js';
@@ -151,6 +152,22 @@ export class PlayerPortalService {
       viewerUserId,
       row.id,
       matchId,
+    );
+  }
+
+  async getOrGenerateInsight(
+    tenantId: number,
+    viewerUserId: number,
+    matchId: number,
+    options?: { forceRegenerate?: boolean; locale?: 'es' | 'en' },
+  ) {
+    const row = await this.resolveSelfPlayer(tenantId, viewerUserId);
+    return playerMatchInsightService.getOrGenerateForViewer(
+      tenantId,
+      viewerUserId,
+      row.id,
+      matchId,
+      options,
     );
   }
 

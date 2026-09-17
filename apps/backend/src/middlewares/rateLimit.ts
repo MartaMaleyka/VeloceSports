@@ -24,3 +24,14 @@ export const authLoginRateLimiter = rateLimit({
     message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo más tarde.',
   },
 });
+
+export const playerInsightRateLimiter = rateLimit({
+  windowMs: env.PLAYER_INSIGHT_RATE_LIMIT_WINDOW_MS,
+  max: env.PLAYER_INSIGHT_RATE_LIMIT_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Demasiadas solicitudes de análisis. Intenta de nuevo más tarde.',
+  },
+});

@@ -25,6 +25,7 @@ export class AcademyDashboardService {
       inProgressCount,
       upcomingSoonRows,
       billingSummary,
+      linkedToParentCount,
     ] = await Promise.all([
       planLimitService.getLimits(tenantId),
       academyDashboardRepository.countPlayersByStatus(tenantId),
@@ -36,6 +37,7 @@ export class AcademyDashboardService {
       matchRepository.countInProgress(tenantId),
       academyDashboardRepository.findUpcomingMatches(tenantId),
       invoiceService.getBillingSummary(tenantId),
+      academyDashboardRepository.countPlayersLinkedToParent(tenantId),
     ]);
 
     const totalCount = Object.values(playerStatusCounts).reduce((sum, n) => sum + n, 0);
@@ -50,6 +52,7 @@ export class AcademyDashboardService {
         retiredCount: playerStatusCounts.retired,
         totalCount,
         planLimit: limits.plan.max_players,
+        linkedToParentCount,
         byCategory: byCategoryRows.map((r) => ({
           categoryId: r.category_id,
           categoryName: r.category_name,

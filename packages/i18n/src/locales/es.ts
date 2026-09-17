@@ -1234,6 +1234,16 @@ export const es = {
       goalkeeping: '¡Manos de oro! Protegiste el arco como un profesional.',
       discipline: '¡Juego limpio y concentrado! Gran actitud en la cancha.',
     },
+    insight: {
+      title: 'Análisis con IA',
+      description: 'Interpreta las estadísticas de este partido y sugiere qué mejorar y cómo, en tu propio idioma.',
+      generate: 'Generar análisis con IA',
+      generating: 'Generando...',
+      generatingHint: 'Puede tardar hasta medio minuto la primera vez.',
+      regenerate: 'Regenerar',
+      generatedAt: 'Generado el {date}',
+      errorGeneric: 'No pudimos generar el análisis. Intenta de nuevo.',
+    },
   },
   tenant: {
     errors: {
@@ -1843,6 +1853,36 @@ export const es = {
   meta: {
     appDescription: 'Plataforma para academias de fútbol formativo',
     loginTitle: 'Iniciar sesión — SquadVeloce',
+  },
+  onboarding: {
+    checklist: {
+      progress: '{done} de {total} completados',
+      dismiss: 'Ocultar esta lista',
+      allDone: '¡Completaste todos los primeros pasos!',
+    },
+    academyAdmin: {
+      title: 'Primeros pasos con tu academia',
+      category: {
+        title: 'Crea tu primera categoría',
+        description: 'Define el rango de edad y asigna un entrenador.',
+      },
+      player: {
+        title: 'Agrega un jugador',
+        description: 'Registra tu primer jugador y vincúlalo con sus padres.',
+      },
+      parentLink: {
+        title: 'Vincula un jugador con su padre o tutor',
+        description: 'Para jugadores menores de edad, conecta su cuenta con la de un padre o tutor.',
+      },
+      coach: {
+        title: 'Invita a un entrenador',
+        description: 'Dale acceso a un entrenador para que capture los partidos.',
+      },
+      match: {
+        title: 'Programa tu primer partido',
+        description: 'Agenda un partido con rival, categoría, fecha y lugar.',
+      },
+    },
   },
   tour: {
     dialogLabel: 'Guía de la pantalla',

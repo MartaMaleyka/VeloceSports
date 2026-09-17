@@ -24,6 +24,7 @@ import {
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
 import { appPath } from '../../lib/app-path';
 import { AcademyDashboardChart } from './AcademyDashboardChart';
+import { GettingStartedChecklist, type ChecklistItem } from '../onboarding/GettingStartedChecklist';
 
 const BASE = appPath('/dashboard/academy-admin');
 
@@ -58,7 +59,7 @@ function SeverityDot({ variant }: { variant: 'warning' | 'error' | 'info' }) {
   return <span className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', color)} aria-hidden="true" />;
 }
 
-function AcademyAdminHomeContent() {
+function AcademyAdminHomeContent({ userId }: { userId: number }) {
   const { t, locale } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -205,6 +206,44 @@ function AcademyAdminHomeContent() {
 
   const iconClass = 'h-5 w-5';
 
+  const checklistItems: ChecklistItem[] = [
+    {
+      id: 'category',
+      title: t('onboarding.academyAdmin.category.title'),
+      description: t('onboarding.academyAdmin.category.description'),
+      done: data.categories.totalCount > 0,
+      href: `${BASE}/categories`,
+    },
+    {
+      id: 'player',
+      title: t('onboarding.academyAdmin.player.title'),
+      description: t('onboarding.academyAdmin.player.description'),
+      done: data.players.totalCount > 0,
+      href: `${BASE}/players`,
+    },
+    {
+      id: 'parentLink',
+      title: t('onboarding.academyAdmin.parentLink.title'),
+      description: t('onboarding.academyAdmin.parentLink.description'),
+      done: data.players.linkedToParentCount > 0,
+      href: `${BASE}/players`,
+    },
+    {
+      id: 'coach',
+      title: t('onboarding.academyAdmin.coach.title'),
+      description: t('onboarding.academyAdmin.coach.description'),
+      done: data.usersByRole.coach > 0,
+      href: `${BASE}/users`,
+    },
+    {
+      id: 'match',
+      title: t('onboarding.academyAdmin.match.title'),
+      description: t('onboarding.academyAdmin.match.description'),
+      done: data.matches.upcomingCount + data.matches.inProgressCount > 0,
+      href: `${BASE}/matches`,
+    },
+  ];
+
   return (
     <div className="ds-stagger-enter space-y-8">
       <div
@@ -242,10 +281,19 @@ function AcademyAdminHomeContent() {
         </div>
       </div>
 
+      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 1 }}>
+        <GettingStartedChecklist
+          userId={userId}
+          storageKey="academyAdmin"
+          title={t('onboarding.academyAdmin.title')}
+          items={checklistItems}
+        />
+      </div>
+
       <div
         data-tour="home-kpis"
         className="ds-stagger-item"
-        style={{ ['--stagger-index' as string]: 1 }}
+        style={{ ['--stagger-index' as string]: 2 }}
       >
         <StatCardGrid columns={3}>
           <StatCard
@@ -313,7 +361,7 @@ function AcademyAdminHomeContent() {
       <section
         data-tour="home-attention"
         className="ds-stagger-item space-y-4"
-        style={{ ['--stagger-index' as string]: 2 }}
+        style={{ ['--stagger-index' as string]: 3 }}
       >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.attentionTitle')}
@@ -359,13 +407,13 @@ function AcademyAdminHomeContent() {
         )}
       </section>
 
-      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 3 }}>
+      <div className="ds-stagger-item" style={{ ['--stagger-index' as string]: 4 }}>
         <AcademyDashboardChart byCategory={data.players.byCategory} />
       </div>
 
       <div
         className="ds-stagger-item grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        style={{ ['--stagger-index' as string]: 4 }}
+        style={{ ['--stagger-index' as string]: 5 }}
       >
         <DataCard className="p-4">
           <LabeledValue label={t('dashboard.academyAdmin.home.billingStatus')}>
@@ -417,7 +465,7 @@ function AcademyAdminHomeContent() {
       <section
         data-tour="home-quick-links"
         className="ds-stagger-item space-y-4"
-        style={{ ['--stagger-index' as string]: 5 }}
+        style={{ ['--stagger-index' as string]: 6 }}
       >
         <h2 className="font-display text-lg font-semibold text-text-primary">
           {t('dashboard.academyAdmin.home.quickLinksTitle')}
@@ -454,6 +502,6 @@ function AcademyAdminHomeContent() {
   );
 }
 
-export default function AcademyAdminHomePage() {
-  return <AcademyAdminHomeContent />;
+export default function AcademyAdminHomePage({ userId }: { userId: number }) {
+  return <AcademyAdminHomeContent userId={userId} />;
 }

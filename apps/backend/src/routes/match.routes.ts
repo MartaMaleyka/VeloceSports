@@ -25,6 +25,9 @@ import {
 } from '../validators/game-action.validator.js';
 import { matchPlayerReportParamsSchema } from '../validators/player-match-report.validator.js';
 import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
+import { playerMatchInsightController } from '../controllers/player-match-insight.controller.js';
+import { regenerateInsightBodySchema } from '../validators/player-match-insight.validator.js';
+import { playerInsightRateLimiter } from '../middlewares/rateLimit.js';
 import { playerObservationController } from '../controllers/player-observation.controller.js';
 import {
   createPlayerObservationBodySchema,
@@ -103,6 +106,14 @@ router.get(
   '/:matchId/players/:playerId/report-card',
   validate(matchPlayerReportParamsSchema, 'params'),
   (req, res, next) => playerMatchReportController.getStaffReportCard(req, res, next),
+);
+
+router.post(
+  '/:matchId/players/:playerId/insight',
+  playerInsightRateLimiter,
+  validate(matchPlayerReportParamsSchema, 'params'),
+  validate(regenerateInsightBodySchema),
+  (req, res, next) => playerMatchInsightController.getOrGenerateForStaff(req, res, next),
 );
 
 router.post(

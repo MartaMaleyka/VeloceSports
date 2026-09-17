@@ -73,6 +73,25 @@ export class PlayerPortalController {
     }
   }
 
+  async getOrGenerateInsight(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { viewerUserId, tenantId } = getViewerContext(req);
+      const { forceRegenerate, locale } = req.body as {
+        forceRegenerate?: boolean;
+        locale?: 'es' | 'en';
+      };
+      const data = await playerPortalService.getOrGenerateInsight(
+        tenantId,
+        viewerUserId,
+        Number(req.params.matchId),
+        { forceRegenerate, locale },
+      );
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async listObservations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { viewerUserId, tenantId } = getViewerContext(req);

@@ -44,6 +44,18 @@ export class AcademyDashboardRepository extends TenantScopedRepository {
     return counts;
   }
 
+  async countPlayersLinkedToParent(tenantId: number): Promise<number> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(DISTINCT player_id) AS count
+       FROM player_viewers
+       WHERE tenant_id = ? AND relationship = 'PARENT'`,
+      [tenantId],
+    );
+    return Number(rows[0]?.count ?? 0);
+  }
+
   async findUpcomingMatches(
     tenantId: number,
     daysAhead = 7,

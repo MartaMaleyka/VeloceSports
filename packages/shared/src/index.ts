@@ -17,6 +17,8 @@ export * from './game-actions.js';
 export * from './performance-dimensions.js';
 export * from './voice-capture-interpreter.js';
 export * from './player-match-report.js';
+export * from './player-match-insight-facts.js';
+export * from './player-match-insight.js';
 export * from './parent-player-dashboard.js';
 export * from './parent-match-calendar.js';
 export * from './player-observations.js';

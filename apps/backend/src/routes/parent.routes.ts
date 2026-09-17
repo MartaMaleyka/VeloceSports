@@ -12,6 +12,9 @@ import {
 } from '../validators/parent.validator.js';
 import { parentPlayerMatchParamsSchema } from '../validators/player-match-report.validator.js';
 import { playerMatchReportController } from '../controllers/player-match-report.controller.js';
+import { playerMatchInsightController } from '../controllers/player-match-insight.controller.js';
+import { regenerateInsightBodySchema } from '../validators/player-match-insight.validator.js';
+import { playerInsightRateLimiter } from '../middlewares/rateLimit.js';
 import {
   parentDashboardParamsSchema,
   parentDashboardQuerySchema,
@@ -123,6 +126,14 @@ router.get(
   '/children/:playerId/matches/:matchId/report-card',
   validate(parentPlayerMatchParamsSchema, 'params'),
   (req, res, next) => playerMatchReportController.getParentReportCard(req, res, next),
+);
+
+router.post(
+  '/children/:playerId/matches/:matchId/insight',
+  playerInsightRateLimiter,
+  validate(parentPlayerMatchParamsSchema, 'params'),
+  validate(regenerateInsightBodySchema),
+  (req, res, next) => playerMatchInsightController.getOrGenerateForParent(req, res, next),
 );
 
 export default router;
