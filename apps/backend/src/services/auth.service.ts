@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import {
+  AcademyApprovalStatus,
   AcademyStatus,
   LOGIN_ROLES,
   UserRole,
@@ -73,6 +74,17 @@ export class AuthService {
       const academy = await academyRepository.findByIdWithStatus(user.tenant_id!);
       if (!academy) {
         throw new ForbiddenError('Academia no encontrada');
+      }
+
+      if (academy.approval_status === AcademyApprovalStatus.PENDING) {
+        throw new ForbiddenError(
+          'Tu cuenta está pendiente de aprobación. Intenta iniciar sesión más tarde.',
+        );
+      }
+      if (academy.approval_status === AcademyApprovalStatus.REJECTED) {
+        throw new ForbiddenError(
+          'Tu solicitud de cuenta no fue aprobada. Contacta a soporte para más información.',
+        );
       }
 
       if (academy.status !== AcademyStatus.ACTIVE) {

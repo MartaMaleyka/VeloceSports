@@ -3,7 +3,7 @@ import type { AcademySuspensionReason } from '@velocesport/shared';
 import { Badge, cn, type BadgeVariant } from '@velocesport/design-system';
 import { useTranslation, type TranslationKey } from '@velocesport/i18n';
 
-type StatusType = 'academy' | 'plan' | 'user';
+type StatusType = 'academy' | 'plan' | 'user' | 'approval';
 
 interface StatusBadgeProps {
   type: StatusType;
@@ -17,6 +17,11 @@ function variantFor(type: StatusType, status: string): BadgeVariant {
   }
   if (type === 'user') {
     return status === UserStatus.ACTIVE ? 'success' : 'default';
+  }
+  if (type === 'approval') {
+    if (status === 'approved') return 'success';
+    if (status === 'rejected') return 'error';
+    return 'warning';
   }
   if (status === AcademyStatus.ACTIVE) return 'success';
   if (status === AcademyStatus.SUSPENDED) return 'warning';
@@ -33,6 +38,11 @@ function labelKey(
   }
   if (type === 'user') {
     return status === UserStatus.ACTIVE ? 'common.active' : 'common.inactive';
+  }
+  if (type === 'approval') {
+    if (status === 'approved') return 'platform.personalAccounts.approvalStatus.approved';
+    if (status === 'rejected') return 'platform.personalAccounts.approvalStatus.rejected';
+    return 'platform.personalAccounts.approvalStatus.pending';
   }
   if (status === AcademyStatus.ACTIVE) return 'common.active';
   if (status === AcademyStatus.SUSPENDED) {

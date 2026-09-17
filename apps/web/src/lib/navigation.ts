@@ -47,6 +47,12 @@ export function getNavItemsForRole(role: LoginRole, locale: Locale): NavItem[] {
       { id: 'home', href: appPath('/dashboard/super-admin'), label: t('nav.home', locale), sectionAccent: 'brand' },
       { id: 'plans', href: appPath('/dashboard/super-admin/plans'), label: t('nav.plans', locale), sectionAccent: 'plans' },
       { id: 'academies', href: appPath('/dashboard/super-admin/academies'), label: t('nav.academies', locale), sectionAccent: 'academies' },
+      {
+        id: 'personal-accounts',
+        href: appPath('/dashboard/super-admin/personal-accounts'),
+        label: t('nav.personalAccounts', locale),
+        sectionAccent: 'users',
+      },
       { id: 'billing', href: appPath('/dashboard/super-admin/billing'), label: t('nav.billing', locale), sectionAccent: 'billing' },
       { id: 'audit', href: appPath('/dashboard/super-admin/audit'), label: t('nav.audit', locale), sectionAccent: 'audit' },
       {

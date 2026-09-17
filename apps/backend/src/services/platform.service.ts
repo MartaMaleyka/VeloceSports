@@ -9,6 +9,8 @@ import type {
   ReactivateAcademyResultDto,
 } from '@velocesport/shared';
 import {
+  AcademyAccountType,
+  AcademyApprovalStatus,
   AcademyBillingStatus as AcademyBillingStatusConst,
   AcademyStatus as AcademyStatusConst,
   AcademySuspensionReason,
@@ -53,6 +55,7 @@ export class PlatformService {
     search?: string;
     status?: AcademyStatus;
     planId?: number;
+    accountType?: AcademyAccountType;
   }): Promise<AcademyListItemDto[]> {
     const rows = await academyRepository.findAllWithDetails(filters);
     const tenantIds = rows.map((r) => r.id);
@@ -294,6 +297,60 @@ export class PlatformService {
     };
   }
 
+  /** Aprueba una cuenta autorregistrada (personal o academia) pendiente de revisión. */
+  async approveAccount(
+    actorUserId: number,
+    academyId: number,
+  ): Promise<AcademyDetailDto> {
+    const before = await this.getAcademy(academyId);
+
+    if (before.approvalStatus !== AcademyApprovalStatus.PENDING) {
+      throw new ValidationError('Esta solicitud ya fue procesada');
+    }
+
+    await academyRepository.approve(academyId);
+    const after = await this.getAcademy(academyId);
+
+    await auditService.log(
+      { userId: actorUserId, tenantId: academyId },
+      'academy',
+      academyId,
+      'approve',
+      { approvalStatus: before.approvalStatus, status: before.status },
+      { approvalStatus: after.approvalStatus, status: after.status },
+    );
+
+    return after;
+  }
+
+  /** Rechaza una cuenta autorregistrada (personal o academia) pendiente de revisión. */
+  async rejectAccount(
+    actorUserId: number,
+    academyId: number,
+    reason: string | null,
+  ): Promise<AcademyDetailDto> {
+    const before = await this.getAcademy(academyId);
+
+    if (before.approvalStatus !== AcademyApprovalStatus.PENDING) {
+      throw new ValidationError('Esta solicitud ya fue procesada');
+    }
+
+    await academyRepository.reject(academyId, reason);
+    await userSessionService.revokeAllSessionsForTenant(academyId);
+    const after = await this.getAcademy(academyId);
+
+    await auditService.log(
+      { userId: actorUserId, tenantId: academyId },
+      'academy',
+      academyId,
+      'reject',
+      { approvalStatus: before.approvalStatus },
+      { approvalStatus: after.approvalStatus, approvalReason: after.approvalReason },
+    );
+
+    return after;
+  }
+
   async listAcademyUsers(
     academyId: number,
     filters?: { search?: string; role?: typeof UserRole.ACADEMY_ADMIN; status?: typeof UserStatus.ACTIVE },
@@ -488,6 +545,9 @@ export class PlatformService {
       name: row.name,
       slug: row.slug,
       status: row.status,
+      accountType: row.account_type,
+      approvalStatus: row.approval_status,
+      approvalReason: row.approval_reason,
       suspensionReason: row.suspension_reason,
       overdueInvoiceCount,
       plan: row.plan_id ? { id: row.plan_id, name: row.plan_name ?? '' } : null,

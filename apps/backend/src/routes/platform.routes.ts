@@ -13,6 +13,7 @@ import {
   listAcademyUsersQuerySchema,
   listPlansQuerySchema,
   reactivateAcademySchema,
+  rejectAcademyBodySchema,
   updateAcademySchema,
   updateAcademyStatusSchema,
   updatePlanSchema,
@@ -81,6 +82,12 @@ router.patch('/academies/:academyId/status', validate(updateAcademyStatusSchema)
 );
 router.post('/academies/:academyId/reactivate', validate(reactivateAcademySchema), (req, res, next) =>
   platformController.reactivateAcademy(req, res, next),
+);
+router.post('/academies/:academyId/approve', (req, res, next) =>
+  platformController.approveAccount(req, res, next),
+);
+router.post('/academies/:academyId/reject', validate(rejectAcademyBodySchema), (req, res, next) =>
+  platformController.rejectAccount(req, res, next),
 );
 
 router.get(

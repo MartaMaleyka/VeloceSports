@@ -388,6 +388,7 @@ export function ParentHomePage() {
   const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
   const [period, setPeriod] = useState<ParentDashboardPeriodValue>('all');
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [canCaptureMatches, setCanCaptureMatches] = useState(false);
   const [availablePeriods, setAvailablePeriods] = useState<
     ParentPlayerDashboardDto['availablePeriods']
   >([{ value: 'all', monthKey: null }]);
@@ -403,6 +404,7 @@ export function ParentHomePage() {
       const active = list.filter((c) => c.status === PlayerStatus.ACTIVE);
       setChildren(active);
       if (profile?.firstName) setFirstName(profile.firstName);
+      setCanCaptureMatches(profile?.roles?.includes('coach') ?? false);
       if (active.length > 0) {
         setSelectedChildId((prev) =>
           prev != null && active.some((c) => c.id === prev) ? prev : active[0].id,
@@ -497,6 +499,19 @@ export function ParentHomePage() {
           <p className="mt-3 max-w-prose text-base font-medium text-text-secondary">
             {t('dashboard.parent.home.heroSubtitle')}
           </p>
+          {canCaptureMatches && (
+            <div className="mt-5">
+              <Button
+                type="button"
+                className="min-h-touch"
+                onClick={() => {
+                  window.location.href = appPath('/dashboard/coach/matches');
+                }}
+              >
+                {t('dashboard.parent.home.captureMatches')}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

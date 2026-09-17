@@ -44,6 +44,33 @@ export interface LoginResponseDto {
   mustChangePassword?: boolean;
 }
 
+/** Alta pública de un padre independiente (sin academia): crea su cuenta y la de su hijo. */
+export interface SignupIndependentBody {
+  parentFirstName: string;
+  parentLastName: string;
+  email: string;
+  password: string;
+  childFirstName: string;
+  childLastName: string;
+  childJerseyNumber?: number;
+}
+
+/** La cuenta queda pendiente de aprobación por super_admin; no se emiten tokens todavía. */
+export interface SignupIndependentResponseDto {
+  pendingApproval: true;
+  email: string;
+}
+
+/** Alta pública de una academia real (con su primer academy_admin). Igual que la
+ * independiente, queda pendiente de aprobación de super_admin. */
+export interface SignupAcademyBody {
+  academyName: string;
+  adminFirstName: string;
+  adminLastName: string;
+  email: string;
+  password: string;
+}
+
 export interface ResetPasswordRequestDto {
   newPassword?: string;
   generateRandom?: boolean;

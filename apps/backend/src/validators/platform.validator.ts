@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { AcademyStatus, MAX_BILLING_ANCHOR_DAY, MIN_BILLING_ANCHOR_DAY, PlanStatus, UserRole, UserStatus } from '@velocesport/shared';
+import {
+  AcademyAccountType,
+  AcademyStatus,
+  MAX_BILLING_ANCHOR_DAY,
+  MIN_BILLING_ANCHOR_DAY,
+  PlanStatus,
+  UserRole,
+  UserStatus,
+} from '@velocesport/shared';
 
 const positiveInt = z.coerce.number().int().min(0);
 const moneyAmount = z.coerce.number().min(0).multipleOf(0.01);
@@ -79,6 +87,11 @@ export const listAcademiesQuerySchema = z.object({
   search: z.string().trim().optional(),
   status: z.enum([AcademyStatus.ACTIVE, AcademyStatus.SUSPENDED, AcademyStatus.INACTIVE]).optional(),
   planId: z.coerce.number().int().positive().optional(),
+  accountType: z.enum([AcademyAccountType.ACADEMY, AcademyAccountType.PERSONAL]).optional(),
+});
+
+export const rejectAcademyBodySchema = z.object({
+  reason: z.string().trim().max(500).nullable().optional(),
 });
 
 export const createAcademyUserSchema = z.object({

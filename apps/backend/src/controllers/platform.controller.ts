@@ -68,6 +68,7 @@ export class PlatformController {
         search: req.query.search as string | undefined,
         status: req.query.status as never,
         planId: req.query.planId ? Number(req.query.planId) : undefined,
+        accountType: req.query.accountType as never,
       });
       res.status(200).json({ success: true, data: academies });
     } catch (error) {
@@ -127,6 +128,31 @@ export class PlatformController {
         req.body,
       );
       res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const academy = await platformService.approveAccount(
+        getActor(req).userId,
+        Number(req.params.academyId),
+      );
+      res.status(200).json({ success: true, data: academy });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rejectAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const academy = await platformService.rejectAccount(
+        getActor(req).userId,
+        Number(req.params.academyId),
+        (req.body.reason as string | null | undefined) ?? null,
+      );
+      res.status(200).json({ success: true, data: academy });
     } catch (error) {
       next(error);
     }

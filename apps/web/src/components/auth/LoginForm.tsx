@@ -182,6 +182,13 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
       <Button type="submit" loading={loading} disabled={loading} className="w-full" size="lg">
         {t('auth.login.submit')}
       </Button>
+
+      <p className="text-center text-sm text-text-secondary">
+        {t('auth.login.noAcademy')}{' '}
+        <a href={appPath('/signup')} className="font-medium text-action-primary underline-offset-2 hover:underline">
+          {t('auth.login.goToSignup')}
+        </a>
+      </p>
     </form>
   );
 }

@@ -1,4 +1,9 @@
-import type { AcademyStatus, AcademySuspensionReason } from './statuses.js';
+import type {
+  AcademyAccountType,
+  AcademyApprovalStatus,
+  AcademyStatus,
+  AcademySuspensionReason,
+} from './statuses.js';
 import type { UserRole, UserStatus } from './roles.js';
 import type { AcademyBillingStatus } from './billing.js';
 
@@ -57,6 +62,10 @@ export interface AcademyListItemDto {
   name: string;
   slug: string;
   status: AcademyStatus;
+  accountType: AcademyAccountType;
+  /** 'pending' hasta que un super_admin la apruebe; aplica a cuentas personales y academias autorregistradas. */
+  approvalStatus: AcademyApprovalStatus;
+  approvalReason: string | null;
   /** Motivo si status = suspended; null en otro caso */
   suspensionReason: AcademySuspensionReason | null;
   /** Facturas vencidas pendientes (útil para reactivación) */

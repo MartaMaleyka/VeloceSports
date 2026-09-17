@@ -44,6 +44,24 @@ export const registerSchema = z.object({
   }
 });
 
+export const signupIndependentSchema = z.object({
+  parentFirstName: z.string().trim().min(1, 'El nombre es obligatorio').max(100),
+  parentLastName: z.string().trim().min(1, 'El apellido es obligatorio').max(100),
+  email: z.string().trim().email('Correo electrónico inválido'),
+  password: strongPasswordSchema,
+  childFirstName: z.string().trim().min(1, 'El nombre del jugador es obligatorio').max(100),
+  childLastName: z.string().trim().min(1, 'El apellido del jugador es obligatorio').max(100),
+  childJerseyNumber: z.number().int().min(0).max(99).optional(),
+});
+
+export const signupAcademySchema = z.object({
+  academyName: z.string().trim().min(2, 'El nombre de la academia es obligatorio').max(200),
+  adminFirstName: z.string().trim().min(1, 'El nombre es obligatorio').max(100),
+  adminLastName: z.string().trim().min(1, 'El apellido es obligatorio').max(100),
+  email: z.string().trim().email('Correo electrónico inválido'),
+  password: strongPasswordSchema,
+});
+
 export const academyIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });

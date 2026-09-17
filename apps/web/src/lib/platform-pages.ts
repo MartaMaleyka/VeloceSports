@@ -8,6 +8,7 @@ import SuperAdminsPage from '../components/platform/SuperAdminsPage';
 import SuperAdminHomePage from '../components/platform/SuperAdminHomePage';
 import InvoicesListPage from '../components/platform/InvoicesListPage';
 import AuditLogPage from '../components/platform/AuditLogPage';
+import PersonalAccountsListPage from '../components/platform/PersonalAccountsListPage';
 
 export const platformPages = {
   home: SuperAdminHomePage,
@@ -19,6 +20,7 @@ export const platformPages = {
   'academy-form': AcademyFormPage,
   'academy-detail': AcademyDetailPage,
   'super-admins': SuperAdminsPage,
+  'personal-accounts-list': PersonalAccountsListPage,
 } as const satisfies Record<string, ComponentType<Record<string, unknown>>>;
 
 export type PlatformPageId = keyof typeof platformPages;

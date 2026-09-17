@@ -15,6 +15,7 @@ import {
   DollarSign,
   BarChart3,
   ScrollText,
+  UserCheck,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { LoginRole } from '@velocesport/shared';
@@ -60,6 +61,7 @@ const NAV_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   children: Users,
   plans: CreditCard,
   academies: Building2,
+  'personal-accounts': UserCheck,
   audit: ScrollText,
   analytics: BarChart3,
   analysis: BarChart3,

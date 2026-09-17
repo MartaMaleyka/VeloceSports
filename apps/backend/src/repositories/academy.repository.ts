@@ -1,17 +1,25 @@
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import type { AcademyStatus, AcademySuspensionReason } from '@velocesport/shared';
+import type {
+  AcademyAccountType,
+  AcademyApprovalStatus,
+  AcademyStatus,
+  AcademySuspensionReason,
+} from '@velocesport/shared';
 import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
 
 const ACADEMY_COLUMNS =
-  'id, name, slug, status, suspension_reason, plan_id, timezone, locale, currency, billing_anchor_day, logo_url, contact_email, contact_phone, address, default_periods_count, default_period_duration_minutes, notifications_enabled, created_at, updated_at';
+  'id, name, slug, status, account_type, approval_status, approval_reason, suspension_reason, plan_id, timezone, locale, currency, billing_anchor_day, logo_url, contact_email, contact_phone, address, default_periods_count, default_period_duration_minutes, notifications_enabled, created_at, updated_at';
 
 export interface AcademyRow extends RowDataPacket {
   id: number;
   name: string;
   slug: string;
   status: AcademyStatus;
+  account_type: AcademyAccountType;
+  approval_status: AcademyApprovalStatus;
+  approval_reason: string | null;
   suspension_reason: AcademySuspensionReason | null;
   plan_id: number | null;
   timezone: string;
@@ -55,15 +63,22 @@ export class AcademyRepository extends TenantScopedRepository {
     return rows[0] ?? null;
   }
 
-  async findByIdWithStatus(academyId: number): Promise<Pick<AcademyRow, 'id' | 'status'> | null> {
+  async findByIdWithStatus(
+    academyId: number,
+  ): Promise<Pick<AcademyRow, 'id' | 'status' | 'account_type' | 'approval_status'> | null> {
     const pool = getPool();
     const [rows] = await pool.execute<AcademyRow[]>(
-      'SELECT id, status FROM academies WHERE id = ? LIMIT 1',
+      'SELECT id, status, account_type, approval_status FROM academies WHERE id = ? LIMIT 1',
       [academyId],
     );
     const row = rows[0];
     if (!row) return null;
-    return { id: row.id, status: row.status };
+    return {
+      id: row.id,
+      status: row.status,
+      account_type: row.account_type,
+      approval_status: row.approval_status,
+    };
   }
 
   async findById(academyId: number): Promise<AcademyRow | null> {
@@ -88,6 +103,7 @@ export class AcademyRepository extends TenantScopedRepository {
     search?: string;
     status?: AcademyStatus;
     planId?: number;
+    accountType?: AcademyAccountType;
   }): Promise<AcademyWithPlanRow[]> {
     const pool = getPool();
     const conditions: string[] = [];
@@ -101,6 +117,10 @@ export class AcademyRepository extends TenantScopedRepository {
       conditions.push('a.plan_id = ?');
       params.push(filters.planId);
     }
+    if (filters?.accountType) {
+      conditions.push('a.account_type = ?');
+      params.push(filters.accountType);
+    }
     if (filters?.search) {
       conditions.push('(a.name LIKE ? OR a.slug LIKE ?)');
       const term = `%${filters.search}%`;
@@ -110,7 +130,8 @@ export class AcademyRepository extends TenantScopedRepository {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [rows] = await pool.execute<AcademyWithPlanRow[]>(
-      `SELECT a.id, a.name, a.slug, a.status, a.suspension_reason, a.plan_id, a.timezone, a.locale, a.currency, a.billing_anchor_day, a.logo_url,
+      `SELECT a.id, a.name, a.slug, a.status, a.account_type, a.approval_status, a.approval_reason,
+              a.suspension_reason, a.plan_id, a.timezone, a.locale, a.currency, a.billing_anchor_day, a.logo_url,
               a.created_at, a.updated_at, p.name AS plan_name,
               (SELECT COUNT(*) FROM users u WHERE u.tenant_id = a.id AND u.role IN ('academy_admin', 'coach', 'parent')) AS user_count
        FROM academies a
@@ -125,7 +146,8 @@ export class AcademyRepository extends TenantScopedRepository {
   async findByIdWithDetails(academyId: number): Promise<AcademyWithPlanRow | null> {
     const pool = getPool();
     const [rows] = await pool.execute<AcademyWithPlanRow[]>(
-      `SELECT a.id, a.name, a.slug, a.status, a.suspension_reason, a.plan_id, a.timezone, a.locale, a.currency, a.billing_anchor_day, a.logo_url,
+      `SELECT a.id, a.name, a.slug, a.status, a.account_type, a.approval_status, a.approval_reason,
+              a.suspension_reason, a.plan_id, a.timezone, a.locale, a.currency, a.billing_anchor_day, a.logo_url,
               a.created_at, a.updated_at, p.name AS plan_name,
               (SELECT COUNT(*) FROM users u WHERE u.tenant_id = a.id AND u.role IN ('academy_admin', 'coach', 'parent')) AS user_count
        FROM academies a
@@ -142,6 +164,8 @@ export class AcademyRepository extends TenantScopedRepository {
       name: string;
       slug: string;
       status?: AcademyStatus;
+      accountType?: AcademyAccountType;
+      approvalStatus?: AcademyApprovalStatus;
       planId: number;
       timezone?: string;
       locale?: string;
@@ -152,12 +176,14 @@ export class AcademyRepository extends TenantScopedRepository {
   ): Promise<number> {
     const executor = conn ?? getPool();
     const [result] = await executor.execute<ResultSetHeader>(
-      `INSERT INTO academies (name, slug, status, plan_id, timezone, locale, currency, billing_anchor_day)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO academies (name, slug, status, account_type, approval_status, plan_id, timezone, locale, currency, billing_anchor_day)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.name,
         input.slug,
         input.status ?? 'active',
+        input.accountType ?? 'academy',
+        input.approvalStatus ?? 'approved',
         input.planId,
         input.timezone ?? 'America/Panama',
         input.locale ?? 'es-PA',
@@ -321,6 +347,22 @@ export class AcademyRepository extends TenantScopedRepository {
     await pool.execute(
       "UPDATE academies SET status = 'active', suspension_reason = NULL WHERE id = ?",
       [academyId],
+    );
+  }
+
+  async approve(academyId: number): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      "UPDATE academies SET approval_status = 'approved', approval_reason = NULL, status = 'active' WHERE id = ?",
+      [academyId],
+    );
+  }
+
+  async reject(academyId: number, reason: string | null): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      "UPDATE academies SET approval_status = 'rejected', approval_reason = ? WHERE id = ?",
+      [reason, academyId],
     );
   }
 }

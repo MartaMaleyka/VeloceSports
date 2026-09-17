@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AcademyListItemDto, PlanDto } from '@velocesport/shared';
-import { AcademyStatus } from '@velocesport/shared';
+import { AcademyApprovalStatus, AcademyStatus } from '@velocesport/shared';
 import {
   Badge,
   Button,
@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   Building2,
   CheckCircle2,
+  Clock3,
   Plus,
   Users,
 } from 'lucide-react';
@@ -34,6 +35,7 @@ import { RowActionsMenu } from './RowActionsMenu';
 import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './ReactivateAcademyModal';
 import { StatusBadge } from './StatusBadge';
 import { BillingStatusBadge } from './BillingBadges';
+import { RejectAccountModal, type RejectAccountTarget } from './RejectAccountModal';
 
 const PAGE_SIZE = 12;
 
@@ -78,6 +80,9 @@ function AcademiesListContent() {
   const [confirmAcademy, setConfirmAcademy] = useState<{ id: number; status: string } | null>(null);
   const [reactivateTarget, setReactivateTarget] = useState<ReactivateAcademyTarget | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [approveTarget, setApproveTarget] = useState<AcademyListItemDto | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<RejectAccountTarget | null>(null);
+  const [approvalLoading, setApprovalLoading] = useState(false);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -91,7 +96,7 @@ function AcademiesListContent() {
     setError(null);
     try {
       const [academyData, planData] = await Promise.all([
-        platformFetchList<AcademyListItemDto>('academies'),
+        platformFetchList<AcademyListItemDto>('academies?accountType=academy'),
         platformFetchList<PlanDto>('plans'),
       ]);
       setAcademies(academyData);
@@ -115,14 +120,21 @@ function AcademiesListContent() {
     const active = academies.filter((a) => a.status === AcademyStatus.ACTIVE).length;
     const suspendedInactive = academies.filter((a) => a.status !== AcademyStatus.ACTIVE).length;
     const platformUsers = academies.reduce((sum, a) => sum + a.userCount, 0);
-    return { total: academies.length, active, suspendedInactive, platformUsers };
+    const pendingApproval = academies.filter(
+      (a) => a.approvalStatus === AcademyApprovalStatus.PENDING,
+    ).length;
+    return { total: academies.length, active, suspendedInactive, platformUsers, pendingApproval };
   }, [academies]);
 
   const filteredAcademies = useMemo(() => {
     const term = search.trim().toLowerCase();
     return academies
       .filter((academy) => {
-        if (statusFilter && academy.status !== statusFilter) return false;
+        if (statusFilter === 'pending_approval') {
+          if (academy.approvalStatus !== AcademyApprovalStatus.PENDING) return false;
+        } else if (statusFilter && academy.status !== statusFilter) {
+          return false;
+        }
         if (planFilter && String(academy.plan?.id ?? '') !== planFilter) return false;
         if (!term) return true;
         const haystack = `${academy.name} ${academy.slug}`.toLowerCase();
@@ -170,23 +182,51 @@ function AcademiesListContent() {
     }
   };
 
+  const approveAcademy = async () => {
+    if (!approveTarget) return;
+    setApprovalLoading(true);
+    try {
+      await platformFetch(`academies/${approveTarget.id}/approve`, { method: 'POST' });
+      showToast({ variant: 'success', message: t('platform.accounts.successApprove') });
+      setApproveTarget(null);
+      await load();
+    } catch (e) {
+      showToast({
+        variant: 'error',
+        message: e instanceof PlatformApiError ? e.message : t('platform.errors.generic'),
+      });
+    } finally {
+      setApprovalLoading(false);
+    }
+  };
+
   const academyActions = (academy: AcademyListItemDto) => ({
     primaryActions: [
-      {
-        id: 'view',
-        label: t('matches.viewDetail'),
-        onClick: () => {
-          window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}`);
-        },
-      },
-      {
-        id: 'edit',
-        label: t('common.edit'),
-        onClick: () => {
-          window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}/edit`);
-        },
-      },
-      ...(academy.status === AcademyStatus.SUSPENDED
+      ...(academy.approvalStatus === AcademyApprovalStatus.PENDING
+        ? [
+            {
+              id: 'approve',
+              label: t('platform.accounts.approve'),
+              onClick: () => setApproveTarget(academy),
+            },
+          ]
+        : [
+            {
+              id: 'view',
+              label: t('matches.viewDetail'),
+              onClick: () => {
+                window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}`);
+              },
+            },
+            {
+              id: 'edit',
+              label: t('common.edit'),
+              onClick: () => {
+                window.location.href = appPath(`/dashboard/super-admin/academies/${academy.id}/edit`);
+              },
+            },
+          ]),
+      ...(academy.status === AcademyStatus.SUSPENDED && academy.approvalStatus !== AcademyApprovalStatus.PENDING
         ? [
             {
               id: 'reactivate',
@@ -201,42 +241,52 @@ function AcademiesListContent() {
           ]
         : []),
     ],
-    menuActions: [
-      ...(academy.status === AcademyStatus.INACTIVE
+    menuActions:
+      academy.approvalStatus === AcademyApprovalStatus.PENDING
         ? [
             {
-              id: 'activate',
-              label: t('platform.academies.status.activate'),
-              onClick: () =>
-                setConfirmAcademy({ id: academy.id, status: AcademyStatus.ACTIVE }),
+              id: 'reject',
+              label: t('platform.accounts.reject.action'),
+              onClick: () => setRejectTarget({ id: academy.id, name: academy.name }),
+              destructive: true,
             },
           ]
-        : []),
-      ...(academy.status === AcademyStatus.SUSPENDED
-        ? [
-            {
-              id: 'reactivate',
-              label: t('platform.academies.reactivate.action'),
-              onClick: () =>
-                setReactivateTarget({
-                  id: academy.id,
-                  name: academy.name,
-                  overdueInvoiceCount: academy.overdueInvoiceCount,
-                }),
-            },
-          ]
-        : []),
-      ...(academy.status !== AcademyStatus.SUSPENDED
-        ? [
-            {
-              id: 'suspend',
-              label: t('platform.academies.status.suspend'),
-              onClick: () =>
-                setConfirmAcademy({ id: academy.id, status: AcademyStatus.SUSPENDED }),
-            },
-          ]
-        : []),
-    ],
+        : [
+            ...(academy.status === AcademyStatus.INACTIVE
+              ? [
+                  {
+                    id: 'activate',
+                    label: t('platform.academies.status.activate'),
+                    onClick: () =>
+                      setConfirmAcademy({ id: academy.id, status: AcademyStatus.ACTIVE }),
+                  },
+                ]
+              : []),
+            ...(academy.status === AcademyStatus.SUSPENDED
+              ? [
+                  {
+                    id: 'reactivate',
+                    label: t('platform.academies.reactivate.action'),
+                    onClick: () =>
+                      setReactivateTarget({
+                        id: academy.id,
+                        name: academy.name,
+                        overdueInvoiceCount: academy.overdueInvoiceCount,
+                      }),
+                  },
+                ]
+              : []),
+            ...(academy.status !== AcademyStatus.SUSPENDED
+              ? [
+                  {
+                    id: 'suspend',
+                    label: t('platform.academies.status.suspend'),
+                    onClick: () =>
+                      setConfirmAcademy({ id: academy.id, status: AcademyStatus.SUSPENDED }),
+                  },
+                ]
+              : []),
+          ],
   });
 
   const renderAcademyCard = (academy: AcademyListItemDto) => (
@@ -253,11 +303,15 @@ function AcademiesListContent() {
             <h3 className="truncate font-display text-xl font-semibold tracking-tight text-text-primary">
               {academy.name}
             </h3>
-            <StatusBadge
-              type="academy"
-              status={academy.status}
-              suspensionReason={academy.suspensionReason}
-            />
+            {academy.approvalStatus !== AcademyApprovalStatus.APPROVED ? (
+              <StatusBadge type="approval" status={academy.approvalStatus} />
+            ) : (
+              <StatusBadge
+                type="academy"
+                status={academy.status}
+                suspensionReason={academy.suspensionReason}
+              />
+            )}
           </div>
           <p className="mt-0.5 text-xs text-text-muted">{academy.slug}</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -273,6 +327,11 @@ function AcademiesListContent() {
           <p className="mt-3 text-sm text-text-secondary">
             {t('platform.academies.cardUsers', { count: academy.userCount })}
           </p>
+          {academy.approvalStatus === AcademyApprovalStatus.REJECTED && academy.approvalReason && (
+            <p className="mt-2 text-xs text-text-secondary">
+              {t('platform.accounts.reasonLabel')}: {academy.approvalReason}
+            </p>
+          )}
         </div>
       </div>
       <DataCardFooter>
@@ -345,7 +404,11 @@ function AcademiesListContent() {
             <TableCell>{planLabel(academy)}</TableCell>
             <TableCell>{academy.userCount}</TableCell>
             <TableCell>
-              <StatusBadge type="academy" status={academy.status} suspensionReason={academy.suspensionReason} />
+              {academy.approvalStatus !== AcademyApprovalStatus.APPROVED ? (
+                <StatusBadge type="approval" status={academy.approvalStatus} />
+              ) : (
+                <StatusBadge type="academy" status={academy.status} suspensionReason={academy.suspensionReason} />
+              )}
             </TableCell>
             <TableCell>
               <BillingStatusBadge status={academy.billingStatus} />
@@ -388,6 +451,11 @@ function AcademiesListContent() {
 
   return (
     <>
+      {kpis.pendingApproval > 0 && (
+        <Badge variant="warning" className="mb-4 inline-flex">
+          {t('platform.accounts.pendingBanner', { count: kpis.pendingApproval })}
+        </Badge>
+      )}
       <DataView
         items={filteredAcademies}
         isSourceEmpty={academies.length === 0}
@@ -408,6 +476,10 @@ function AcademiesListContent() {
           { value: AcademyStatus.ACTIVE, label: t('common.active') },
           { value: AcademyStatus.SUSPENDED, label: t('common.suspended') },
           { value: AcademyStatus.INACTIVE, label: t('common.inactive') },
+          {
+            value: 'pending_approval',
+            label: t('platform.personalAccounts.approvalStatus.pending'),
+          },
         ]}
         secondaryFilter={planFilter}
         onSecondaryFilterChange={setPlanFilter}
@@ -456,6 +528,32 @@ function AcademiesListContent() {
         target={reactivateTarget}
         onClose={() => setReactivateTarget(null)}
         onSuccess={() => void load()}
+      />
+
+      <ConfirmModal
+        open={!!approveTarget}
+        onClose={() => setApproveTarget(null)}
+        onConfirm={() => void approveAcademy()}
+        title={t('platform.accounts.approveConfirmTitle')}
+        description={
+          approveTarget
+            ? t('platform.accounts.approveConfirmDescription', { name: approveTarget.name })
+            : ''
+        }
+        confirmLabel={t('platform.accounts.approve')}
+        cancelLabel={t('common.cancel')}
+        loading={approvalLoading}
+      />
+
+      <RejectAccountModal
+        open={!!rejectTarget}
+        target={rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        onSuccess={() => {
+          setRejectTarget(null);
+          showToast({ variant: 'success', message: t('platform.accounts.successReject') });
+          void load();
+        }}
       />
 
       <ConfirmModal

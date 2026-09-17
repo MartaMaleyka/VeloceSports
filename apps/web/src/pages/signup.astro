@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SignupIndependentFormIsland from '../components/auth/SignupIndependentFormIsland';
+import LoginHeroBrandMark from '../components/auth/LoginHeroBrandMark.astro';
+import LoginHeroDecor from '../components/auth/LoginHeroDecor.astro';
+import LoginPanelDecor from '../components/auth/LoginPanelDecor.astro';
+import { resolveLocale, t } from '@velocesport/i18n';
+
+const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const apiUrl = `${base}/api/auth`;
+
+const heroFeatures = [
+  t('auth.signup.heroFeatures.noAcademy', locale),
+  t('auth.signup.heroFeatures.capture', locale),
+  t('auth.signup.heroFeatures.free', locale),
+];
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t('auth.signup.formTitle', locale)} — ${t('common.appName', locale)}`}
+  description={t('meta.appDescription', locale)}
+>
+  <div class="ds-brand-page">
+    <div class="ds-brand-page__shell md:grid-cols-2">
+      <aside class="ds-brand-page__hero ds-brand-page__hero--asymmetric" aria-label={t('common.appName', locale)}>
+        <LoginHeroDecor />
+
+        <div class="ds-brand-page__hero-content ds-brand-page__hero-content--asymmetric ds-stagger-enter">
+          <div class="ds-stagger-item ds-brand-page__hero-brand">
+            <LoginHeroBrandMark />
+          </div>
+
+          <div class="ds-stagger-item ds-brand-page__hero-copy">
+            <div class="ds-brand-page__hero-accent" aria-hidden="true"></div>
+            <h1 class="sr-only">{t('common.appName', locale)}</h1>
+            <span class="ds-brand-tagline ds-brand-tagline--compact">
+              {t('auth.signup.heroTagline', locale)}
+            </span>
+          </div>
+
+          <ul class="ds-brand-page__features ds-brand-page__features--flow ds-brand-page__features--asymmetric ds-stagger-item">
+            {
+              heroFeatures.map((feature, index) => (
+                <li class="ds-brand-page__feature" style={`--feature-index: ${index}`}>
+                  <span class="ds-brand-page__feature-icon" aria-hidden="true">
+                    ✓
+                  </span>
+                  {feature}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </aside>
+
+      <main class="ds-brand-page__panel">
+        <LoginPanelDecor />
+        <SignupIndependentFormIsland client:idle initialLocale={locale} apiUrl={apiUrl} />
+      </main>
+    </div>
+  </div>
+</BaseLayout>

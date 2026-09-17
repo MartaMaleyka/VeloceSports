@@ -1,5 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { SignupAcademyBody, SignupIndependentBody } from '@velocesport/shared';
 import { authService } from '../services/auth.service.js';
+import { independentSignupService } from '../services/independent-signup.service.js';
+import { academySignupService } from '../services/academy-signup.service.js';
 import { UnauthorizedError } from '../types/index.js';
 
 function readClientContext(req: Request): {
@@ -24,6 +27,26 @@ export class AuthController {
       const { email, password } = req.body as { email: string; password: string };
       const result = await authService.login(email, password, readClientContext(req));
       res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async signupIndependent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = req.body as SignupIndependentBody;
+      const result = await independentSignupService.signup(body);
+      res.status(201).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async signupAcademy(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = req.body as SignupAcademyBody;
+      const result = await academySignupService.signup(body);
+      res.status(201).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

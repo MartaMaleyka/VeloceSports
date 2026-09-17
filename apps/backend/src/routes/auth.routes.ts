@@ -3,7 +3,16 @@ import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { authLoginRateLimiter } from '../middlewares/rateLimit.js';
 import { validate } from '../middlewares/validate.js';
-import { loginSchema, registerSchema, refreshSchema, logoutSchema, updateProfileSchema, changePasswordSchema } from '../validators/auth.validator.js';
+import {
+  loginSchema,
+  registerSchema,
+  refreshSchema,
+  logoutSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+  signupIndependentSchema,
+  signupAcademySchema,
+} from '../validators/auth.validator.js';
 
 const router = Router();
 
@@ -59,6 +68,74 @@ router.post(
   authLoginRateLimiter,
   validate(loginSchema),
   (req, res, next) => authController.login(req, res, next),
+);
+
+/**
+ * @openapi
+ * /auth/signup-independent:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Alta pública de un padre sin academia (cuenta personal, un solo jugador)
+ *     description: Crea una academia personal invisible, siembra su catálogo de acciones, y da al padre también el rol coach sobre ella para que pueda capturar en vivo.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [parentFirstName, parentLastName, email, password, childFirstName, childLastName]
+ *             properties:
+ *               parentFirstName: { type: string }
+ *               parentLastName: { type: string }
+ *               email: { type: string }
+ *               password: { type: string }
+ *               childFirstName: { type: string }
+ *               childLastName: { type: string }
+ *               childJerseyNumber: { type: integer }
+ *     responses:
+ *       201:
+ *         description: Cuenta creada, tokens de sesión listos para usar
+ *       409:
+ *         description: El correo ya está registrado
+ */
+router.post(
+  '/signup-independent',
+  authLoginRateLimiter,
+  validate(signupIndependentSchema),
+  (req, res, next) => authController.signupIndependent(req, res, next),
+);
+
+/**
+ * @openapi
+ * /auth/signup-academy:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Alta pública de una academia real (con su primer academy_admin)
+ *     description: Igual que signup-independent, la cuenta queda pendiente de aprobación de super_admin.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [academyName, adminFirstName, adminLastName, email, password]
+ *             properties:
+ *               academyName: { type: string }
+ *               adminFirstName: { type: string }
+ *               adminLastName: { type: string }
+ *               email: { type: string }
+ *               password: { type: string }
+ *     responses:
+ *       201:
+ *         description: Cuenta creada, pendiente de aprobación
+ *       409:
+ *         description: El correo ya está registrado
+ */
+router.post(
+  '/signup-academy',
+  authLoginRateLimiter,
+  validate(signupAcademySchema),
+  (req, res, next) => authController.signupAcademy(req, res, next),
 );
 
 /**
