@@ -19,3 +19,4 @@ tmp-export-test/
 .vscode/*
 !.vscode/extensions.json
 .env.minio
+.keys/

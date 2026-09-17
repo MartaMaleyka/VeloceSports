@@ -79,9 +79,9 @@ export default function MatchClockBar({
             {running ? (
               <Button
                 type="button"
-                size="md"
+                size="sm"
                 variant="secondary"
-                className="min-h-9 px-3 text-xs md:min-h-touch md:text-sm"
+                className="px-2.5 text-xs md:px-4 md:text-sm"
                 disabled={commandLoading}
                 onClick={() => void onPause()}
               >
@@ -90,9 +90,9 @@ export default function MatchClockBar({
             ) : (
               <Button
                 type="button"
-                size="md"
+                size="sm"
                 variant="secondary"
-                className="min-h-9 px-3 text-xs md:min-h-touch md:text-sm"
+                className="px-2.5 text-xs md:px-4 md:text-sm"
                 disabled={commandLoading}
                 onClick={() => void onResume()}
               >
@@ -101,9 +101,9 @@ export default function MatchClockBar({
             )}
             <Button
               type="button"
-              size="md"
+              size="sm"
               variant="secondary"
-              className="min-h-9 px-3 text-xs md:min-h-touch md:text-sm"
+              className="px-2.5 text-xs md:px-4 md:text-sm"
               disabled={commandLoading || !canAdvancePeriod}
               title={
                 canAdvancePeriod
@@ -116,9 +116,9 @@ export default function MatchClockBar({
             </Button>
             <Button
               type="button"
-              size="md"
+              size="sm"
               variant="secondary"
-              className="min-h-9 px-3 text-xs md:min-h-touch md:text-sm"
+              className="px-2.5 text-xs md:px-4 md:text-sm"
               disabled={commandLoading}
               onClick={openAdjust}
             >

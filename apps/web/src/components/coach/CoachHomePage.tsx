@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { MatchCategoryOptionDto, MatchDto, MatchesKpisDto } from '@velocesport/shared';
 import { MatchStatus } from '@velocesport/shared';
 import {
+  Alert,
   Button,
   Skeleton,
   StatCard,
@@ -111,12 +112,14 @@ export default function CoachHomePage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-feedback-error/30 bg-feedback-error/5 px-6 py-8 text-center">
-        <p className="text-feedback-error">{error}</p>
-        <Button type="button" className="mt-4" onClick={() => void load()}>
-          {t('common.retry')}
-        </Button>
-      </div>
+      <Alert variant="error" title={t('dashboard.coach.home.errors.title')}>
+        {error}
+        <div className="mt-3">
+          <Button type="button" variant="secondary" size="sm" onClick={() => void load()}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      </Alert>
     );
   }
 

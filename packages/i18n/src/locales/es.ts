@@ -704,6 +704,9 @@ export const es = {
         heroEyebrow: 'Entrenador',
         heroHello: 'Hola, {name}',
         heroSubtitle: 'Prepara el próximo partido y sigue a tus categorías.',
+        errors: {
+          title: 'Error',
+        },
         kpis: {
           categories: 'Mis categorías',
           upcoming: 'Próximos partidos',

@@ -1,8 +1,9 @@
+import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../utils/cn.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
-export type ButtonSize = 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -21,24 +22,29 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
+  sm: 'min-h-touch px-4 py-2 text-sm font-medium',
   md: 'min-h-touch px-6 py-3 text-sm font-medium',
   lg: 'min-h-touch px-8 py-3 text-base font-medium',
 };
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled,
-  className,
-  children,
-  type = 'button',
-  ...props
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    disabled,
+    className,
+    children,
+    type = 'button',
+    ...props
+  },
+  ref,
+) {
   const isDisabled = disabled || loading;
 
   return (
     <button
+      ref={ref}
       type={type}
       disabled={isDisabled}
       aria-busy={loading || undefined}
@@ -61,4 +67,4 @@ export function Button({
       {children}
     </button>
   );
-}
+});

@@ -1,21 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ActionCatalogDto,
+  ActionImpact,
   GameActionListDto,
   MatchAttendanceDto,
   MatchDto,
 } from '@velocesport/shared';
 import { GameActionStatus, MatchLineupRole, MatchStatus } from '@velocesport/shared';
 import {
+  normalizeVoiceText,
   parseVoicePhrase,
+  VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE,
   type VoiceInterpretFailure,
 } from '@velocesport/shared';
+import { CircleCheck, CircleDot, CircleX, TriangleAlert, Vibrate, Volume2, VolumeX } from 'lucide-react';
 import {
   Alert,
   Button,
   ConfirmModal,
   Input,
   Modal,
+  Skeleton,
   cn,
   useToast,
 } from '@velocesport/design-system';
@@ -43,10 +48,13 @@ import {
   playVoiceSuccessFeedback,
 } from './capture/voice-capture-feedback';
 import {
+  getVoiceConfirmBeforeRegister,
   getVoiceContinuousMode,
   getVoiceSoundFeedback,
   getVoiceVibrationFeedback,
   setVoiceContinuousMode,
+  setVoiceSoundFeedback,
+  setVoiceVibrationFeedback,
 } from './capture/voice-capture-preferences';
 import { PlayerAvatar } from '../players/PlayerAvatar';
 
@@ -54,6 +62,16 @@ interface MatchCapturePanelProps {
   matchId: number;
   match: MatchDto;
   onMatchUpdated: (updated?: MatchDto) => void;
+}
+
+const VOICE_CONFIRM_YES = new Set(['si', 'confirmar', 'confirmo', 'dale', 'ok', 'okay', 'yes', 'confirm']);
+const VOICE_CONFIRM_NO = new Set(['no', 'cancelar', 'cancela', 'cancel']);
+
+/** Icono redundante al color para distinguir impacto (accesibilidad daltónica). */
+function ImpactIcon({ impact, className }: { impact: ActionImpact; className?: string }) {
+  if (impact === 'positive') return <CircleCheck className={className} aria-hidden="true" />;
+  if (impact === 'negative') return <CircleX className={className} aria-hidden="true" />;
+  return <CircleDot className={className} aria-hidden="true" />;
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -139,11 +157,23 @@ export default function MatchCapturePanel({
   const [voiceContinuousMode, setVoiceContinuousModeState] = useState(false);
   const [voiceSoundFeedback, setVoiceSoundFeedbackState] = useState(true);
   const [voiceVibrationFeedback, setVoiceVibrationFeedbackState] = useState(true);
+  const [pendingVoiceConfirm, setPendingVoiceConfirm] = useState<{
+    player: CapturePlayerRef;
+    action: CaptureActionRef;
+    heardText: string;
+  } | null>(null);
 
   useEffect(() => {
     setVoiceContinuousModeState(getVoiceContinuousMode());
     setVoiceSoundFeedbackState(getVoiceSoundFeedback());
     setVoiceVibrationFeedbackState(getVoiceVibrationFeedback());
+  }, []);
+
+  // En móvil, el tablero entra a pantalla completa por defecto: evita el scroll
+  // para localizar jugadores mientras el coach mira la cancha, no la pantalla.
+  useEffect(() => {
+    setBoardFullscreen((current) => current || !isDesktopCapture);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -469,9 +499,36 @@ export default function MatchCapturePanel({
     ],
   );
 
+  const confirmPendingVoiceCapture = useCallback(() => {
+    setPendingVoiceConfirm((current) => {
+      if (!current) return current;
+      registerVoiceCapture(current.player, current.action, current.heardText);
+      return null;
+    });
+  }, [registerVoiceCapture]);
+
+  const cancelPendingVoiceCapture = useCallback(() => {
+    setPendingVoiceConfirm(null);
+    emitVoiceOutcome('info', t('matches.capture.voiceCapture.cancelled'));
+  }, [emitVoiceOutcome, t]);
+
   const handleVoiceFinalPhrase = useCallback(
     (text: string) => {
       if (captureLocked) return;
+
+      if (pendingVoiceConfirm) {
+        const normalized = normalizeVoiceText(text);
+        if (VOICE_CONFIRM_YES.has(normalized)) {
+          confirmPendingVoiceCapture();
+          return;
+        }
+        if (VOICE_CONFIRM_NO.has(normalized)) {
+          cancelPendingVoiceCapture();
+          return;
+        }
+        // No coincide con sí/no: se descarta la confirmación pendiente y se interpreta la frase nueva.
+        setPendingVoiceConfirm(null);
+      }
 
       const parsed = parseVoicePhrase({
         text,
@@ -517,10 +574,22 @@ export default function MatchCapturePanel({
         return;
       }
 
-      registerVoiceCapture(player, action, text.trim());
+      const heardText = text.trim();
+      if (
+        getVoiceConfirmBeforeRegister() &&
+        result.confidence < VOICE_CAPTURE_AUTO_REGISTER_MIN_CONFIDENCE
+      ) {
+        setPendingVoiceConfirm({ player, action, heardText });
+        return;
+      }
+
+      registerVoiceCapture(player, action, heardText);
     },
     [
       captureLocked,
+      pendingVoiceConfirm,
+      confirmPendingVoiceCapture,
+      cancelPendingVoiceCapture,
       locale,
       presentPlayers,
       voiceCatalog,
@@ -550,55 +619,157 @@ export default function MatchCapturePanel({
     voiceExperiment.toggleListening();
   }, [voiceContinuousMode, voiceExperiment]);
 
-  const voiceMicProps = isLiveMode
-    ? {
-        isListening: voiceExperiment.isListening,
-        continuousActive: voiceExperiment.continuousActive,
-        supported: voiceExperiment.supported,
-        reducedMotion,
-        onToggle: handleVoiceMicToggle,
+  const handleVoiceContinuousToggle = useCallback(() => {
+    const next = !voiceContinuousMode;
+    setVoiceContinuousModeState(next);
+    setVoiceContinuousMode(next);
+    if (next) {
+      voiceExperiment.startContinuousListening();
+    } else {
+      voiceExperiment.stopContinuousListening();
+    }
+  }, [voiceContinuousMode, voiceExperiment]);
+
+  const handleToggleVoiceSound = useCallback(() => {
+    setVoiceSoundFeedbackState((current) => {
+      const next = !current;
+      setVoiceSoundFeedback(next);
+      return next;
+    });
+  }, []);
+
+  const handleToggleVoiceVibration = useCallback(() => {
+    setVoiceVibrationFeedbackState((current) => {
+      const next = !current;
+      setVoiceVibrationFeedback(next);
+      return next;
+    });
+  }, []);
+
+  const voiceStatusLabel = voiceExperiment.continuousActive
+    ? t('matches.capture.voiceCapture.listeningContinuous')
+    : voiceExperiment.isListening
+      ? t('matches.capture.voiceCapture.listening')
+      : t('matches.capture.voiceCapture.stopped');
+
+  const voiceAlert = useMemo(() => {
+    if (!isLiveMode) return null;
+    if (voiceExperiment.status === 'unsupported') {
+      return {
+        variant: 'info' as const,
+        title: t('matches.capture.voiceCapture.notSupported'),
+        description: t('matches.capture.voiceCapture.notSupportedDetail'),
+      };
+    }
+    if (voiceExperiment.status === 'permission_denied') {
+      return {
+        variant: 'warning' as const,
+        title: t('matches.capture.voiceCapture.permissionDenied'),
+        description: t('matches.capture.voiceCapture.permissionDeniedDetail'),
+      };
+    }
+    if (voiceExperiment.status === 'error') {
+      if (!voiceExperiment.secureContext) {
+        return {
+          variant: 'warning' as const,
+          title: t('matches.capture.voiceCapture.error'),
+          description: t('matches.capture.voiceCapture.insecureContext'),
+        };
       }
-    : undefined;
-
-  const togglePlayer = (playerId: number) => {
-    const next = selectedPlayerId === playerId ? null : playerId;
-    setSelectedPlayerId(next);
-    if (next != null && selectedActionCode != null) {
-      tryCapture(next, selectedActionCode);
+      return {
+        variant: 'error' as const,
+        title: t('matches.capture.voiceCapture.error'),
+        description: t('matches.capture.voiceCapture.errorDetail', {
+          code: voiceExperiment.errorCode ?? 'unknown',
+        }),
+      };
     }
-  };
+    return null;
+  }, [
+    isLiveMode,
+    voiceExperiment.status,
+    voiceExperiment.secureContext,
+    voiceExperiment.errorCode,
+    t,
+  ]);
 
-  const handlePlayerTap = (playerId: number) => {
-    if (captureLocked) return;
-    if (isDesktopCapture) {
-      togglePlayer(playerId);
-      return;
-    }
-    if (selectedPlayerId === playerId && actionSheetOpen) {
-      closeActionSheet();
-      return;
-    }
-    setSelectedPlayerId(playerId);
-    setActionSheetOpen(true);
-  };
+  const voiceMicProps = useMemo(
+    () =>
+      isLiveMode
+        ? {
+            isListening: voiceExperiment.isListening,
+            continuousActive: voiceExperiment.continuousActive,
+            supported: voiceExperiment.supported,
+            reducedMotion,
+            onToggle: handleVoiceMicToggle,
+          }
+        : undefined,
+    [
+      isLiveMode,
+      voiceExperiment.isListening,
+      voiceExperiment.continuousActive,
+      voiceExperiment.supported,
+      reducedMotion,
+      handleVoiceMicToggle,
+    ],
+  );
 
-  const handleMobileActionSelect = (code: number) => {
-    if (selectedPlayerId == null) return;
-    tryCapture(selectedPlayerId, code);
-  };
+  const togglePlayer = useCallback(
+    (playerId: number) => {
+      const next = selectedPlayerId === playerId ? null : playerId;
+      setSelectedPlayerId(next);
+      if (next != null && selectedActionCode != null) {
+        tryCapture(next, selectedActionCode);
+      }
+    },
+    [selectedActionCode, selectedPlayerId, tryCapture],
+  );
 
-  const toggleAction = (code: number) => {
-    const next = selectedActionCode === code ? null : code;
-    setSelectedActionCode(next);
-    if (selectedPlayerId != null && next != null) {
-      tryCapture(selectedPlayerId, next);
-    }
-  };
+  const handlePlayerTap = useCallback(
+    (playerId: number) => {
+      if (captureLocked) return;
+      if (isDesktopCapture) {
+        togglePlayer(playerId);
+        return;
+      }
+      if (selectedPlayerId === playerId && actionSheetOpen) {
+        closeActionSheet();
+        return;
+      }
+      setSelectedPlayerId(playerId);
+      setActionSheetOpen(true);
+    },
+    [actionSheetOpen, captureLocked, closeActionSheet, isDesktopCapture, selectedPlayerId, togglePlayer],
+  );
+
+  const handleMobileActionSelect = useCallback(
+    (code: number) => {
+      if (selectedPlayerId == null) return;
+      tryCapture(selectedPlayerId, code);
+    },
+    [selectedPlayerId, tryCapture],
+  );
+
+  const toggleAction = useCallback(
+    (code: number) => {
+      const next = selectedActionCode === code ? null : code;
+      setSelectedActionCode(next);
+      if (selectedPlayerId != null && next != null) {
+        tryCapture(selectedPlayerId, next);
+      }
+    },
+    [selectedActionCode, selectedPlayerId, tryCapture],
+  );
 
   const undoCandidate = useMemo(() => {
     if (!isLiveMode) return null;
     return history.find((e) => canImmediateUndo(e, tick)) ?? null;
   }, [history, isLiveMode, tick]);
+
+  const lastCaptured = useMemo(
+    () => history.find((e) => e.serverStatus !== GameActionStatus.VOIDED) ?? null,
+    [history],
+  );
 
   const handleImmediateUndo = async (clientActionId?: string) => {
     const targetId = clientActionId ?? undoCandidate?.clientActionId;
@@ -668,7 +839,12 @@ export default function MatchCapturePanel({
       : null;
 
   if (loading) {
-    return <p className="text-text-secondary">{t('common.loading')}</p>;
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-16 rounded-lg" />
+        <Skeleton className="h-64 rounded-xl" />
+      </div>
+    );
   }
 
   if (forbidden) {
@@ -722,8 +898,36 @@ export default function MatchCapturePanel({
 
   return (
     <div className="flex min-h-[70vh] max-h-[min(85dvh,920px)] flex-col">
+      {/* Cuerpo: móvil columna; md+ dos columnas lado a lado. Incluye la barra de
+          contexto (reloj/deshacer/voz) para que siga visible en pantalla completa. */}
+      <div
+        className={cn(
+          boardFullscreen
+            ? 'fixed inset-0 z-50 flex flex-col overflow-y-auto bg-bg-surface p-3 sm:p-4'
+            : 'flex min-h-0 flex-1 flex-col',
+        )}
+        aria-modal={boardFullscreen || undefined}
+        role={boardFullscreen ? 'dialog' : undefined}
+        aria-label={boardFullscreen ? t('matches.capture.boardFullscreenLabel') : undefined}
+      >
       {/* Barra de contexto — compacta en móvil */}
       <div className="sticky top-0 z-30 -mx-4 shrink-0 border-b border-border bg-bg-surface/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:py-3">
+        {lastCaptured && canEditActions && (
+          <div
+            className={cn(
+              'mb-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold md:text-sm',
+              impactChipClasses(lastCaptured.action.impact),
+            )}
+          >
+            <ImpactIcon impact={lastCaptured.action.impact} className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {t('matches.capture.toastRecorded', {
+                jersey: lastCaptured.player.jerseyNumber,
+                action: lastCaptured.action.name,
+              })}
+            </span>
+          </div>
+        )}
         {isLiveMode && match.clock ? (
           <MatchClockBar
             period={matchClock.period}
@@ -794,13 +998,106 @@ export default function MatchCapturePanel({
             <span className="text-xs text-text-primary md:text-sm">{t('matches.capture.undoBanner')}</span>
             <Button
               type="button"
-              size="md"
+              size="sm"
               variant="secondary"
-              className="min-h-9 shrink-0 px-3 text-xs md:min-h-touch md:text-sm"
+              className="shrink-0 px-2.5 text-xs md:px-4 md:text-sm"
               onClick={() => void handleImmediateUndo()}
             >
               {t('matches.capture.undo')}
             </Button>
+          </div>
+        )}
+
+        {voiceMicProps && (
+          <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-bg-muted/40 px-2 py-1.5 md:mt-2 md:px-3 md:py-2">
+            <span className="text-xs text-text-secondary md:text-sm">
+              {t('matches.capture.voiceCapture.title')}: {voiceStatusLabel}
+            </span>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                aria-pressed={voiceSoundFeedback}
+                aria-label={t('matches.capture.voiceCapture.soundFeedback')}
+                title={t('matches.capture.voiceCapture.soundFeedback')}
+                onClick={handleToggleVoiceSound}
+                className={cn(
+                  'inline-flex min-h-touch min-w-touch items-center justify-center rounded-full border transition-colors',
+                  voiceSoundFeedback
+                    ? 'border-section-brand-fg bg-section-brand-subtle text-section-brand-fg'
+                    : 'border-border text-text-muted hover:bg-bg-surface',
+                )}
+              >
+                {voiceSoundFeedback ? (
+                  <Volume2 className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <VolumeX className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+              <button
+                type="button"
+                aria-pressed={voiceVibrationFeedback}
+                aria-label={t('matches.capture.voiceCapture.vibrationFeedback')}
+                title={t('matches.capture.voiceCapture.vibrationFeedback')}
+                onClick={handleToggleVoiceVibration}
+                className={cn(
+                  'inline-flex min-h-touch min-w-touch items-center justify-center rounded-full border transition-colors',
+                  voiceVibrationFeedback
+                    ? 'border-section-brand-fg bg-section-brand-subtle text-section-brand-fg'
+                    : 'border-border text-text-muted hover:bg-bg-surface',
+                )}
+              >
+                <Vibrate className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <Button
+                type="button"
+                size="sm"
+                variant={voiceContinuousMode ? 'primary' : 'secondary'}
+                aria-pressed={voiceContinuousMode}
+                className="px-2.5 text-xs md:px-4 md:text-sm"
+                disabled={!voiceExperiment.supported}
+                onClick={handleVoiceContinuousToggle}
+              >
+                {t('matches.capture.voiceCapture.continuousMode')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {voiceAlert && (
+          <Alert
+            variant={voiceAlert.variant}
+            title={voiceAlert.title}
+            className="mt-1.5 md:mt-2"
+          >
+            {voiceAlert.description}
+          </Alert>
+        )}
+
+        {pendingVoiceConfirm && (
+          <div className="mt-1.5 space-y-1.5 rounded-lg border border-section-brand-border bg-section-brand-subtle/40 px-2 py-1.5 md:mt-2 md:px-3 md:py-2">
+            <p className="text-xs font-medium text-text-primary md:text-sm">
+              {t('matches.capture.voiceCapture.confirmPrompt', {
+                jersey: pendingVoiceConfirm.player.jerseyNumber,
+                lastName: pendingVoiceConfirm.player.lastName,
+                action: pendingVoiceConfirm.action.name,
+              })}
+            </p>
+            <p className="text-xs text-text-muted">
+              {t('matches.capture.voiceCapture.confirmHeard', {
+                text: pendingVoiceConfirm.heardText,
+              })}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" size="sm" onClick={confirmPendingVoiceCapture}>
+                {t('matches.capture.voiceCapture.confirmAction')}
+              </Button>
+              <Button type="button" size="sm" variant="secondary" onClick={cancelPendingVoiceCapture}>
+                {t('common.cancel')}
+              </Button>
+              <span className="text-xs text-text-muted">
+                {t('matches.capture.voiceCapture.confirmVoiceHint')}
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -819,17 +1116,7 @@ export default function MatchCapturePanel({
         </Alert>
       )}
 
-      {/* Cuerpo: móvil columna; md+ dos columnas lado a lado */}
-      <div
-        className={cn(
-          boardFullscreen
-            ? 'fixed inset-0 z-50 flex flex-col bg-bg-surface p-3 sm:p-4'
-            : 'mt-2 flex min-h-0 flex-1 flex-col md:mt-3',
-        )}
-        aria-modal={boardFullscreen || undefined}
-        role={boardFullscreen ? 'dialog' : undefined}
-        aria-label={boardFullscreen ? t('matches.capture.boardFullscreenLabel') : undefined}
-      >
+      <div className="mt-2 flex min-h-0 flex-1 flex-col md:mt-3">
         <div className="mb-2 flex h-7 shrink-0 items-center justify-between gap-2">
           <h3
             className={cn(
@@ -868,73 +1155,14 @@ export default function MatchCapturePanel({
                   {t('matches.capture.playersSection')}
                 </h3>
               </div>
-              <div
-                className={cn(
-                  'grid gap-1.5',
-                  boardFullscreen
-                    ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(6rem,1fr))]'
-                    : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))]',
-                )}
-              >
-                {presentPlayers.map((player) => {
-                  const isSelected = selectedPlayerId === player.playerId;
-                  const isStarter = player.lineup === MatchLineupRole.STARTER;
-                  const ringImpact = isDesktopCapture ? (selectedAction?.impact ?? null) : null;
-                  return (
-                    <button
-                      key={player.playerId}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => handlePlayerTap(player.playerId)}
-                      className={cn(
-                        'flex w-full min-w-0 flex-col items-center justify-center rounded-lg border transition-transform',
-                        boardFullscreen
-                          ? 'min-h-[4rem] px-2 py-2'
-                          : 'min-h-[3.25rem] px-1.5 py-1.5',
-                        impactPlayerRingClasses(ringImpact, isSelected),
-                        !reducedMotion && isSelected && 'scale-[1.02]',
-                      )}
-                    >
-                      <PlayerAvatar
-                        player={{
-                          firstName: player.firstName,
-                          lastName: player.lastName,
-                          photoUrl: player.photoUrl ?? null,
-                        }}
-                        size="sm"
-                        className="mb-0.5"
-                      />
-                      <span
-                        className={cn(
-                          'ds-capture-player__jersey font-display font-bold tabular-nums leading-none',
-                          boardFullscreen ? 'text-2xl' : 'text-xl',
-                          isStarter && !isSelected && 'text-section-brand-fg',
-                        )}
-                      >
-                        {player.jerseyNumber}
-                      </span>
-                      <span
-                        className={cn(
-                          'ds-capture-player__name mt-0.5 line-clamp-1 text-center font-medium leading-tight',
-                          boardFullscreen ? 'text-[0.65rem]' : 'text-[0.6rem]',
-                        )}
-                      >
-                        {player.lastName}
-                      </span>
-                      {isStarter && (
-                        <span
-                          className={cn(
-                            'mt-0.5 rounded-full border border-section-brand-border bg-section-brand-subtle px-1 font-semibold uppercase leading-none text-section-brand-fg',
-                            boardFullscreen ? 'text-[0.6rem]' : 'text-[0.55rem]',
-                          )}
-                        >
-                          {t('matches.attendance.starter')}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+              <CapturePlayerGrid
+                players={presentPlayers}
+                selectedPlayerId={selectedPlayerId}
+                selectedActionImpact={isDesktopCapture ? selectedAction?.impact ?? null : null}
+                boardFullscreen={boardFullscreen}
+                reducedMotion={reducedMotion}
+                onSelectPlayer={handlePlayerTap}
+              />
 
               {isLiveMode && !boardFullscreen && (
                 <div className="mt-4 pb-2 md:hidden">
@@ -976,6 +1204,7 @@ export default function MatchCapturePanel({
           )}
         </div>
       </div>
+    </div>
 
       {/* Historial desktop: debajo del bloque jugadores + acciones */}
       {(history.length > 0 || readOnlyHistory || canEditActions) && (
@@ -1155,7 +1384,98 @@ export default function MatchCapturePanel({
   );
 }
 
-function CaptureActionGrid({
+const CapturePlayerGrid = memo(function CapturePlayerGrid({
+  players,
+  selectedPlayerId,
+  selectedActionImpact,
+  boardFullscreen,
+  reducedMotion,
+  onSelectPlayer,
+}: {
+  players: CapturePlayerRef[];
+  selectedPlayerId: number | null;
+  selectedActionImpact: ActionImpact | null;
+  boardFullscreen: boolean;
+  reducedMotion: boolean;
+  onSelectPlayer: (playerId: number) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className={cn(
+        'grid gap-1.5',
+        boardFullscreen
+          ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(6rem,1fr))]'
+          : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))]',
+      )}
+    >
+      {players.map((player) => {
+        const isSelected = selectedPlayerId === player.playerId;
+        const isStarter = player.lineup === MatchLineupRole.STARTER;
+        const ringImpact = selectedActionImpact;
+        return (
+          <button
+            key={player.playerId}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => onSelectPlayer(player.playerId)}
+            className={cn(
+              'relative flex w-full min-w-0 flex-col items-center justify-center rounded-lg border transition-transform',
+              boardFullscreen ? 'min-h-[4rem] px-2 py-2' : 'min-h-[3.25rem] px-1.5 py-1.5',
+              impactPlayerRingClasses(ringImpact, isSelected),
+              !reducedMotion && isSelected && 'scale-[1.02]',
+            )}
+          >
+            {ringImpact === 'negative' && isSelected && (
+              <TriangleAlert
+                className="absolute right-1 top-1 h-3.5 w-3.5 text-feedback-error"
+                aria-hidden="true"
+              />
+            )}
+            <PlayerAvatar
+              player={{
+                firstName: player.firstName,
+                lastName: player.lastName,
+                photoUrl: player.photoUrl ?? null,
+              }}
+              size="sm"
+              className="mb-0.5"
+            />
+            <span
+              className={cn(
+                'ds-capture-player__jersey font-display font-bold tabular-nums leading-none',
+                boardFullscreen ? 'text-2xl' : 'text-xl',
+                isStarter && !isSelected && 'text-section-brand-fg',
+              )}
+            >
+              {player.jerseyNumber}
+            </span>
+            <span
+              className={cn(
+                'ds-capture-player__name mt-0.5 line-clamp-1 text-center font-medium leading-tight',
+                boardFullscreen ? 'text-[0.65rem]' : 'text-[0.6rem]',
+              )}
+            >
+              {player.lastName}
+            </span>
+            {isStarter && (
+              <span
+                className={cn(
+                  'mt-0.5 rounded-full border border-section-brand-border bg-section-brand-subtle px-1 font-semibold uppercase leading-none text-section-brand-fg',
+                  boardFullscreen ? 'text-[0.6rem]' : 'text-[0.55rem]',
+                )}
+              >
+                {t('matches.attendance.starter')}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+});
+
+const CaptureActionGrid = memo(function CaptureActionGrid({
   sortedCatalog,
   selectedActionCode,
   onSelectAction,
@@ -1254,7 +1574,10 @@ function CaptureActionGrid({
                   'ring-2 ring-section-brand-fg ring-offset-2 ring-offset-bg-surface',
               )}
             >
-              <span className="font-mono text-xs leading-none opacity-70">{action.code}</span>
+              <span className="flex items-center gap-1 font-mono text-xs leading-none opacity-70">
+                <ImpactIcon impact={action.impact} className="h-3 w-3 shrink-0" />
+                {action.code}
+              </span>
               <span className="mt-0.5 line-clamp-2 text-[0.65rem] font-semibold leading-tight">
                 {action.name}
               </span>
@@ -1271,7 +1594,7 @@ function CaptureActionGrid({
       )}
     </section>
   );
-}
+});
 
 function CaptureHistoryList({
   history,
