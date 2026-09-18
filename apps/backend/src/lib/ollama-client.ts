@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { PlayerMatchInsightFactsDto } from '@velocesport/shared';
+import type { PlayerMatchInsightFactsDto, PlayerPeriodInsightFactsDto } from '@velocesport/shared';
 import { env } from '../config/env.js';
 
 export interface OllamaInsightResult {
@@ -266,4 +266,147 @@ export async function generatePlayerMatchInsight(
   }
 
   return { result: buildFallbackInsight(facts, locale), source: 'fallback' };
+}
+
+export interface GeneratePeriodInsightResult {
+  text: string;
+  source: 'ollama' | 'fallback';
+}
+
+const ollamaPeriodInsightSchema = z.object({
+  text: z.string().trim().min(1).max(MAX_TEXT_LENGTH),
+});
+
+const TREND_LABELS: Record<Locale, Record<string, string>> = {
+  es: {
+    up: 'en aumento respecto al mes anterior',
+    down: 'en descenso respecto al mes anterior',
+    stable: 'estable respecto al mes anterior',
+    unknown: 'sin suficiente historial para ver tendencia',
+  },
+  en: {
+    up: 'trending up from the previous month',
+    down: 'trending down from the previous month',
+    stable: 'stable compared to the previous month',
+    unknown: 'not enough history yet to see a trend',
+  },
+};
+
+export function buildFallbackPeriodInsight(
+  facts: PlayerPeriodInsightFactsDto,
+  locale: Locale = 'es',
+): string {
+  const strongLabel = dimensionLabel(facts.strongestDimension?.slug, locale);
+  const weakLabel = dimensionLabel(facts.weakestDimension?.slug, locale);
+  const trendLabel = TREND_LABELS[locale][facts.trend];
+
+  if (locale === 'en') {
+    const caveat = !facts.hasEnoughData
+      ? ' There is still limited data for this period to draw firm conclusions.'
+      : '';
+    return `${facts.playerFirstName}: ${facts.matchesPlayed} match(es), ${facts.minutesPlayed} minutes, ${facts.totalActions} actions (${trendLabel}).${strongLabel ? ` Strongest in ${strongLabel}.` : ''}${weakLabel && weakLabel !== strongLabel ? ` Room to grow in ${weakLabel} — consider a focused drill on it.` : ''}${caveat}`;
+  }
+
+  const caveat = !facts.hasEnoughData
+    ? ' Todavía hay pocos datos en este periodo para sacar conclusiones firmes.'
+    : '';
+  return `${facts.playerFirstName}: ${facts.matchesPlayed} partido(s), ${facts.minutesPlayed} minutos, ${facts.totalActions} acciones (${trendLabel}).${strongLabel ? ` Su punto más fuerte es ${strongLabel}.` : ''}${weakLabel && weakLabel !== strongLabel ? ` Tiene espacio para crecer en ${weakLabel} — considera un ejercicio enfocado en eso.` : ''}${caveat}`;
+}
+
+function buildPeriodSystemPrompt(locale: Locale): string {
+  if (locale === 'en') {
+    return `You are an assistant that helps a coach interpret a young player's performance statistics over a period (a date range, a category, or a set of matches — not a single match). Work EXCLUSIVELY from the data given in the user message: never invent numbers, opponent names, injuries, or comparisons not explicitly mentioned.
+
+Write one short paragraph (3 to 5 sentences) addressed to the coach: technical, direct, third person. Name the player's strongest dimension, the dimension to reinforce, mention the trend if it is meaningful, and end with one concrete training suggestion.
+
+If the data shows few minutes or few recorded actions for this period, say so explicitly and avoid categorical conclusions.
+
+Never mention medical records, injuries, or comparisons naming other players.
+
+Respond ONLY with a valid JSON object, no text before or after, with exactly this shape:
+{"text": "..."}`;
+  }
+
+  return `Eres un asistente que ayuda a un entrenador a interpretar las estadísticas de rendimiento de un jugador joven durante un periodo (un rango de fechas, una categoría, o un conjunto de partidos — no un solo partido). Trabajas EXCLUSIVAMENTE con los datos que se te entregan en el mensaje del usuario: nunca inventes cifras, nombres de rivales, lesiones ni comparaciones que no se mencionen explícitamente.
+
+Escribe un solo párrafo breve (3 a 5 frases) dirigido al entrenador: tono técnico y directo, en tercera persona. Nombra la dimensión más fuerte del jugador, la dimensión a reforzar, menciona la tendencia si es relevante, y termina con una sugerencia concreta de entrenamiento.
+
+Si los datos indican pocos minutos o pocas acciones registradas en este periodo, dilo explícitamente y evita conclusiones categóricas.
+
+Nunca menciones tarjetas médicas, lesiones, ni comparaciones con otros jugadores por nombre.
+
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después, con exactamente esta forma:
+{"text": "..."}`;
+}
+
+function buildPeriodUserPrompt(facts: PlayerPeriodInsightFactsDto, locale: Locale): string {
+  const strong = facts.strongestDimension;
+  const weak = facts.weakestDimension;
+  const missing = facts.missingDimensions.map((slug) => dimensionLabel(slug, locale)).join(', ');
+  const actions = facts.notableActions
+    .map((a) => `- ${a.name}: ${a.count} ${locale === 'en' ? 'time(s)' : 'vez/veces'} (${a.impact})`)
+    .join('\n');
+  const trendLabel = TREND_LABELS[locale][facts.trend];
+
+  if (locale === 'en') {
+    return `Period data to generate the analysis:
+
+Player: ${facts.playerFirstName}
+Category: ${facts.categoryName}
+Period/filter applied: ${facts.filterSummary}
+Matches played: ${facts.matchesPlayed}
+Minutes played: ${facts.minutesPlayed}
+Total actions: ${facts.totalActions}
+Monthly trend: ${trendLabel}
+Enough data to draw confident conclusions?: ${facts.hasEnoughData ? 'yes' : 'no'}
+Strongest dimension: ${strong ? `${dimensionLabel(strong.slug, locale)} (score ${strong.score}/100, ${strong.count} actions)` : 'not enough data'}
+Weakest dimension with recorded data: ${weak ? `${dimensionLabel(weak.slug, locale)} (score ${weak.score}/100, ${weak.count} actions)` : 'not enough data'}
+Dimensions with no recorded actions in this period: ${missing || 'none'}
+Most notable actions:
+${actions || '- none recorded'}
+Coach observations on file for this player/period: ${facts.observationsCount}
+
+Generate the JSON with the text per the system instructions.`;
+  }
+
+  return `Datos del periodo para generar el análisis:
+
+Jugador: ${facts.playerFirstName}
+Categoría: ${facts.categoryName}
+Periodo/filtro aplicado: ${facts.filterSummary}
+Partidos jugados: ${facts.matchesPlayed}
+Minutos jugados: ${facts.minutesPlayed}
+Acciones totales: ${facts.totalActions}
+Tendencia mensual: ${trendLabel}
+¿Hay suficientes datos para opinar con confianza?: ${facts.hasEnoughData ? 'sí' : 'no'}
+Dimensión más fuerte: ${strong ? `${dimensionLabel(strong.slug, locale)} (score ${strong.score}/100, ${strong.count} acciones)` : 'sin datos suficientes'}
+Dimensión más débil con datos registrados: ${weak ? `${dimensionLabel(weak.slug, locale)} (score ${weak.score}/100, ${weak.count} acciones)` : 'sin datos suficientes'}
+Dimensiones sin acciones registradas en este periodo: ${missing || 'ninguna'}
+Acciones más notables:
+${actions || '- ninguna registrada'}
+Observaciones del coach registradas para este jugador/periodo: ${facts.observationsCount}
+
+Genera el JSON con el texto según las instrucciones del sistema.`;
+}
+
+export async function generatePlayerPeriodInsight(
+  facts: PlayerPeriodInsightFactsDto,
+  locale: Locale = 'es',
+): Promise<GeneratePeriodInsightResult> {
+  if (!env.OLLAMA_ENABLED) {
+    return { text: buildFallbackPeriodInsight(facts, locale), source: 'fallback' };
+  }
+
+  const raw = await withOllamaLock(() =>
+    callOllama(buildPeriodSystemPrompt(locale), buildPeriodUserPrompt(facts, locale)),
+  );
+  if (raw) {
+    const parsed = tryParseJson(raw);
+    const validated = ollamaPeriodInsightSchema.safeParse(parsed);
+    if (validated.success) {
+      return { text: validated.data.text, source: 'ollama' };
+    }
+  }
+
+  return { text: buildFallbackPeriodInsight(facts, locale), source: 'fallback' };
 }

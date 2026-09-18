@@ -41,7 +41,7 @@ services:
       MINIO_PUBLIC_PORT: ${MINIO_PUBLIC_PORT:-9100}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
       OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
       OLLAMA_TIMEOUT_MS: ${OLLAMA_TIMEOUT_MS:-120000}
     healthcheck:
       test:
@@ -65,19 +65,20 @@ services:
 
   # Agente de interpretación de estadísticas: modelo local, sin datos a terceros.
   # Tras el primer `docker compose up -d ollama`, descargar el modelo una vez con:
-  #   docker exec velocesport-ollama ollama pull llama3.1:8b
+  #   docker exec velocesport-ollama ollama pull llama3.2:3b
   # El backend funciona igual sin este servicio (usa el respaldo determinístico);
   # ollama es una dependencia "blanda" (service_started, no service_healthy).
-  # mem_limit: en un servidor con poca RAM libre, esto evita que una inferencia
-  # pesada tumbe TODO el host (SSH incluido) — si se pasa del límite, Docker mata
-  # solo este contenedor, no el sistema completo. Si el servidor sigue quedándose
-  # sin memoria, considera bajar a un modelo más chico (OLLAMA_MODEL=llama3.2:3b).
+  # Se usa llama3.2:3b (~2GB) en vez de un modelo más grande a propósito: probado
+  # en carne propia que un 8B satura la RAM disponible tanto en este servidor como
+  # en un Docker Desktop típico y hace que Ollama mate su propio proceso (OOM).
+  # mem_limit: si aun así se pasa de memoria, Docker mata solo este contenedor,
+  # no el sistema completo.
   ollama:
     image: ollama/ollama:latest
     container_name: velocesport-ollama
     restart: unless-stopped
-    mem_limit: 5g
-    memswap_limit: 5g
+    mem_limit: 3g
+    memswap_limit: 3g
     volumes:
       - ollama_data:/root/.ollama
     healthcheck:
@@ -90,7 +91,7 @@ services:
       - velocesport
 
   minio:
-    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: velocesport-minio
     restart: unless-stopped
     environment:
@@ -112,7 +113,7 @@ services:
       - velocesport
 
   minio-init:
-    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
     container_name: velocesport-minio-init
     restart: 'no'
     depends_on:

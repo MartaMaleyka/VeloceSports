@@ -48,6 +48,7 @@ import { appPath } from '../../lib/app-path';
 import { useChartTheme } from '../../hooks/useChartTheme';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { PlayerAvatar } from '../players/PlayerAvatar';
+import PlayerPeriodInsightPanel from './PlayerPeriodInsightPanel';
 
 const ANALYSIS_BASE = appPath('/dashboard/coach/analysis');
 const MATCHES_BASE = appPath('/dashboard/coach/matches');
@@ -198,6 +199,8 @@ export default function CoachAnalysisPlayerDetailPage({
           </div>
         </div>
       </header>
+
+      <PlayerPeriodInsightPanel playerId={data.player.id} filters={data.filters} />
 
       <div data-tour="analysisDetail-stats">
       <StatCardGrid columns={4}>

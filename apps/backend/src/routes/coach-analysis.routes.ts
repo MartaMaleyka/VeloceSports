@@ -9,6 +9,9 @@ import {
   coachAnalysisQuerySchema,
 } from '../validators/coach-analysis.validator.js';
 import { coachAnalysisController } from '../controllers/coach-analysis.controller.js';
+import { playerPeriodInsightController } from '../controllers/player-period-insight.controller.js';
+import { regenerateInsightBodySchema } from '../validators/player-match-insight.validator.js';
+import { playerInsightRateLimiter } from '../middlewares/rateLimit.js';
 
 const router = Router();
 
@@ -125,6 +128,15 @@ router.get(
   validate(coachAnalysisPlayerParamSchema, 'params'),
   validate(coachAnalysisQuerySchema, 'query'),
   (req, res, next) => coachAnalysisController.getPlayerDetail(req, res, next),
+);
+
+router.post(
+  '/players/:playerId/insight',
+  playerInsightRateLimiter,
+  validate(coachAnalysisPlayerParamSchema, 'params'),
+  validate(coachAnalysisQuerySchema, 'query'),
+  validate(regenerateInsightBodySchema),
+  (req, res, next) => playerPeriodInsightController.getOrGenerateForStaff(req, res, next),
 );
 
 export default router;

@@ -11,6 +11,10 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
   return handleProxy(request, cookies, params.path, 'GET');
 };
 
+export const POST: APIRoute = async ({ params, request, cookies }) => {
+  return handleProxy(request, cookies, params.path, 'POST');
+};
+
 async function handleProxy(
   request: Request,
   cookies: Parameters<typeof getSession>[0],
@@ -22,11 +26,15 @@ async function handleProxy(
   const url = new URL(request.url);
   const target = `${INTERNAL_API_URL}/api/coach/analysis/${path}${url.search}`;
 
+  const hasBody = method !== 'GET' && method !== 'HEAD';
+  const body = hasBody ? await request.text() : undefined;
+
   return proxyWithSessionRefresh({
     cookies,
     request,
     targetUrl: target,
     method,
+    body,
     assertAccess: () => {
       const session = getSession(cookies);
       if (!session || !sessionHasAnyRole(session, ALLOWED_ROLES)) {

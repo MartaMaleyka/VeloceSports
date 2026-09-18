@@ -33,7 +33,8 @@ function pickAudienceText(row: PlayerMatchInsightRow, audience: Audience): strin
 }
 
 function readyDto(row: PlayerMatchInsightRow, audience: Audience): PlayerMatchInsightDto {
-  const facts = JSON.parse(row.facts_json) as { hasEnoughData: boolean };
+  // mysql2 ya deserializa las columnas JSON a objetos JS; nunca vienen como string.
+  const facts = row.facts_json as { hasEnoughData: boolean };
   return {
     status: 'ready',
     text: pickAudienceText(row, audience),

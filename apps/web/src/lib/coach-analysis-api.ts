@@ -3,6 +3,7 @@ import type {
   CoachAnalysisFiltersDto,
   CoachPlayerAnalysisDetailDto,
   CoachPlayerAnalysisListDto,
+  PlayerPeriodInsightDto,
 } from '@velocesport/shared';
 
 export class CoachAnalysisApiError extends Error {
@@ -65,6 +66,17 @@ export async function fetchCoachPlayerAnalysisDetail(
   filters: CoachAnalysisFiltersDto = {},
 ): Promise<CoachPlayerAnalysisDetailDto> {
   return analysisFetch<CoachPlayerAnalysisDetailDto>(`players/${playerId}${toQuery(filters)}`);
+}
+
+export async function fetchCoachPlayerAnalysisInsight(
+  playerId: number,
+  filters: CoachAnalysisFiltersDto = {},
+  options: { forceRegenerate?: boolean; locale?: string } = {},
+): Promise<PlayerPeriodInsightDto> {
+  return analysisFetch<PlayerPeriodInsightDto>(`players/${playerId}/insight${toQuery(filters)}`, {
+    method: 'POST',
+    body: JSON.stringify(options),
+  });
 }
 
 export async function downloadCoachPlayerAnalysisCsv(
