@@ -56,8 +56,13 @@ const envSchema = z.object({
   OLLAMA_BASE_URL: z.string().min(1).default('http://127.0.0.1:11434'),
   OLLAMA_MODEL: z.string().min(1).default('llama3.2:3b'),
   OLLAMA_TIMEOUT_MS: z.coerce.number().int().positive().default(45_000),
+  /**
+   * El endpoint de insight se consulta por polling (cada pocos segundos) mientras
+   * se genera en segundo plano, no una sola vez por análisis — una sola generación
+   * ya implica varias peticiones. El límite debe cubrir eso, no solo "N generaciones".
+   */
   PLAYER_INSIGHT_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
-  PLAYER_INSIGHT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  PLAYER_INSIGHT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
 });
 
 export type Env = z.infer<typeof envSchema>;
