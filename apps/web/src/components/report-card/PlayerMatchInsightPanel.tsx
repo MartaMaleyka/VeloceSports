@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Alert, Button, DataCard, cn } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
@@ -20,6 +20,9 @@ export interface PlayerMatchInsightPanelProps {
 
 type PanelState = 'idle' | 'loading' | 'ready' | 'error';
 
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 45; // ~135s, por encima del timeout del servidor a Ollama (120s)
+
 function formatGeneratedAt(iso: string, locale: string): string {
   return new Date(iso).toLocaleString(locale === 'es' ? 'es-PA' : 'en-US', {
     dateStyle: 'medium',
@@ -36,31 +39,79 @@ export default function PlayerMatchInsightPanel({
   const [state, setState] = useState<PanelState>('idle');
   const [insight, setInsight] = useState<PlayerMatchInsightDto | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pollTimeoutRef = useRef<number | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollTimeoutRef.current != null) {
+      window.clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopPolling, [stopPolling]);
+
+  const requestInsight = useCallback(
+    (forceRegenerate: boolean): Promise<PlayerMatchInsightDto> => {
+      const options = { forceRegenerate, locale };
+      return apiMode === 'player'
+        ? fetchPlayerInsight(matchId, options)
+        : apiMode === 'parent'
+          ? fetchParentInsight(playerId, matchId, options)
+          : fetchStaffInsight(matchId, playerId, options);
+    },
+    [apiMode, locale, matchId, playerId],
+  );
+
+  const handleError = useCallback(
+    (e: unknown) => {
+      const message =
+        e instanceof ParentApiError || e instanceof MatchesApiError || e instanceof PlayerApiError
+          ? e.message
+          : t('reportCard.insight.errorGeneric');
+      setError(message);
+      setState('error');
+    },
+    [t],
+  );
+
+  const poll = useCallback(
+    (attempt: number) => {
+      requestInsight(false)
+        .then((data) => {
+          if (data.status === 'ready') {
+            setInsight(data);
+            setState('ready');
+            return;
+          }
+          if (attempt >= MAX_POLL_ATTEMPTS) {
+            setError(t('reportCard.insight.errorTimeout'));
+            setState('error');
+            return;
+          }
+          pollTimeoutRef.current = window.setTimeout(() => poll(attempt + 1), POLL_INTERVAL_MS);
+        })
+        .catch(handleError);
+    },
+    [requestInsight, handleError, t],
+  );
 
   const generate = useCallback(
-    async (forceRegenerate: boolean) => {
+    (forceRegenerate: boolean) => {
+      stopPolling();
       setState('loading');
       setError(null);
-      try {
-        const options = { forceRegenerate, locale };
-        const data =
-          apiMode === 'player'
-            ? await fetchPlayerInsight(matchId, options)
-            : apiMode === 'parent'
-              ? await fetchParentInsight(playerId, matchId, options)
-              : await fetchStaffInsight(matchId, playerId, options);
-        setInsight(data);
-        setState('ready');
-      } catch (e) {
-        const message =
-          e instanceof ParentApiError || e instanceof MatchesApiError || e instanceof PlayerApiError
-            ? e.message
-            : t('reportCard.insight.errorGeneric');
-        setError(message);
-        setState('error');
-      }
+      requestInsight(forceRegenerate)
+        .then((data) => {
+          if (data.status === 'ready') {
+            setInsight(data);
+            setState('ready');
+          } else {
+            poll(1);
+          }
+        })
+        .catch(handleError);
     },
-    [apiMode, locale, matchId, playerId, t],
+    [requestInsight, poll, handleError, stopPolling],
   );
 
   return (
@@ -82,7 +133,7 @@ export default function PlayerMatchInsightPanel({
             </p>
 
             {state === 'idle' && (
-              <Button type="button" className="mt-4" onClick={() => void generate(false)}>
+              <Button type="button" className="mt-4" onClick={() => generate(false)}>
                 {t('reportCard.insight.generate')}
               </Button>
             )}
@@ -101,13 +152,13 @@ export default function PlayerMatchInsightPanel({
                 <Alert variant="error" title={t('reportCard.errors.title')}>
                   {error}
                 </Alert>
-                <Button type="button" variant="secondary" onClick={() => void generate(false)}>
+                <Button type="button" variant="secondary" onClick={() => generate(false)}>
                   {t('common.retry')}
                 </Button>
               </div>
             )}
 
-            {state === 'ready' && insight && (
+            {state === 'ready' && insight?.text && insight.generatedAt && (
               <div className="mt-4 space-y-3">
                 <p
                   className={cn(
@@ -126,7 +177,7 @@ export default function PlayerMatchInsightPanel({
                     type="button"
                     variant="secondary"
                     size="sm"
-                    onClick={() => void generate(true)}
+                    onClick={() => generate(true)}
                   >
                     {t('reportCard.insight.regenerate')}
                   </Button>

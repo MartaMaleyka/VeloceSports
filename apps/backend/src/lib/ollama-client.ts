@@ -231,6 +231,21 @@ async function callOllama(systemPrompt: string, userPrompt: string): Promise<str
   }
 }
 
+/**
+ * Serializa las llamadas a Ollama backend-wide: el servidor corre el modelo en CPU
+ * con poca RAM libre, así que no conviene disparar varias inferencias de 8B a la vez.
+ */
+let ollamaQueue: Promise<unknown> = Promise.resolve();
+
+function withOllamaLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = ollamaQueue.then(fn, fn);
+  ollamaQueue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 export async function generatePlayerMatchInsight(
   facts: PlayerMatchInsightFactsDto,
   locale: Locale = 'es',
@@ -239,7 +254,9 @@ export async function generatePlayerMatchInsight(
     return { result: buildFallbackInsight(facts, locale), source: 'fallback' };
   }
 
-  const raw = await callOllama(buildSystemPrompt(locale), buildUserPrompt(facts, locale));
+  const raw = await withOllamaLock(() =>
+    callOllama(buildSystemPrompt(locale), buildUserPrompt(facts, locale)),
+  );
   if (raw) {
     const parsed = tryParseJson(raw);
     const validated = ollamaInsightSchema.safeParse(parsed);

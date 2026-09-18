@@ -11,7 +11,6 @@ import {
   type PlayerMatchInsightRow,
 } from '../repositories/player-match-insight.repository.js';
 import { playerMatchReportService } from './player-match-report.service.js';
-import { ConflictError } from '../types/index.js';
 import type { AuthUser } from '../types/index.js';
 
 interface ReportActorContext {
@@ -27,25 +26,30 @@ interface GetOrGenerateOptions {
   locale?: Locale;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function pickAudienceText(row: PlayerMatchInsightRow, audience: Audience): string {
   if (audience === 'player') return row.player_text;
   if (audience === 'parent') return row.parent_text;
   return row.coach_text;
 }
 
-function rowToDto(row: PlayerMatchInsightRow, audience: Audience): PlayerMatchInsightDto {
+function readyDto(row: PlayerMatchInsightRow, audience: Audience): PlayerMatchInsightDto {
   const facts = JSON.parse(row.facts_json) as { hasEnoughData: boolean };
   return {
+    status: 'ready',
     text: pickAudienceText(row, audience),
     generationSource: row.generation_source,
     generatedAt: (row.generated_at ?? row.updated_at).toISOString(),
     hasEnoughData: facts.hasEnoughData,
   };
 }
+
+const pendingDto: PlayerMatchInsightDto = {
+  status: 'pending',
+  text: null,
+  generationSource: null,
+  generatedAt: null,
+  hasEnoughData: null,
+};
 
 export class PlayerMatchInsightService {
   async getOrGenerateForParent(
@@ -61,15 +65,7 @@ export class PlayerMatchInsightService {
       playerId,
       matchId,
     );
-    const row = await this.getOrGenerate(
-      tenantId,
-      playerId,
-      matchId,
-      parentUserId,
-      reportCard,
-      options,
-    );
-    return rowToDto(row, 'parent');
+    return this.getOrGenerate(tenantId, playerId, matchId, parentUserId, reportCard, options, 'parent');
   }
 
   async getOrGenerateForStaff(
@@ -83,15 +79,15 @@ export class PlayerMatchInsightService {
       matchId,
       playerId,
     );
-    const row = await this.getOrGenerate(
+    return this.getOrGenerate(
       actor.tenantId,
       playerId,
       matchId,
       actor.user.userId,
       reportCard,
       options,
+      'coach',
     );
-    return rowToDto(row, 'coach');
   }
 
   async getOrGenerateForViewer(
@@ -107,17 +103,23 @@ export class PlayerMatchInsightService {
       playerId,
       matchId,
     );
-    const row = await this.getOrGenerate(
+    return this.getOrGenerate(
       tenantId,
       playerId,
       matchId,
       viewerUserId,
       reportCard,
       options,
+      'player',
     );
-    return rowToDto(row, 'player');
   }
 
+  /**
+   * Nunca bloquea esperando al modelo: si hace falta generar, dispara el trabajo en
+   * segundo plano y responde "pending" de inmediato. El cliente hace polling del
+   * mismo endpoint (con forceRegenerate=false) hasta que quede "ready". Esto evita
+   * depender del timeout de cualquier proxy/reverse-proxy delante del backend.
+   */
   private async getOrGenerate(
     tenantId: number,
     playerId: number,
@@ -125,7 +127,8 @@ export class PlayerMatchInsightService {
     requestedByUserId: number,
     reportCard: PlayerMatchReportCardDto,
     options: GetOrGenerateOptions,
-  ): Promise<PlayerMatchInsightRow> {
+    audience: Audience,
+  ): Promise<PlayerMatchInsightDto> {
     const forceRegenerate = options.forceRegenerate ?? false;
     const locale = options.locale ?? 'es';
 
@@ -135,7 +138,7 @@ export class PlayerMatchInsightService {
         playerId,
         matchId,
       );
-      if (cached && cached.status === 'ready') return cached;
+      if (cached?.status === 'ready') return readyDto(cached, audience);
     }
 
     const gotLock = await playerMatchInsightRepository.tryMarkGenerating(
@@ -145,19 +148,21 @@ export class PlayerMatchInsightService {
       requestedByUserId,
     );
 
-    if (!gotLock) {
-      for (let attempt = 0; attempt < 3; attempt += 1) {
-        await sleep(1500);
-        const row = await playerMatchInsightRepository.findByPlayerAndMatch(
-          tenantId,
-          playerId,
-          matchId,
-        );
-        if (row && row.status === 'ready') return row;
-      }
-      throw new ConflictError('El análisis se está generando, intenta de nuevo en unos segundos');
+    if (gotLock) {
+      void this.generateAndPersist(tenantId, playerId, matchId, requestedByUserId, reportCard, locale);
     }
 
+    return pendingDto;
+  }
+
+  private async generateAndPersist(
+    tenantId: number,
+    playerId: number,
+    matchId: number,
+    requestedByUserId: number,
+    reportCard: PlayerMatchReportCardDto,
+    locale: Locale,
+  ): Promise<void> {
     try {
       const facts = buildInsightFacts(reportCard);
       const factsJson = JSON.stringify(facts);
@@ -177,18 +182,10 @@ export class PlayerMatchInsightService {
         generationSource: source,
         requestedByUserId,
       });
-
-      const row = await playerMatchInsightRepository.findByPlayerAndMatch(
-        tenantId,
-        playerId,
-        matchId,
-      );
-      if (!row) throw new Error('No se pudo leer el análisis recién generado');
-      return row;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido al generar el análisis';
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido al generar el análisis';
       await playerMatchInsightRepository.markFailed(tenantId, playerId, matchId, message);
-      throw error;
     }
   }
 }

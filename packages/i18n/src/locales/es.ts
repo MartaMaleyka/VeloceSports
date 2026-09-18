@@ -1243,6 +1243,7 @@ export const es = {
       regenerate: 'Regenerar',
       generatedAt: 'Generado el {date}',
       errorGeneric: 'No pudimos generar el análisis. Intenta de nuevo.',
+      errorTimeout: 'El análisis está tardando más de lo esperado. Intenta de nuevo en un momento.',
     },
   },
   tenant: {
