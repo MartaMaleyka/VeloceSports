@@ -68,10 +68,16 @@ services:
   #   docker exec velocesport-ollama ollama pull llama3.1:8b
   # El backend funciona igual sin este servicio (usa el respaldo determinístico);
   # ollama es una dependencia "blanda" (service_started, no service_healthy).
+  # mem_limit: en un servidor con poca RAM libre, esto evita que una inferencia
+  # pesada tumbe TODO el host (SSH incluido) — si se pasa del límite, Docker mata
+  # solo este contenedor, no el sistema completo. Si el servidor sigue quedándose
+  # sin memoria, considera bajar a un modelo más chico (OLLAMA_MODEL=llama3.2:3b).
   ollama:
     image: ollama/ollama:latest
     container_name: velocesport-ollama
     restart: unless-stopped
+    mem_limit: 5g
+    memswap_limit: 5g
     volumes:
       - ollama_data:/root/.ollama
     healthcheck:
