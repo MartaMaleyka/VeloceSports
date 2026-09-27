@@ -5,6 +5,7 @@ import {
   Alert,
   Badge,
   Button,
+  ConfirmModal,
   DataCard,
   DataCardFooter,
   DataView,
@@ -86,6 +87,8 @@ function ActionCatalogContent() {
   const { viewMode, setViewMode } = useDataViewPreference();
 
   const [actions, setActions] = useState<ActionCatalogDto[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<ActionCatalogDto | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [kpis, setKpis] = useState<ActionCatalogKpisDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -208,8 +211,14 @@ function ActionCatalogContent() {
     }
   };
 
-  const deleteAction = async (action: ActionCatalogDto) => {
-    if (!window.confirm(t('tenant.actionCatalog.deleteConfirm', { name: action.name }))) return;
+  const deleteAction = (action: ActionCatalogDto) => {
+    setDeleteTarget(action);
+  };
+
+  const confirmDeleteAction = async () => {
+    const action = deleteTarget;
+    if (!action) return;
+    setDeleting(true);
     try {
       await tenantFetch(`action-catalog/${action.id}`, { method: 'DELETE' });
       showToast({ variant: 'success', message: t('tenant.actionCatalog.successDelete') });
@@ -219,6 +228,9 @@ function ActionCatalogContent() {
         variant: 'error',
         message: e instanceof TenantApiError ? e.message : t('tenant.errors.generic'),
       });
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -493,6 +505,19 @@ function ActionCatalogContent() {
           </div>
         </form>
       </Modal>
+      <ConfirmModal
+        open={deleteTarget != null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDeleteAction()}
+        title={t('tenant.actionCatalog.remove')}
+        description={
+          deleteTarget ? t('tenant.actionCatalog.deleteConfirm', { name: deleteTarget.name }) : ''
+        }
+        confirmLabel={t('tenant.actionCatalog.remove')}
+        cancelLabel={t('common.cancel')}
+        loading={deleting}
+        variant="destructive"
+      />
     </>
   );
 }
