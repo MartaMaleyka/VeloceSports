@@ -1,4 +1,4 @@
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware, sequence } from 'astro:middleware';
 import { resolveLocale } from '@velocesport/i18n';
 import {
   getDashboardPathForSession,
@@ -8,8 +8,14 @@ import {
   sessionHasRole,
 } from './lib/auth-config.js';
 import { ensureSession } from './lib/session.js';
+import { applySecurityHeaders } from './lib/security-headers.js';
 
-export const onRequest = defineMiddleware(async (context, next) => {
+const securityHeadersMiddleware = defineMiddleware(async (_context, next) => {
+  const response = await next();
+  return applySecurityHeaders(response, { production: import.meta.env.PROD });
+});
+
+const authMiddleware = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
   const { session, endReason } = await ensureSession(context.cookies);
   const locale = resolveLocale(
@@ -76,3 +82,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   return next();
 });
+
+export const onRequest = sequence(securityHeadersMiddleware, authMiddleware);
