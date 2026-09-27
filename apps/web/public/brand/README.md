@@ -4,8 +4,9 @@ Archivos en esta carpeta (provisionales):
 
 | Archivo | Uso |
 |---------|-----|
-| `logo-dark.png` | Logo completo sobre fondo oscuro (hero login) |
-| `logo-light.png` | Logo completo sobre fondo claro |
+| `logo-dark.png` / `logo-light.png` | Originales 1024×1024 (fuente; no se sirven en la UI) |
+| `logo-dark-640.webp` | Hero del login (~90 KB en vez de ~680 KB) |
+| `logo-dark-180.webp` / `logo-light-180.webp` | Marca de la tarjeta de login (90 px @2x) |
 | `favicon.ico` / `favicon.png` | Favicon (derivado del logo dark) |
 | `apple-touch-icon.png` | Icono iOS 180×180 |
 | `og-image.png` | Open Graph 1200×630 |
@@ -22,7 +23,13 @@ no quedó limpio.
 **Solución actual:** el sidebar usa el componente React
 `apps/web/src/components/brand/SquadVeloceMonogram.tsx` — SVG inline solo del
 isotipo (S + V/check + estrella de velocidad), sin wordmark, banda de íconos ni eslogan.
-Login/hero siguen con los PNG completos.
+Login/hero usan las versiones WebP derivadas de los PNG completos.
+
+Para regenerarlas tras cambiar un PNG original:
+
+```bash
+node -e "const s=require('sharp');s('logo-dark.png').resize(640,640).webp({quality:88}).toFile('logo-dark-640.webp')"
+```
 
 ### Cuando lleguen los SVG del diseñador
 

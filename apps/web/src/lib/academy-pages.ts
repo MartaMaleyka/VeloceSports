@@ -1,14 +1,20 @@
 import { lazy, type ComponentType } from 'react';
-import AcademyBillingPage from '../components/academy/AcademyBillingPage';
-import AcademyAdminHomePage from '../components/academy/AcademyAdminHomePage';
-import AcademySettingsPage from '../components/academy/AcademySettingsPage';
-import AcademyReportsPage from '../components/academy/AcademyReportsPage';
-import TenantUsersPage from '../components/academy/TenantUsersPage';
-import ActionCatalogPage from '../components/academy/ActionCatalogPage';
-import TenantCategoriesPage from '../components/academy/TenantCategoriesPage';
-import TenantPlayersPage from '../components/academy/TenantPlayersPage';
-import TenantMatchesPage from '../components/matches/TenantMatchesPage';
-import MatchDetailPage from '../components/matches/MatchDetailPage';
+
+/**
+ * Cada página se carga bajo demanda: el DashboardShell es el mismo island para
+ * todos los roles, y con imports estáticos cualquier usuario descargaba el código
+ * de todas las páginas (super admin, captura de partidos, gráficos...).
+ */
+const AcademyBillingPage = lazy(() => import('../components/academy/AcademyBillingPage'));
+const AcademyAdminHomePage = lazy(() => import('../components/academy/AcademyAdminHomePage'));
+const AcademySettingsPage = lazy(() => import('../components/academy/AcademySettingsPage'));
+const AcademyReportsPage = lazy(() => import('../components/academy/AcademyReportsPage'));
+const TenantUsersPage = lazy(() => import('../components/academy/TenantUsersPage'));
+const ActionCatalogPage = lazy(() => import('../components/academy/ActionCatalogPage'));
+const TenantCategoriesPage = lazy(() => import('../components/academy/TenantCategoriesPage'));
+const TenantPlayersPage = lazy(() => import('../components/academy/TenantPlayersPage'));
+const TenantMatchesPage = lazy(() => import('../components/matches/TenantMatchesPage'));
+const MatchDetailPage = lazy(() => import('../components/matches/MatchDetailPage'));
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),
