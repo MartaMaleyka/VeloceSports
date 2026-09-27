@@ -3,7 +3,7 @@ import { platformController } from '../controllers/platform.controller.js';
 import { userRoleController } from '../controllers/user-role.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireSuperAdmin } from '../middlewares/platformGuard.js';
-import { validate } from '../middlewares/validate.js';
+import { positiveIntParam, validate } from '../middlewares/validate.js';
 import {
   createAcademySchema,
   createAcademyUserSchema,
@@ -46,6 +46,11 @@ import {
 import { passwordResetController } from '../controllers/password-reset.controller.js';
 
 const router = Router();
+
+router.param('planId', positiveIntParam);
+router.param('academyId', positiveIntParam);
+router.param('userId', positiveIntParam);
+router.param('invoiceId', positiveIntParam);
 
 router.use(authenticate, requireSuperAdmin);
 

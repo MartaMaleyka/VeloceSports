@@ -2,7 +2,13 @@ import { z } from 'zod';
 import { parseJwtDurationToSeconds } from '@velocesport/shared';
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  /**
+   * Obligatorio: sin él el backend no debe asumir "development" (Swagger abierto,
+   * rate limit global desactivado, rutas de herramientas dev habilitadas).
+   */
+  NODE_ENV: z.enum(['development', 'test', 'production'], {
+    required_error: 'NODE_ENV es obligatorio (development | test | production)',
+  }),
   PORT: z.coerce.number().int().positive().default(3000),
 
   DB_HOST: z.string().min(1),
@@ -20,8 +26,6 @@ const envSchema = z.object({
   SESSION_INACTIVITY_TIMEOUT: z.string().default('60m'),
 
   CORS_ORIGINS: z.string().min(1),
-
-  SESSION_SECRET: z.string().min(16).optional(),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(2_000),
