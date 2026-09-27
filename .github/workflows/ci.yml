@@ -57,6 +57,8 @@ jobs:
           AUTH_LOGIN_RATE_LIMIT_MAX=10000
           PLAYER_INSIGHT_RATE_LIMIT_MAX=10000
           ENV
+      - name: Compilar backend (tsc)
+        run: pnpm --filter @velocesport/backend build
       - run: pnpm --filter @velocesport/backend test
 
   web:
