@@ -1562,6 +1562,8 @@ export const en = {
       viewReportCard: 'View match report card',
     },
     capture: {
+      offlineBanner:
+        'Offline. Actions are saved on this device and will be sent when the connection returns ({count} pending).',
       coachOnly: 'coach only',
       forbiddenTitle: 'No capture access',
       forbiddenBody: 'Only the coach assigned to this match category can capture actions.',

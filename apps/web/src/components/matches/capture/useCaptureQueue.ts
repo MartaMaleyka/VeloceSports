@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CreateGameActionBody, GameActionDto } from '@velocesport/shared';
 import { MatchesApiError, matchesFetch } from '../../../lib/matches-api';
 import {
@@ -9,9 +9,20 @@ import {
   type CapturePlayerRef,
   type CaptureSendStatus,
 } from './capture-types';
+import { readPendingCaptures, writePendingCaptures } from './capture-storage.js';
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function toRequestBody(entry: CaptureHistoryEntry): CreateGameActionBody {
+  return {
+    clientActionId: entry.clientActionId,
+    playerId: entry.player.playerId,
+    actionCode: entry.action.code,
+    minute: entry.minute,
+    period: entry.period,
+  };
 }
 
 interface SubmitPayload extends CreateGameActionBody {
@@ -124,18 +135,47 @@ export function useCaptureQueue(matchId: number) {
       const entry = history.find((e) => e.clientActionId === clientActionId);
       if (!entry || entry.sendStatus !== 'failed') return;
 
-      const body: CreateGameActionBody = {
-        clientActionId: entry.clientActionId,
-        playerId: entry.player.playerId,
-        actionCode: entry.action.code,
-        minute: entry.minute,
-        period: entry.period,
-      };
-
-      void runSubmit(entry, body);
+      void runSubmit(entry, toRequestBody(entry));
     },
     [history, runSubmit],
   );
+
+  // Persistir lo no confirmado para sobrevivir a recargas y cortes de conexión.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    writePendingCaptures(matchId, history);
+  }, [history, matchId]);
+
+  // Al montar: recuperar lo pendiente de una sesión anterior y reenviarlo.
+  useEffect(() => {
+    const pending = readPendingCaptures(matchId);
+    restoredRef.current = true;
+    if (pending.length === 0) return;
+    setHistory((prev) => {
+      const known = new Set(prev.map((e) => e.clientActionId));
+      const restored = pending
+        .filter((e) => !known.has(e.clientActionId))
+        .map((e) => ({ ...e, sendStatus: 'failed' as CaptureSendStatus }));
+      return [...prev, ...restored].sort((a, b) => b.createdAtMs - a.createdAtMs);
+    });
+    for (const entry of pending) {
+      void runSubmit(entry, toRequestBody(entry));
+    }
+  }, [matchId, runSubmit]);
+
+  // Al recuperar la conexión: reenviar automáticamente todo lo fallido.
+  const historyRef = useRef(history);
+  historyRef.current = history;
+  useEffect(() => {
+    const onOnline = () => {
+      for (const entry of historyRef.current) {
+        if (entry.sendStatus === 'failed') void runSubmit(entry, toRequestBody(entry));
+      }
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [runSubmit]);
 
   const immediateUndo = useCallback(
     async (clientActionId: string): Promise<boolean> => {

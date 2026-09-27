@@ -1566,6 +1566,8 @@ export const es = {
       viewReportCard: 'Ver ficha del partido',
     },
     capture: {
+      offlineBanner:
+        'Sin conexión. Las acciones se guardan en este dispositivo y se enviarán al recuperar la señal ({count} pendientes).',
       coachOnly: 'solo coach',
       forbiddenTitle: 'Sin acceso al tablero',
       forbiddenBody: 'Solo el entrenador asignado a la categoría de este partido puede capturar acciones.',
