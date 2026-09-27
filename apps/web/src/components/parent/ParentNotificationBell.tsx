@@ -60,10 +60,20 @@ export default function ParentNotificationBell() {
     }
   }, []);
 
+  // Polling solo con la pestaña visible; al volver a ella se refresca de inmediato.
   useEffect(() => {
     void refreshCount();
-    const interval = window.setInterval(() => void refreshCount(), 60_000);
-    return () => window.clearInterval(interval);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void refreshCount();
+    }, 60_000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void refreshCount();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [refreshCount]);
 
   useEffect(() => {

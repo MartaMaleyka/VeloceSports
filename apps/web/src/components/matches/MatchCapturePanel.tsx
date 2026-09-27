@@ -234,10 +234,18 @@ export default function MatchCapturePanel({
 
   const lastCaptureRef = useRef<string | null>(null);
 
+  // El tick solo alimenta la ventana de "deshacer" (10 s). Re-renderizar este panel
+  // cada segundo durante todo el partido es caro: solo se refresca mientras haya
+  // alguna acción que todavía se pueda deshacer.
+  const hasUndoableEntry = history.some((entry: CaptureHistoryEntry) =>
+    canImmediateUndo(entry, Date.now()),
+  );
   useEffect(() => {
+    if (!hasUndoableEntry) return;
+    setTick(Date.now());
     const id = window.setInterval(() => setTick(Date.now()), 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [hasUndoableEntry]);
 
   const load = useCallback(async () => {
     setLoading(true);
