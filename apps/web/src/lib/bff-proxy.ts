@@ -1,6 +1,7 @@
 import type { AstroCookies } from 'astro';
 import { getAccessToken, getSession } from './session.js';
 import { hasRefreshToken, refreshSessionCookies } from './token-refresh.js';
+import { backendFetch } from './client-ip.js';
 
 export interface BffProxyOptions {
   cookies: AstroCookies;
@@ -62,7 +63,7 @@ export async function proxyWithSessionRefresh(options: BffProxyOptions): Promise
       init.body = options.body;
     }
 
-    return fetch(options.targetUrl, init);
+    return backendFetch(options.targetUrl, init);
   };
 
   let backendRes = await execute(token);

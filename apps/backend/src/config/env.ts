@@ -36,6 +36,16 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(2_000),
   AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+  /** Registro público (academias y cuentas personales), por IP. */
+  AUTH_SIGNUP_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(3_600_000),
+  AUTH_SIGNUP_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+
+  /**
+   * Proxies de confianza para leer la IP real desde X-Forwarded-For (valor de
+   * `trust proxy` de Express). Por defecto solo redes locales/privadas: el BFF de
+   * Astro en la red de Docker. Usa "false" si el backend queda expuesto directamente.
+   */
+  TRUST_PROXY: z.string().min(1).default('loopback, linklocal, uniquelocal'),
 
   /** Ventana para deshacer inmediato (borrado físico sin traza) */
   GAME_ACTION_IMMEDIATE_UNDO_WINDOW_SECONDS: z.coerce.number().int().positive().default(10),
@@ -89,6 +99,15 @@ export const env = parseEnv();
 
 export function getCorsOrigins(): string[] {
   return env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+}
+
+/** Convierte TRUST_PROXY al formato que acepta `app.set('trust proxy', ...)`. */
+export function parseTrustProxy(raw: string): boolean | number | string {
+  const value = raw.trim();
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value;
 }
 
 export function isProduction(): boolean {

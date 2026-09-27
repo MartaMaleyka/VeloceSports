@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { INTERNAL_API_URL } from 'astro:env/server';
+import { backendFetch } from '../../../lib/client-ip.js';
 
 async function proxyAuth(request: Request, path: string): Promise<Response> {
   const body = await request.text();
@@ -8,7 +9,7 @@ async function proxyAuth(request: Request, path: string): Promise<Response> {
   const headers: Record<string, string> = {};
   if (contentType) headers['Content-Type'] = contentType;
 
-  const backendRes = await fetch(`${INTERNAL_API_URL}${path}`, {
+  const backendRes = await backendFetch(`${INTERNAL_API_URL}${path}`, {
     method: request.method,
     headers,
     body: body || undefined,
