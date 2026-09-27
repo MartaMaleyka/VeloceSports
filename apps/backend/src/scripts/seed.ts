@@ -1008,7 +1008,7 @@ async function seed(): Promise<void> {
     const category = SEED.categories[catIndex]!;
     const categoryId = categoryIdsByName.get(category.name)!;
     const coachForCategory =
-      SEED.coaches.find((c) => c.categories.includes(category.name)) ?? SEED.coaches[0]!;
+      SEED.coaches.find((c) => (c.categories as readonly string[]).includes(category.name)) ?? SEED.coaches[0]!;
     const coachUserId = coachIdsByEmail.get(coachForCategory.email)!;
     const playersInCategory = seededPlayers
       .filter((p) => p.categoryName === category.name)

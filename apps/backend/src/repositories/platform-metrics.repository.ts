@@ -64,8 +64,7 @@ export class PlatformMetricsRepository {
         suspended_billing: number;
         suspended_manual: number;
         inactive: number;
-      }> & RowDataPacket
-    >(
+      } & RowDataPacket>>(
       `SELECT
          COUNT(*) AS total,
          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active,
@@ -113,8 +112,7 @@ export class PlatformMetricsRepository {
   ): Promise<Array<{ month: string; billed: number; collected: number }>> {
     const pool = getPool();
     const [rows] = await pool.query<
-      Array<{ month: string; billed: string | null; collected: string | null }> & RowDataPacket
-    >(
+      Array<{ month: string; billed: string | null; collected: string | null } & RowDataPacket>>(
       `SELECT
          DATE_FORMAT(period_start, '%Y-%m') AS month,
          SUM(CASE WHEN status IN ('pending', 'paid', 'overdue') THEN amount ELSE 0 END) AS billed,
@@ -140,14 +138,12 @@ export class PlatformMetricsRepository {
     pendingAmount: number;
   }> {
     const pool = getPool();
-    const [rows] = await pool.query<
-      Array<{
+    const [rows] = await pool.query<Array<{
         overdue_count: number;
         overdue_amount: string | null;
         pending_count: number;
         pending_amount: string | null;
-      }> & RowDataPacket
-    >(
+      } & RowDataPacket>>(
       `SELECT
          SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) AS overdue_count,
          SUM(CASE WHEN status = 'overdue' THEN amount ELSE 0 END) AS overdue_amount,
@@ -173,9 +169,7 @@ export class PlatformMetricsRepository {
     if (!range) return { issuedCount: 0, overdueCount: 0 };
 
     const pool = getPool();
-    const [rows] = await pool.query<
-      Array<{ issued_count: number; overdue_count: number }> & RowDataPacket
-    >(
+    const [rows] = await pool.query<Array<{ issued_count: number; overdue_count: number } & RowDataPacket>>(
       `SELECT
          SUM(CASE WHEN status IN ('pending', 'paid', 'overdue') THEN 1 ELSE 0 END) AS issued_count,
          SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) AS overdue_count
@@ -201,13 +195,11 @@ export class PlatformMetricsRepository {
     }
 
     const pool = getPool();
-    const [rows] = await pool.query<
-      Array<{
+    const [rows] = await pool.query<Array<{
         total_billed: string | null;
         total_collected: string | null;
         pending_collection: string | null;
-      }> & RowDataPacket
-    >(
+      } & RowDataPacket>>(
       `SELECT
          SUM(CASE WHEN status IN ('pending', 'paid', 'overdue') THEN amount ELSE 0 END) AS total_billed,
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS total_collected,
@@ -246,8 +238,7 @@ export class PlatformMetricsRepository {
   > {
     const pool = getPool();
     const [rows] = await pool.query<
-      Array<{ id: number; name: string; overdue_invoice_count: number }> & RowDataPacket
-    >(
+      Array<{ id: number; name: string; overdue_invoice_count: number } & RowDataPacket>>(
       `SELECT
          a.id,
          a.name,
@@ -276,16 +267,14 @@ export class PlatformMetricsRepository {
     }>
   > {
     const pool = getPool();
-    const [rows] = await pool.query<
-      Array<{
+    const [rows] = await pool.query<Array<{
         id: number;
         tenant_id: number;
         academy_name: string;
         amount: string;
         currency: string;
         due_date: Date;
-      }> & RowDataPacket
-    >(
+      } & RowDataPacket>>(
       `SELECT i.id, i.tenant_id, a.name AS academy_name, i.amount, i.currency, i.due_date
        FROM invoices i
        INNER JOIN academies a ON a.id = i.tenant_id

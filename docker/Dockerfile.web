@@ -2,52 +2,45 @@ FROM node:20-alpine AS build
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
-ARG ASTRO_BASE=/profe
-ARG ASTRO_SITE=http://127.0.0.1:9082
-ARG ASTRO_ALLOWED_ORIGINS=http://127.0.0.1:9082,http://localhost:9082
-ARG PUBLIC_SITE_URL=https://aby.litomalone.dev
-ARG JWT_ACCESS_SECRET
-ARG JWT_ACCESS_EXPIRES_IN=15m
-ARG JWT_REFRESH_EXPIRES_IN=7d
+# Solo valores públicos de build (Astro los necesita para `site`, `base` y CSRF).
+# Los secretos (JWT_ACCESS_SECRET) se inyectan en runtime: nunca en capas de la imagen.
+ARG ASTRO_BASE=/
+ARG ASTRO_SITE
+ARG ASTRO_ALLOWED_ORIGINS
+ARG PUBLIC_SITE_URL
 
 ENV ASTRO_BASE=${ASTRO_BASE}
 ENV ASTRO_SITE=${ASTRO_SITE}
 ENV ASTRO_ALLOWED_ORIGINS=${ASTRO_ALLOWED_ORIGINS}
 ENV PUBLIC_SITE_URL=${PUBLIC_SITE_URL}
-ENV JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
-ENV JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
-ENV JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
 ENV CI=true
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages ./packages
 COPY apps/web ./apps/web
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 RUN pnpm --filter @velocesport/shared build \
  && pnpm --filter @velocesport/i18n build \
  && pnpm --filter @velocesport/design-system build
 RUN pnpm --filter @velocesport/web build
 
+# Dependencias SSR de producción (react, jsonwebtoken...) sin toolchain de build.
+RUN pnpm --filter @velocesport/web deploy --prod /out \
+ && rm -rf /out/dist && cp -r apps/web/dist /out/dist
+
 FROM node:20-alpine AS runtime
 # Astro standalone embebe rutas absolutas al directorio de build (/app/apps/web/dist).
-WORKDIR /app
+WORKDIR /app/apps/web
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
 
-# React, jsonwebtoken y otras deps SSR quedan externalizadas en standalone.
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages ./packages
-COPY --from=build /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=build /app/apps/web/dist ./apps/web/dist
-COPY --from=build /app/apps/web/package.json ./apps/web/package.json
-
-WORKDIR /app/apps/web
-
-COPY docker/web-entrypoint.sh /entrypoint.sh
+COPY --from=build --chown=node:node /out ./
+COPY --chown=node:node docker/web-entrypoint.sh /entrypoint.sh
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
+USER node
 EXPOSE 4321
 ENTRYPOINT ["/entrypoint.sh"]

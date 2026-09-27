@@ -1,28 +1,26 @@
 import type {
   ParentNotificationDto,
   ParentNotificationListDto,
-  ParentNotificationPayloadDto,
+  NotificationPayloadDto,
   ParentNotificationPreferencesDto,
   UpdateParentNotificationPreferencesBody,
   UpdateParentPlayerNotificationPreferenceBody,
 } from '@velocesport/shared';
-import { NotificationType } from '@velocesport/shared';
 import { notificationRepository } from '../repositories/notification.repository.js';
 import { notificationPreferenceRepository } from '../repositories/notification-preference.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
-import { parentLinkRepository } from '../repositories/parent-link.repository.js';
 import { ForbiddenError, NotFoundError } from '../types/index.js';
 
-function parsePayload(raw: unknown): ParentNotificationPayloadDto | null {
+function parsePayload(raw: unknown): NotificationPayloadDto | null {
   if (raw == null) return null;
   if (typeof raw === 'string') {
     try {
-      return JSON.parse(raw) as ParentNotificationPayloadDto;
+      return JSON.parse(raw) as NotificationPayloadDto;
     } catch {
       return null;
     }
   }
-  if (typeof raw === 'object') return raw as ParentNotificationPayloadDto;
+  if (typeof raw === 'object') return raw as NotificationPayloadDto;
   return null;
 }
 

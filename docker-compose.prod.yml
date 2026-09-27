@@ -74,7 +74,8 @@ services:
   # mem_limit: si aun así se pasa de memoria, Docker mata solo este contenedor,
   # no el sistema completo.
   ollama:
-    image: ollama/ollama:latest
+    # Versión fija: `latest` cambia sin aviso entre despliegues.
+    image: ollama/ollama:${OLLAMA_IMAGE_TAG:-0.34.4}
     container_name: velocesport-ollama
     restart: unless-stopped
     mem_limit: 3g
@@ -145,13 +146,11 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
       args:
+        # Solo valores públicos: los secretos se inyectan en runtime (environment).
         ASTRO_BASE: ${ASTRO_BASE:-/profe}
         ASTRO_SITE: ${ASTRO_SITE:-http://127.0.0.1:9082}
         ASTRO_ALLOWED_ORIGINS: ${ASTRO_ALLOWED_ORIGINS:-http://127.0.0.1:9082,http://localhost:9082}
-        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://aby.litomalone.dev/profe/login}
-        JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-        JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
-        JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?Define PUBLIC_SITE_URL en .env.production}
     container_name: velocesport-web
     restart: unless-stopped
     env_file:
@@ -164,7 +163,7 @@ services:
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
-      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://aby.litomalone.dev/profe}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:?Define PUBLIC_API_URL en .env.production}
     ports:
       - '127.0.0.1:9082:4321'
     depends_on:

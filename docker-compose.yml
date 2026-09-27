@@ -4,8 +4,9 @@ services:
     container_name: velocesport-mysql
     restart: unless-stopped
     ports:
-      # Evita choque con MySQL nativo (3306) y con el frontend (8065)
-      - '3307:3306'
+      # Evita choque con MySQL nativo (3306) y con el frontend (8065).
+      # Solo en localhost: credenciales de desarrollo, no exponer a la red.
+      - '127.0.0.1:3307:3306'
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: velocesport
@@ -26,8 +27,8 @@ services:
     restart: unless-stopped
     ports:
       # 9100/9101 evitán choque con otros MinIO locales en 9000/9001
-      - '9100:9000'
-      - '9101:9001'
+      - '127.0.0.1:9100:9000'
+      - '127.0.0.1:9101:9001'
     env_file:
       - .env.minio
     volumes:
