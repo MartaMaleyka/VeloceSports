@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
-import { authLoginRateLimiter } from '../middlewares/rateLimit.js';
+import { authLoginRateLimiter, authSignupRateLimiter } from '../middlewares/rateLimit.js';
 import { validate } from '../middlewares/validate.js';
 import {
   loginSchema,
@@ -100,7 +100,7 @@ router.post(
  */
 router.post(
   '/signup-independent',
-  authLoginRateLimiter,
+  authSignupRateLimiter,
   validate(signupIndependentSchema),
   (req, res, next) => authController.signupIndependent(req, res, next),
 );
@@ -133,7 +133,7 @@ router.post(
  */
 router.post(
   '/signup-academy',
-  authLoginRateLimiter,
+  authSignupRateLimiter,
   validate(signupAcademySchema),
   (req, res, next) => authController.signupAcademy(req, res, next),
 );

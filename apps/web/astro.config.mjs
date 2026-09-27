@@ -78,6 +78,17 @@ export default defineConfig({
         access: 'public',
         default: 'http://localhost:3000',
       }),
+      /**
+       * Proxies de confianza delante de Astro (nginx = 1). Se usa para leer la IP real
+       * del cliente desde X-Forwarded-For sin aceptar valores inyectados por el navegador.
+       */
+      TRUSTED_PROXY_HOPS: envField.number({
+        context: 'server',
+        access: 'secret',
+        default: 1,
+        int: true,
+        min: 0,
+      }),
       INTERNAL_API_URL: envField.string({
         context: 'server',
         access: 'secret',

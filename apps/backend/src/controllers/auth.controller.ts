@@ -9,15 +9,10 @@ function readClientContext(req: Request): {
   userAgent?: string | null;
   ipAddress?: string | null;
 } {
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip =
-    typeof forwarded === 'string'
-      ? forwarded.split(',')[0]?.trim()
-      : req.socket.remoteAddress ?? null;
-
+  // req.ip ya resuelve X-Forwarded-For solo desde proxies de confianza (TRUST_PROXY).
   return {
     userAgent: req.headers['user-agent'] ?? null,
-    ipAddress: ip,
+    ipAddress: req.ip ?? req.socket.remoteAddress ?? null,
   };
 }
 
