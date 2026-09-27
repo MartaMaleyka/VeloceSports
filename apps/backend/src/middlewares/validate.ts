@@ -17,3 +17,22 @@ export function validate(schema: ZodSchema, part: RequestPart = 'body') {
     next();
   };
 }
+
+/**
+ * Handler para `router.param(name, positiveIntParam)`: rechaza con 400 cualquier
+ * id de ruta que no sea un entero positivo antes de llegar al controlador
+ * (evita `Number('abc') → NaN` en consultas SQL).
+ */
+export function positiveIntParam(
+  _req: Request,
+  _res: Response,
+  next: NextFunction,
+  value: string,
+  name: string,
+): void {
+  if (!/^[1-9]\d{0,15}$/.test(value)) {
+    next(new ValidationError(`Parámetro ${name} inválido`));
+    return;
+  }
+  next();
+}

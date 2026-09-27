@@ -88,11 +88,3 @@ export function verifyRefreshToken(token: string): RefreshJwtPayload {
     sessionId,
   };
 }
-
-export function decodeAccessToken(token: string): JwtPayload | null {
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
