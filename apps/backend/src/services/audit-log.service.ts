@@ -1,3 +1,4 @@
+import type { RowDataPacket } from 'mysql2/promise';
 import type {
   AuditLogEntryDto,
   AuditLogKpisDto,
@@ -125,7 +126,7 @@ export class AuditLogService {
     if (academyIds.size > 0) {
       const ids = [...academyIds];
       const placeholders = ids.map(() => '?').join(',');
-      const [academyRows] = await pool.query<Array<{ id: number; name: string }>>(
+      const [academyRows] = await pool.query<Array<{ id: number; name: string } & RowDataPacket>>(
         `SELECT id, name FROM academies WHERE id IN (${placeholders})`,
         ids,
       );
@@ -137,7 +138,7 @@ export class AuditLogService {
     if (userIds.size > 0) {
       const ids = [...userIds];
       const placeholders = ids.map(() => '?').join(',');
-      const [userRows] = await pool.query<Array<{ id: number; email: string }>>(
+      const [userRows] = await pool.query<Array<{ id: number; email: string } & RowDataPacket>>(
         `SELECT id, email FROM users WHERE id IN (${placeholders})`,
         ids,
       );
@@ -150,7 +151,7 @@ export class AuditLogService {
     if (planIds.size > 0) {
       const ids = [...planIds];
       const placeholders = ids.map(() => '?').join(',');
-      const [planRows] = await pool.query<Array<{ id: number; name: string }>>(
+      const [planRows] = await pool.query<Array<{ id: number; name: string } & RowDataPacket>>(
         `SELECT id, name FROM plans WHERE id IN (${placeholders})`,
         ids,
       );
@@ -163,7 +164,7 @@ export class AuditLogService {
       const ids = [...invoiceIds];
       const placeholders = ids.map(() => '?').join(',');
       const [invoiceRows] = await pool.query<
-        Array<{ id: number; amount: string; currency: string; academy_name: string | null }>
+        Array<{ id: number; amount: string; currency: string; academy_name: string | null } & RowDataPacket>
       >(
         `SELECT i.id, i.amount, i.currency, a.name AS academy_name
          FROM invoices i

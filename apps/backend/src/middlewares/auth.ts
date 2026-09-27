@@ -45,15 +45,16 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       }
     }
 
+    const mustChangePassword = gate.must_change_password;
     req.user = {
       userId: payload.userId,
       role: payload.role,
       roles: payload.roles,
       tenantId: payload.tenantId ?? null,
-      mustChangePassword: gate.must_change_password,
+      mustChangePassword,
     };
 
-    if (req.user.mustChangePassword && !isPasswordChangeAllowed(req)) {
+    if (mustChangePassword && !isPasswordChangeAllowed(req)) {
       next(
         new ForbiddenError(
           'Debes cambiar tu contraseña temporal antes de continuar',

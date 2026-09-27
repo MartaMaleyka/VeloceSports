@@ -6,23 +6,24 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages/shared ./packages/shared
 COPY apps/backend ./apps/backend
 
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @velocesport/shared build
+RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm --filter @velocesport/shared build \
+ && pnpm --filter @velocesport/backend build
+
+# Solo dependencias de producción (sin tsx, jest, typescript...) + paquetes del workspace.
+RUN pnpm --filter @velocesport/backend deploy --prod /out \
+ && cp -r apps/backend/dist /out/dist \
+ && cp -r apps/backend/db /out/db
 
 FROM node:20-alpine AS runtime
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
-WORKDIR /app
+WORKDIR /app/apps/backend
 
 ENV NODE_ENV=production
 
-COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml /app/tsconfig.base.json ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/shared ./packages/shared
-COPY --from=build /app/apps/backend ./apps/backend
-
-COPY docker/backend-entrypoint.sh /entrypoint.sh
+COPY --from=build --chown=node:node /out ./
+COPY --chown=node:node docker/backend-entrypoint.sh /entrypoint.sh
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
-WORKDIR /app/apps/backend
+USER node
 EXPOSE 3000
 ENTRYPOINT ["/entrypoint.sh"]
