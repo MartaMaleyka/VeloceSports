@@ -102,6 +102,22 @@ export class UserSessionRepository {
     return result.affectedRows;
   }
 
+  /** Borra por lotes las sesiones revocadas o expiradas antes de `cutoff`. */
+  async deleteStale(cutoff: Date, batchSize = 5_000): Promise<number> {
+    const pool = getPool();
+    let total = 0;
+    for (;;) {
+      const [result] = await pool.execute<ResultSetHeader>(
+        `DELETE FROM user_sessions
+         WHERE (revoked_at IS NOT NULL AND revoked_at < ?) OR expires_at < ?
+         LIMIT ${Math.max(1, Math.floor(batchSize))}`,
+        [cutoff, cutoff],
+      );
+      total += result.affectedRows;
+      if (result.affectedRows < batchSize) return total;
+    }
+  }
+
   async countActiveForUser(userId: number): Promise<number> {
     const pool = getPool();
     const [rows] = await pool.execute<RowDataPacket[]>(

@@ -16,6 +16,8 @@ const envSchema = z.object({
   DB_USER: z.string().min(1),
   DB_PASSWORD: z.string(),
   DB_NAME: z.string().min(1),
+  /** Conexiones máximas del pool de MySQL. */
+  DB_POOL_SIZE: z.coerce.number().int().positive().default(10),
 
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
@@ -24,6 +26,9 @@ const envSchema = z.object({
 
   /** Tiempo máximo sin actividad antes de cerrar la sesión (ej. 60m, 1h). */
   SESSION_INACTIVITY_TIMEOUT: z.string().default('60m'),
+
+  /** Días que se conservan sesiones expiradas/revocadas antes de borrarlas. */
+  SESSION_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
 
   CORS_ORIGINS: z.string().min(1),
 
