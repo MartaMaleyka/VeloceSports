@@ -20,11 +20,18 @@ import {
   inviteAdultPlayerBodySchema,
   inviteAdultPlayerParamsSchema,
 } from '../validators/adult-player.validator.js';
+import { getPool } from '../config/db.js';
 
 const router = Router();
 
-router.get('/health', (_req, res) => {
-  res.json({ success: true, message: 'OK' });
+/** Liveness + base de datos: el healthcheck de Docker no debe dar OK si MySQL no responde. */
+router.get('/health', async (_req, res) => {
+  try {
+    await getPool().query('SELECT 1');
+    res.json({ success: true, message: 'OK' });
+  } catch {
+    res.status(503).json({ success: false, message: 'Base de datos no disponible' });
+  }
 });
 
 router.use('/auth', authRoutes);

@@ -55,6 +55,8 @@ export class UserSessionService {
     client?: SessionClientContext,
   ): Promise<SessionTokensResult> {
     const expiresAt = refreshExpiresAt();
+    // El id de sesión va dentro del refresh JWT: se inserta con un hash de relleno
+    // y se actualiza en cuanto se firma el token definitivo.
     const placeholderHash = await hashRefreshToken(randomUUID());
 
     const sessionId = await userSessionRepository.create({
@@ -275,6 +277,15 @@ export class UserSessionService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Borra sesiones expiradas o revocadas hace más de `retentionDays`. Cada refresh
+   * crea una fila nueva, así que sin esta limpieza la tabla crece sin límite.
+   */
+  async purgeStaleSessions(retentionDays: number): Promise<number> {
+    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+    return userSessionRepository.deleteStale(cutoff);
   }
 
   /** Revoca sesiones de todos los usuarios de una academia (por tenant_id en sesión). */

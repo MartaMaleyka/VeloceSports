@@ -54,7 +54,7 @@ describe('Auth sessions — Fase 1', () => {
     expect(session.tenant_id).toBe(seed.academyAId);
     expect(session.revoked_at).toBeNull();
     expect(session.refresh_token_hash).not.toBe(refreshToken);
-    expect(session.refresh_token_hash).toMatch(/^\$2[aby]\$/);
+    expect(session.refresh_token_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
     await expect(verifyRefreshTokenHash(refreshToken, session.refresh_token_hash)).resolves.toBe(true);
   });
 
@@ -67,8 +67,7 @@ describe('Auth sessions — Fase 1', () => {
 
     const refreshToken = response.body.data.refreshToken as string;
     expect(response.body.data.refreshTokenHash).toBeUndefined();
-    expect(JSON.stringify(response.body)).not.toContain('$2a$');
-    expect(JSON.stringify(response.body)).not.toContain('$2b$');
+    expect(JSON.stringify(response.body)).not.toContain('sha256:');
 
     const session = await fetchSessionForRefreshToken(refreshToken);
     expect(session.refresh_token_hash).not.toEqual(refreshToken);
@@ -207,7 +206,7 @@ describe('Auth sessions — Fase 1', () => {
 });
 
 describe('Auth sessions — hash nunca almacenado en claro', () => {
-  it('todas las filas de user_sessions almacenan bcrypt, no el JWT en claro', async () => {
+  it('todas las filas de user_sessions almacenan SHA-256, no el JWT en claro', async () => {
     await loginAdminA();
     await loginAdminA();
 
@@ -218,7 +217,7 @@ describe('Auth sessions — hash nunca almacenado en claro', () => {
 
     expect(rows.length).toBeGreaterThanOrEqual(2);
     for (const row of rows) {
-      expect(row.refresh_token_hash).toMatch(/^\$2[aby]\$/);
+      expect(row.refresh_token_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
       expect(row.refresh_token_hash.startsWith('eyJ')).toBe(false);
     }
   });
