@@ -3,7 +3,7 @@ import {
   getDashboardRoute,
   type ApiErrorResponse,
   type ApiSuccessResponse,
-  type LoginResponseDto,
+  type BffLoginResponseDto,
 } from '@velocesport/shared';
 import { useTranslation } from '@velocesport/i18n';
 import {
@@ -60,14 +60,16 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
 
     setLoading(true);
     try {
+      // El BFF guarda los tokens en cookies httpOnly; la respuesta solo trae el usuario.
       const loginRes = await fetch(`${apiUrl}/login`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const loginBody = (await loginRes.json()) as
-        | ApiSuccessResponse<LoginResponseDto>
+        | ApiSuccessResponse<BffLoginResponseDto>
         | ApiErrorResponse;
 
       if (!loginRes.ok || !loginBody.success) {
@@ -76,21 +78,6 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
             ? loginBody.message
             : t('auth.login.errors.invalidCredentials');
         setFormError(message);
-        return;
-      }
-
-      const sessionRes = await fetch(`${apiUrl}/session`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accessToken: loginBody.data.accessToken,
-          refreshToken: loginBody.data.refreshToken,
-        }),
-      });
-
-      if (!sessionRes.ok) {
-        setFormError(t('auth.login.errors.sessionFailed'));
         return;
       }
 

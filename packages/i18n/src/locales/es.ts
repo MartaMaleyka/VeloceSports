@@ -107,7 +107,6 @@ export const es = {
         passwordRequired: 'Ingresa tu contraseña',
         passwordMin: 'La contraseña debe tener al menos 8 caracteres',
         invalidCredentials: 'No pudimos iniciar sesión. Revisa tus credenciales.',
-        sessionFailed: 'No pudimos guardar tu sesión. Intenta de nuevo.',
         network: 'No pudimos conectar con el servidor. Revisa tu conexión e intenta de nuevo.',
       },
       noAcademy: '¿No tienes cuenta?',
