@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { parentDashboardService } from '../services/parent-dashboard.service.js';
+import { parentLiveMatchService } from '../services/parent-live-match.service.js';
 import type { AuthUser } from '../types/index.js';
 
 export class ParentDashboardController {
@@ -14,6 +15,20 @@ export class ParentDashboardController {
         user.userId,
         Number(req.params.playerId),
         period,
+      );
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getChildLiveMatches(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = req.user as AuthUser;
+      const data = await parentLiveMatchService.getLiveForParent(
+        req.tenantId as number,
+        user.userId,
+        Number(req.params.playerId),
       );
       res.status(200).json({ success: true, data });
     } catch (error) {

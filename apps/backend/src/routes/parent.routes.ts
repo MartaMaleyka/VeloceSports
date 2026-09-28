@@ -111,6 +111,12 @@ router.get(
 );
 
 router.get(
+  '/children/:playerId/live',
+  validate(parentDashboardParamsSchema, 'params'),
+  (req, res, next) => parentDashboardController.getChildLiveMatches(req, res, next),
+);
+
+router.get(
   '/children/:playerId/observations',
   validate(parentListObservationsParamsSchema, 'params'),
   (req, res, next) => playerObservationController.listForParent(req, res, next),

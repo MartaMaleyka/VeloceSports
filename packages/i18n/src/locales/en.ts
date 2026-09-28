@@ -1075,6 +1075,18 @@ export const en = {
     },
   },
   parentDashboard: {
+    live: {
+      title: 'Live',
+      vs: 'vs {opponent}',
+      clock: 'Minute {minute} · period {period}',
+      paused: 'Paused · minute {minute} · period {period}',
+      notInLineup: 'The match has started. Not in the lineup yet.',
+      noActionsYet: 'No actions recorded in this match yet.',
+      summaryLabel: 'Actions in this match',
+      recentTitle: 'Latest plays',
+      recentItem: 'Min {minute}: {action}',
+      autoRefresh: 'Updates automatically while the match is on.',
+    },
     periodLabel: 'Period',
     periodAll: 'Full season',
     childTabs: 'Select child',
