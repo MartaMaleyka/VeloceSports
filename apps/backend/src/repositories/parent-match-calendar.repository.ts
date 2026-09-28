@@ -34,11 +34,15 @@ export class ParentMatchCalendarRepository extends TenantScopedRepository {
     }
 
     const baseFrom = `
-      FROM parent_players pp
-      INNER JOIN players p ON p.id = pp.player_id AND p.tenant_id = pp.tenant_id
-      INNER JOIN matches m ON m.category_id = p.category_id AND m.tenant_id = pp.tenant_id
+      FROM players p
+      INNER JOIN matches m ON m.category_id = p.category_id AND m.tenant_id = p.tenant_id
       INNER JOIN categories c ON c.id = m.category_id AND c.tenant_id = m.tenant_id
-      WHERE pp.tenant_id = ? AND pp.parent_user_id = ?
+      WHERE p.tenant_id = ?
+        AND EXISTS (
+          SELECT 1 FROM player_viewers pv
+          WHERE pv.tenant_id = p.tenant_id AND pv.player_id = p.id AND pv.viewer_id = ?
+            AND pv.relationship IN ('PARENT', 'GUARDIAN')
+        )
         AND p.status = 'active'
         ${playerFilter}
     `;
