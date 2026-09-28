@@ -2,7 +2,7 @@
   "name": "squadveloce",
   "private": true,
   "version": "0.1.0",
-  "description": "SquadVeloce — plataforma SaaS multi-tenant para academias de fútbol formativo",
+  "description": "SquadVeloce \u2014 plataforma SaaS multi-tenant para academias de f\u00fatbol formativo",
   "scripts": {
     "dev:backend": "pnpm --filter @velocesport/backend dev",
     "build:backend": "pnpm --filter @velocesport/backend build",
@@ -17,5 +17,14 @@
     "node": ">=22.12.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "overrides": {
+      "brace-expansion@5": "^5.0.9",
+      "js-yaml@4": "^4.3.2",
+      "fast-uri@3": "^3.1.6",
+      "body-parser@1": "^1.20.8",
+      "qs@6": "^6.16.0"
+    }
+  }
 }

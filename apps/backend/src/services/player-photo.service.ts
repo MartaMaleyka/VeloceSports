@@ -1,4 +1,4 @@
-import fileType from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import sharp from 'sharp';
 import {
   PlayerStatus,
@@ -179,7 +179,7 @@ export class PlayerPhotoService {
   }
 
   private async processImage(buffer: Buffer, originalName: string): Promise<Buffer> {
-    const detected = await fileType.fromBuffer(buffer);
+    const detected = await fileTypeFromBuffer(buffer);
     if (!detected || !ALLOWED_MIME.has(detected.mime)) {
       throw new ValidationError(
         'Formato no permitido. Usa JPG, PNG o WebP (el contenido real del archivo no coincide)',
