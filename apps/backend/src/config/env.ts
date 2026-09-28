@@ -53,6 +53,16 @@ const envSchema = z.object({
   /** Días tras finalizar en que se permiten correcciones post-partido */
   MATCH_CORRECTION_WINDOW_DAYS: z.coerce.number().int().positive().default(7),
 
+  /**
+   * Job diario de facturas vencidas: marca `overdue` y SUSPENDE las academias
+   * afectadas. Desactivado por defecto: activarlo es una decisión de negocio.
+   */
+  BILLING_OVERDUE_JOB_ENABLED: z
+    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+    .default(false)
+    .transform((v) => v === true || v === 'true' || v === '1'),
+  BILLING_OVERDUE_JOB_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(6),
+
   /** Object storage (MinIO) — fotos de jugadores */
   MINIO_ENDPOINT: z.string().min(1).default('127.0.0.1'),
   MINIO_PORT: z.coerce.number().int().positive().default(9100),
@@ -66,16 +76,6 @@ const envSchema = z.object({
   /** Host/puerto que ve el navegador en las URLs firmadas (si difiere del endpoint interno). */
   MINIO_PUBLIC_ENDPOINT: z.string().min(1).optional(),
   MINIO_PUBLIC_PORT: z.coerce.number().int().positive().optional(),
-
-  /**
-   * Job diario de facturas vencidas: marca `overdue` y SUSPENDE las academias
-   * afectadas. Desactivado por defecto: activarlo es una decisión de negocio.
-   */
-  BILLING_OVERDUE_JOB_ENABLED: z
-    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
-    .default(false)
-    .transform((v) => v === true || v === 'true' || v === '1'),
-  BILLING_OVERDUE_JOB_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(6),
 
   /** Agente de interpretación de estadísticas — modelo local vía Ollama (sin datos a terceros). */
   OLLAMA_ENABLED: z

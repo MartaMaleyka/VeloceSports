@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import type { Server } from 'node:http';
 import { createApp } from './app.js';
+import { startOverdueInvoicesJob } from './jobs/overdue-invoices.job.js';
 import { env } from './config/env.js';
 import { closePool, getPool } from './config/db.js';
 import { userSessionService } from './services/user-session.service.js';
-import { startOverdueInvoicesJob } from './jobs/overdue-invoices.job.js';
 
 const app = createApp();
 
