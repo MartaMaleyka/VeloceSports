@@ -1333,6 +1333,7 @@ export const en = {
       successCreate: 'Category created',
       successUpdate: 'Category updated',
       successStatus: 'Category status updated',
+      inUse: 'You cannot deactivate it: it has active players or unfinished matches. Move them to another category first.',
       activate: 'Activate',
       deactivate: 'Deactivate',
       requiresGuardian: {
@@ -1358,6 +1359,8 @@ export const en = {
       position: 'Position',
       category: 'Category',
       noCategory: 'No category',
+      categoryRequiredActive: 'Assign an active category: an active player needs one to play.',
+      pendingStatusHint: 'Pending enrollment: approve or reject it from the players list.',
       parents: 'Linked parents',
       noParents: 'No parents',
       searchParents: 'Search parents/guardians…',

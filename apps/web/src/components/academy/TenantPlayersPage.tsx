@@ -304,6 +304,13 @@ function TenantPlayersContent() {
       return;
     }
 
+    // RN-05: un jugador activo necesita categoría.
+    const resultingStatus = editing ? form.status : PlayerStatus.ACTIVE;
+    if (resultingStatus === PlayerStatus.ACTIVE && !form.categoryId) {
+      setFormError(t('tenant.players.categoryRequiredActive'));
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = buildPayload();
@@ -509,9 +516,12 @@ function TenantPlayersContent() {
     return { primaryActions: actions };
   };
 
-  const categoryOptions = [
+  // Solo categorías activas son asignables; la actual se mantiene para no forzar un cambio.
+  const assignableCategoryOptions = (currentId: number | null | undefined) => [
     { value: '', label: t('tenant.players.noCategory') },
-    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
+    ...categories
+      .filter((c) => c.status === 'active' || c.id === currentId)
+      .map((c) => ({ value: String(c.id), label: c.name })),
   ];
 
   const kpiHeader = kpis ? (
@@ -779,7 +789,7 @@ function TenantPlayersContent() {
                     : alreadyInvited,
                 }));
               }}
-              options={categoryOptions}
+              options={assignableCategoryOptions(editing?.categoryId)}
             />
           </div>
           {editing && (
@@ -789,8 +799,21 @@ function TenantPlayersContent() {
                 id="p-status"
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                options={statusOptions}
+                options={
+                  editing.status === PlayerStatus.PENDING
+                    ? statusOptions
+                    : statusOptions.filter((o) => o.value !== PlayerStatus.PENDING)
+                }
+                disabled={editing.status === PlayerStatus.PENDING}
+                aria-describedby={
+                  editing.status === PlayerStatus.PENDING ? 'p-status-pending' : undefined
+                }
               />
+              {editing.status === PlayerStatus.PENDING && (
+                <p id="p-status-pending" className="text-sm text-text-secondary">
+                  {t('tenant.players.pendingStatusHint')}
+                </p>
+              )}
             </div>
           )}
           {showAdultToggle && (
@@ -884,14 +907,23 @@ function TenantPlayersContent() {
               id="approve-category"
               value={approveCategoryId}
               onChange={(e) => setApproveCategoryId(e.target.value)}
-              options={categoryOptions}
+              options={assignableCategoryOptions(approveTarget?.categoryId)}
             />
+            {!approveCategoryId && (
+              <p className="text-sm text-text-secondary">
+                {t('tenant.players.categoryRequiredActive')}
+              </p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setApproveTarget(null)}>
               {t('common.cancel')}
             </Button>
-            <Button type="button" disabled={actionLoading} onClick={() => void submitApprove()}>
+            <Button
+              type="button"
+              disabled={actionLoading || !approveCategoryId}
+              onClick={() => void submitApprove()}
+            >
               {actionLoading ? t('common.loading') : t('tenant.players.approve')}
             </Button>
           </div>

@@ -16,6 +16,7 @@ import { coachCategoryRepository } from '../repositories/coach-category.reposito
 import { gameActionRepository } from '../repositories/game-action.repository.js';
 import { matchAttendanceRepository } from '../repositories/match-attendance.repository.js';
 import { matchRepository, type MatchWithCategoryRow } from '../repositories/match.repository.js';
+import { assertAssignableCategory } from '../utils/category-rules.js';
 import { notificationRepository } from '../repositories/notification.repository.js';
 import { buildClockDtoFromRow } from '../utils/match-clock-mapper.js';
 import { auditService } from './audit.service.js';
@@ -232,6 +233,7 @@ export class MatchService {
 
   async createMatch(actor: MatchActorContext, input: CreateMatchBody): Promise<MatchDto> {
     await this.assertCategoryAccess(actor, input.categoryId);
+    await assertAssignableCategory(actor.tenantId, input.categoryId);
 
     const matchId = await matchRepository.create({
       tenantId: actor.tenantId,
@@ -283,6 +285,7 @@ export class MatchService {
         );
       }
       await this.assertCategoryAccess(actor, input.categoryId);
+      await assertAssignableCategory(actor.tenantId, input.categoryId, before.category_id);
     }
 
     await matchRepository.update(actor.tenantId, matchId, {

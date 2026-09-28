@@ -1337,6 +1337,7 @@ export const es = {
       successCreate: 'Categoría creada',
       successUpdate: 'Categoría actualizada',
       successStatus: 'Estado de categoría actualizado',
+      inUse: 'No puedes desactivarla: tiene jugadores activos o partidos sin terminar. Muévelos a otra categoría primero.',
       activate: 'Activar',
       deactivate: 'Desactivar',
       requiresGuardian: {
@@ -1362,6 +1363,8 @@ export const es = {
       position: 'Posición',
       category: 'Categoría',
       noCategory: 'Sin categoría',
+      categoryRequiredActive: 'Asigna una categoría activa: un jugador activo la necesita para jugar.',
+      pendingStatusHint: 'Inscripción pendiente: apruébala o recházala desde la lista de jugadores.',
       parents: 'Padres vinculados',
       noParents: 'Sin padres',
       searchParents: 'Buscar padres/acudientes…',
