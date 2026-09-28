@@ -556,6 +556,8 @@ export const es = {
         upcomingDescription: 'Tienes una factura de {amount} que vence el {date}. Realiza el pago antes del vencimiento para evitar la suspensión de tu academia.',
         overdueTitle: 'Factura vencida',
         overdueDescription: 'Tienes una factura vencida de {amount} (venció el {date}). Tu academia puede ser suspendida si no se regulariza el pago. Contacta al soporte de la plataforma.',
+        overdueSuspensionDate:
+          'Tienes una factura vencida de {amount} (venció el {date}). Si el pago no se registra antes del {suspensionDate}, la cuenta de la academia se suspenderá. Si ya pagaste, envía el comprobante al soporte.',
       },
       summary: {
         currentPlan: 'Plan actual',

@@ -403,6 +403,20 @@ export class UserRepository extends TenantScopedRepository {
     );
   }
 
+  /** Emails de los administradores activos de una academia (roles en user_roles). */
+  async findActiveAcademyAdminEmails(tenantId: number): Promise<string[]> {
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT DISTINCT u.email
+       FROM users u
+       INNER JOIN user_roles r ON r.user_id = u.id
+       WHERE r.role = 'academy_admin' AND r.tenant_id = ? AND u.status = 'active'
+       ORDER BY u.email`,
+      [tenantId],
+    );
+    return rows.map((row) => String(row.email));
+  }
+
   async findPasswordGateState(
     userId: number,
   ): Promise<{

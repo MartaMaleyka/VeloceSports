@@ -112,10 +112,23 @@ function AcademyBillingContent() {
     if (summary.overdueInvoice) {
       items.push(
         <Alert key="overdue" variant="error" title={t('platform.billing.alerts.overdueTitle')}>
-          {t('platform.billing.alerts.overdueDescription', {
-            amount: formatMoney(summary.overdueInvoice.amount, summary.overdueInvoice.currency, locale),
-            date: summary.overdueInvoice.dueDate,
-          })}
+          {(() => {
+            const overdue = summary.overdueInvoice;
+            const params = {
+              amount: formatMoney(overdue.amount, overdue.currency, locale),
+              date: overdue.dueDate,
+            };
+            // Con aviso enviado y suspensión aún pendiente: fecha concreta en vez de "puede ser suspendida".
+            const scheduled = overdue.suspensionScheduledFor
+              ? new Date(overdue.suspensionScheduledFor)
+              : null;
+            return scheduled && scheduled.getTime() > Date.now()
+              ? t('platform.billing.alerts.overdueSuspensionDate', {
+                  ...params,
+                  suspensionDate: new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(scheduled),
+                })
+              : t('platform.billing.alerts.overdueDescription', params);
+          })()}
         </Alert>,
       );
     }

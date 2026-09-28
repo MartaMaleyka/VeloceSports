@@ -268,6 +268,7 @@ export class InvoiceService {
       status: row.status,
       paidAt: row.paid_at?.toISOString() ?? null,
       paidBy: row.paid_by,
+      suspensionScheduledFor: row.suspension_scheduled_for?.toISOString() ?? null,
       notes: row.notes,
       createdAt: row.created_at.toISOString(),
       updatedAt: row.updated_at.toISOString(),
