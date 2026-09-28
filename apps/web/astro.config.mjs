@@ -1,7 +1,6 @@
 import { defineConfig, envField } from 'astro/config';
 import node from '@astrojs/node';
 import react from '@astrojs/react';
-import tailwind from '@astrojs/tailwind';
 
 const astroBase = process.env.ASTRO_BASE ?? '/';
 /**
@@ -52,13 +51,7 @@ export default defineConfig({
     checkOrigin: true,
     allowedDomains: parseAllowedDomains(`${allowedOriginsRaw},${publicSiteUrl}`),
   },
-  integrations: [
-    react(),
-    tailwind({
-      applyBaseStyles: false,
-      configFile: './tailwind.config.mjs',
-    }),
-  ],
+  integrations: [react()],
   env: {
     schema: {
       JWT_ACCESS_SECRET: envField.string({

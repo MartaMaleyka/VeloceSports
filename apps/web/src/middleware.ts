@@ -11,6 +11,18 @@ import { ensureSession } from './lib/session.js';
 import { resolveRequestClientIp, runWithClientIp } from './lib/client-ip.js';
 import { applySecurityHeaders } from './lib/security-headers.js';
 
+/**
+ * La app no usa astro:assets, pero en modo servidor Astro expone igualmente el endpoint
+ * de optimización de imágenes (/_image). Se cierra para no ofrecer superficie de ataque
+ * sin uso (hubo un RCE en ese endpoint, GHSA de Astro < 7.2.8).
+ */
+const blockImageEndpointMiddleware = defineMiddleware((context, next) => {
+  if (/\/_image\/?$/.test(context.url.pathname)) {
+    return new Response(null, { status: 404 });
+  }
+  return next();
+});
+
 /** Fija la IP real del cliente para todo el request (la reenvía el BFF al backend). */
 const clientIpMiddleware = defineMiddleware((context, next) => {
   let clientAddress: string | undefined;
@@ -96,4 +108,9 @@ const authMiddleware = defineMiddleware(async (context, next) => {
   return next();
 });
 
-export const onRequest = sequence(clientIpMiddleware, securityHeadersMiddleware, authMiddleware);
+export const onRequest = sequence(
+  blockImageEndpointMiddleware,
+  clientIpMiddleware,
+  securityHeadersMiddleware,
+  authMiddleware,
+);
