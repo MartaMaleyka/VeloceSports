@@ -87,7 +87,7 @@ importers:
         specifier: ^22.10.5
         version: 22.19.21
       '@types/nodemailer':
-        specifier: ^6.4.17
+        specifier: ^6.4.24
         version: 6.4.24
       '@types/pdfkit':
         specifier: ^0.17.6
