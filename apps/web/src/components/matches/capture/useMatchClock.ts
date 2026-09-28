@@ -23,19 +23,33 @@ export function useMatchClock({
   enabled,
   onUpdated,
 }: UseMatchClockOptions) {
-  const [tick, setTick] = useState(Date.now());
+  // Solo cambia cuando cambia el minuto/periodo mostrado: el reloj se comprueba cada
+  // segundo, pero re-renderizar todo el panel de captura cada segundo durante el
+  // partido es innecesario (la UI no muestra segundos).
+  const [displayedAt, setDisplayedAt] = useState(Date.now());
   const [commandLoading, setCommandLoading] = useState(false);
 
   useEffect(() => {
     if (!enabled || !clock?.running) return;
-    const id = window.setInterval(() => setTick(Date.now()), 1000);
+    const input = matchClockDtoToStateInput(clock);
+    let last = computeMatchClockDisplay(input, Date.now());
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      const next = computeMatchClockDisplay(input, now);
+      if (next.minute !== last.minute || next.period !== last.period) {
+        last = next;
+        setDisplayedAt(now);
+      }
+    }, 1000);
     return () => window.clearInterval(id);
-  }, [clock?.running, enabled]);
+  }, [clock, enabled]);
 
   const display = useMemo(() => {
     if (!clock) return { period: 1, minute: 0, elapsedSeconds: 0 };
-    return computeMatchClockDisplay(matchClockDtoToStateInput(clock), tick);
-  }, [clock, tick]);
+    // Date.now() (no displayedAt) para que un comando nuevo del reloj se refleje al instante.
+    return computeMatchClockDisplay(matchClockDtoToStateInput(clock), Date.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clock, displayedAt]);
 
   const sendCommand = useCallback(
     async (body: { command: string; minute?: number }) => {
@@ -46,7 +60,7 @@ export function useMatchClock({
           body: JSON.stringify(body),
         });
         onUpdated?.(match);
-        setTick(Date.now());
+        setDisplayedAt(Date.now());
         return match;
       } finally {
         setCommandLoading(false);

@@ -1,4 +1,4 @@
-import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import type { RowDataPacket } from 'mysql2/promise';
 import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';

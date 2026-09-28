@@ -7,7 +7,7 @@ export class ReportExportController {
     try {
       const tenantId = req.tenantId as number;
       const reportType = req.params.reportType as TenantReportType;
-      const query = req.query as {
+      const query = req.query as unknown as {
         format: 'csv' | 'pdf';
         locale?: string;
         categoryId?: number;

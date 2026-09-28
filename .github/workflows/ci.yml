@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (tests con MySQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: velocesport_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Configurar entorno de test
+        working-directory: apps/backend
+        run: |
+          cat > .env.test <<'ENV'
+          NODE_ENV=test
+          PORT=3001
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=velocesport_test
+          JWT_ACCESS_SECRET=ci-access-secret-not-used-anywhere-else-000000
+          JWT_REFRESH_SECRET=ci-refresh-secret-not-used-anywhere-else-00000
+          CORS_ORIGINS=http://localhost:4321
+          OLLAMA_ENABLED=false
+          # Las suites hacen muchos logins/insights desde la misma IP en pocos segundos.
+          AUTH_LOGIN_RATE_LIMIT_MAX=10000
+          PLAYER_INSIGHT_RATE_LIMIT_MAX=10000
+          ENV
+      - name: Compilar backend (tsc)
+        run: pnpm --filter @velocesport/backend build
+      - run: pnpm --filter @velocesport/backend test
+
+  web:
+    name: Web (i18n, tests y build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Validar claves de traducción (es/en)
+        run: pnpm --filter @velocesport/i18n test
+      - run: pnpm --filter @velocesport/web test
+      - run: pnpm --filter @velocesport/web build

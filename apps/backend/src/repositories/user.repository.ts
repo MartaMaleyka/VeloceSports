@@ -388,10 +388,14 @@ export class UserRepository extends TenantScopedRepository {
 
   async findPasswordGateState(
     userId: number,
-  ): Promise<{ must_change_password: boolean; password_reset_at: Date | null } | null> {
+  ): Promise<{
+    must_change_password: boolean;
+    password_reset_at: Date | null;
+    status: UserRow['status'];
+  } | null> {
     const pool = getPool();
     const [rows] = await pool.execute<UserRow[]>(
-      'SELECT must_change_password, password_reset_at FROM users WHERE id = ? LIMIT 1',
+      'SELECT must_change_password, password_reset_at, status FROM users WHERE id = ? LIMIT 1',
       [userId],
     );
     const row = rows[0];
@@ -399,6 +403,7 @@ export class UserRepository extends TenantScopedRepository {
     return {
       must_change_password: Boolean(row.must_change_password),
       password_reset_at: row.password_reset_at,
+      status: row.status,
     };
   }
 

@@ -11,7 +11,7 @@ export default function LoginPanelBrandMark() {
   return (
     <div className="ds-brand-card__mark" aria-hidden="true">
       <img
-        src={`${base}brand/logo-light.png`}
+        src={`${base}brand/logo-light-180.webp`}
         alt=""
         width={90}
         height={90}
@@ -19,7 +19,7 @@ export default function LoginPanelBrandMark() {
         decoding="async"
       />
       <img
-        src={`${base}brand/logo-dark.png`}
+        src={`${base}brand/logo-dark-180.webp`}
         alt=""
         width={90}
         height={90}

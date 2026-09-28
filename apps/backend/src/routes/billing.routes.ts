@@ -4,10 +4,12 @@ import { invoiceController } from '../controllers/invoice.controller.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/rbac.js';
 import { tenant } from '../middlewares/tenant.js';
-import { validate } from '../middlewares/validate.js';
+import { positiveIntParam, validate } from '../middlewares/validate.js';
 import { listTenantInvoicesQuerySchema } from '../validators/invoice.validator.js';
 
 const router = Router();
+
+router.param('invoiceId', positiveIntParam);
 
 router.use(authenticate, tenant, requireRole(UserRole.ACADEMY_ADMIN));
 

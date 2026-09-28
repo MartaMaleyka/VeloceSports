@@ -9,15 +9,10 @@ function readClientContext(req: Request): {
   userAgent?: string | null;
   ipAddress?: string | null;
 } {
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip =
-    typeof forwarded === 'string'
-      ? forwarded.split(',')[0]?.trim()
-      : req.socket.remoteAddress ?? null;
-
+  // req.ip ya resuelve X-Forwarded-For solo desde proxies de confianza (TRUST_PROXY).
   return {
     userAgent: req.headers['user-agent'] ?? null,
-    ipAddress: ip,
+    ipAddress: req.ip ?? req.socket.remoteAddress ?? null,
   };
 }
 
@@ -67,15 +62,6 @@ export class AuthController {
       const { refreshToken } = req.body as { refreshToken?: string };
       await authService.logout(refreshToken);
       res.status(200).json({ success: true, data: { loggedOut: true } });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const result = await authService.register(req.body);
-      res.status(201).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

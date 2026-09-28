@@ -1,7 +1,6 @@
 import {
   ActionCatalogStatus,
   MatchLineupRole,
-  MatchStatus,
   UserRole,
   averagePerMinute,
   buildDimensionCountsFromActions,

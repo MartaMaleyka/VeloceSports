@@ -1,4 +1,4 @@
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware, sequence } from 'astro:middleware';
 import { resolveLocale } from '@velocesport/i18n';
 import {
   getDashboardPathForSession,
@@ -8,8 +8,27 @@ import {
   sessionHasRole,
 } from './lib/auth-config.js';
 import { ensureSession } from './lib/session.js';
+import { resolveRequestClientIp, runWithClientIp } from './lib/client-ip.js';
+import { applySecurityHeaders } from './lib/security-headers.js';
 
-export const onRequest = defineMiddleware(async (context, next) => {
+/** Fija la IP real del cliente para todo el request (la reenvía el BFF al backend). */
+const clientIpMiddleware = defineMiddleware((context, next) => {
+  let clientAddress: string | undefined;
+  try {
+    clientAddress = context.clientAddress;
+  } catch {
+    // Sin dirección de socket (prerender): se omite el reenvío de IP.
+  }
+  const clientIp = resolveRequestClientIp(context.request, clientAddress);
+  return runWithClientIp(clientIp, () => next());
+});
+
+const securityHeadersMiddleware = defineMiddleware(async (_context, next) => {
+  const response = await next();
+  return applySecurityHeaders(response, { production: import.meta.env.PROD });
+});
+
+const authMiddleware = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
   const { session, endReason } = await ensureSession(context.cookies);
   const locale = resolveLocale(
@@ -76,3 +95,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   return next();
 });
+
+export const onRequest = sequence(clientIpMiddleware, securityHeadersMiddleware, authMiddleware);

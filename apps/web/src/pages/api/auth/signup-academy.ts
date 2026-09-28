@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { INTERNAL_API_URL } from 'astro:env/server';
+import { backendFetch } from '../../../lib/client-ip.js';
 
 export const POST: APIRoute = async ({ request }) => {
   const body = await request.text();
@@ -8,7 +9,7 @@ export const POST: APIRoute = async ({ request }) => {
   const headers: Record<string, string> = {};
   if (contentType) headers['Content-Type'] = contentType;
 
-  const backendRes = await fetch(`${INTERNAL_API_URL}/auth/signup-academy`, {
+  const backendRes = await backendFetch(`${INTERNAL_API_URL}/auth/signup-academy`, {
     method: 'POST',
     headers,
     body: body || undefined,

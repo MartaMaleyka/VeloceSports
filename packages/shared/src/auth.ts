@@ -44,6 +44,9 @@ export interface LoginResponseDto {
   mustChangePassword?: boolean;
 }
 
+/** Respuesta del login del BFF: los tokens viajan solo en cookies httpOnly. */
+export type BffLoginResponseDto = Omit<LoginResponseDto, 'accessToken' | 'refreshToken'>;
+
 /** Alta pública de un padre independiente (sin academia): crea su cuenta y la de su hijo. */
 export interface SignupIndependentBody {
   parentFirstName: string;

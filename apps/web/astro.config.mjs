@@ -4,8 +4,11 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 const astroBase = process.env.ASTRO_BASE ?? '/';
-/** Origen público (detrás de nginx). Obliga a checkOrigin a confiar en el dominio real, no en 127.0.0.1:9082. */
-const publicSiteUrl = process.env.PUBLIC_SITE_URL || 'https://aby.litomalone.dev';
+/**
+ * Origen público (detrás de nginx). Obliga a checkOrigin a confiar en el dominio real,
+ * no en 127.0.0.1:9082. En producción se define por entorno (ver .env.production.example).
+ */
+const publicSiteUrl = process.env.PUBLIC_SITE_URL || 'http://localhost:4321';
 
 /**
  * Sin allowedDomains, el adapter Node de Astro cae a hostname "localhost" e ignora
@@ -77,6 +80,17 @@ export default defineConfig({
         context: 'client',
         access: 'public',
         default: 'http://localhost:3000',
+      }),
+      /**
+       * Proxies de confianza delante de Astro (nginx = 1). Se usa para leer la IP real
+       * del cliente desde X-Forwarded-For sin aceptar valores inyectados por el navegador.
+       */
+      TRUSTED_PROXY_HOPS: envField.number({
+        context: 'server',
+        access: 'secret',
+        default: 1,
+        int: true,
+        min: 0,
       }),
       INTERNAL_API_URL: envField.string({
         context: 'server',

@@ -1,10 +1,16 @@
 import { lazy, type ComponentType } from 'react';
-import TenantMatchesPage from '../components/matches/TenantMatchesPage';
-import MatchDetailPage from '../components/matches/MatchDetailPage';
-import CoachHomePage from '../components/coach/CoachHomePage';
-import CoachCategoriesPage from '../components/coach/CoachCategoriesPage';
-import CoachPlayersPage from '../components/coach/CoachPlayersPage';
-import CoachAnalysisPage from '../components/coach/CoachAnalysisPage';
+
+/**
+ * Cada página se carga bajo demanda: el DashboardShell es el mismo island para
+ * todos los roles, y con imports estáticos cualquier usuario descargaba el código
+ * de todas las páginas (super admin, captura de partidos, gráficos...).
+ */
+const TenantMatchesPage = lazy(() => import('../components/matches/TenantMatchesPage'));
+const MatchDetailPage = lazy(() => import('../components/matches/MatchDetailPage'));
+const CoachHomePage = lazy(() => import('../components/coach/CoachHomePage'));
+const CoachCategoriesPage = lazy(() => import('../components/coach/CoachCategoriesPage'));
+const CoachPlayersPage = lazy(() => import('../components/coach/CoachPlayersPage'));
+const CoachAnalysisPage = lazy(() => import('../components/coach/CoachAnalysisPage'));
 
 const PlayerMatchReportPage = lazy(
   () => import('../components/report-card/PlayerMatchReportPage'),

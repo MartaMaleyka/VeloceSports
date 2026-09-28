@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LOGIN_ROLES, UserRole, PASSWORD_MIN_LENGTH, PASSWORD_STRENGTH_REGEX } from '@velocesport/shared';
+import { PASSWORD_MIN_LENGTH, PASSWORD_STRENGTH_REGEX } from '@velocesport/shared';
 
 const strongPasswordSchema = z
   .string()
@@ -20,28 +20,6 @@ export const refreshSchema = z.object({
 
 export const logoutSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token requerido').optional(),
-});
-
-export const registerSchema = z.object({
-  email: z.string().email('Correo electrónico inválido'),
-  password: z.string().min(PASSWORD_MIN_LENGTH, 'La contraseña debe tener al menos 8 caracteres'),
-  role: z.enum(LOGIN_ROLES),
-  tenantId: z.number().int().positive().nullable().optional(),
-}).superRefine((data, ctx) => {
-  if (data.role === UserRole.SUPER_ADMIN && data.tenantId != null) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'super_admin no debe tener tenantId',
-      path: ['tenantId'],
-    });
-  }
-  if (data.role !== UserRole.SUPER_ADMIN && (data.tenantId == null || data.tenantId <= 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'tenantId es obligatorio para este rol',
-      path: ['tenantId'],
-    });
-  }
 });
 
 export const signupIndependentSchema = z.object({

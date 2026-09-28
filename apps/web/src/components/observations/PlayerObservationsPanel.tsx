@@ -3,6 +3,7 @@ import type { PlayerObservationDto } from '@velocesport/shared';
 import {
   Alert,
   Button,
+  ConfirmModal,
   EmptyState,
   Label,
   Skeleton,
@@ -132,6 +133,8 @@ export function PlayerObservationsPanel({
   const [scopeGeneral, setScopeGeneral] = useState(defaultMatchId == null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PlayerObservationDto | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const reportBase =
     parentReportBasePath ??
@@ -214,16 +217,26 @@ export function PlayerObservationsPanel({
     setScopeGeneral(defaultMatchId == null);
   };
 
-  const handleDelete = async (obs: PlayerObservationDto) => {
-    if (!window.confirm(t('playerObservations.confirmDelete'))) return;
+  const handleDelete = (obs: PlayerObservationDto) => {
+    setDeleteTarget(obs);
+  };
+
+  const confirmDelete = async () => {
+    const obs = deleteTarget;
+    if (!obs) return;
+    setDeleting(true);
     try {
       await deleteCoachObservation(obs.id);
       if (editingId === obs.id) cancelEdit();
+      setDeleteTarget(null);
       await load();
     } catch (err) {
+      setDeleteTarget(null);
       setError(
         err instanceof MatchesApiError ? err.message : t('playerObservations.errors.generic'),
       );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -346,6 +359,17 @@ export function PlayerObservationsPanel({
           )}
         </div>
       )}
+      <ConfirmModal
+        open={deleteTarget != null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+        title={t('playerObservations.confirmDelete')}
+        description=""
+        confirmLabel={t('playerObservations.delete')}
+        cancelLabel={t('common.cancel')}
+        loading={deleting}
+        variant="destructive"
+      />
     </section>
   );
 }

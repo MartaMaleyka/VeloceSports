@@ -8,6 +8,7 @@ declare global {
         role: UserRole;
         roles: UserRole[];
         tenantId: number | null;
+        mustChangePassword?: boolean;
       };
       tenantId?: number;
     }

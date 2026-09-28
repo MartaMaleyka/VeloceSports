@@ -38,6 +38,7 @@ import {
   type CapturePlayerRef,
 } from './capture/capture-types';
 import { useCaptureQueue } from './capture/useCaptureQueue';
+import { useOnlineStatus } from './capture/useOnlineStatus.js';
 import { useMatchClock } from './capture/useMatchClock';
 import MatchClockBar from './capture/MatchClockBar';
 import { VoiceMicButton } from './capture/VoiceCaptureExperiment';
@@ -224,6 +225,11 @@ export default function MatchCapturePanel({
     upsertFromServer,
   } = useCaptureQueue(matchId);
 
+  const online = useOnlineStatus();
+  const pendingCount = history.filter(
+    (entry: CaptureHistoryEntry) => entry.sendStatus !== 'confirmed',
+  ).length;
+
   const closeActionSheet = useCallback(() => {
     setActionSheetOpen(false);
     setSelectedPlayerId(null);
@@ -234,10 +240,18 @@ export default function MatchCapturePanel({
 
   const lastCaptureRef = useRef<string | null>(null);
 
+  // El tick solo alimenta la ventana de "deshacer" (10 s). Re-renderizar este panel
+  // cada segundo durante todo el partido es caro: solo se refresca mientras haya
+  // alguna acción que todavía se pueda deshacer.
+  const hasUndoableEntry = history.some((entry: CaptureHistoryEntry) =>
+    canImmediateUndo(entry, Date.now()),
+  );
   useEffect(() => {
+    if (!hasUndoableEntry) return;
+    setTick(Date.now());
     const id = window.setInterval(() => setTick(Date.now()), 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [hasUndoableEntry]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -912,6 +926,13 @@ export default function MatchCapturePanel({
       >
       {/* Barra de contexto — compacta en móvil */}
       <div className="sticky top-0 z-30 -mx-4 shrink-0 border-b border-border bg-bg-surface/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:py-3">
+        {!online && (
+          <div role="status" aria-live="polite" className="mb-2">
+            <Alert variant="warning">
+              {t('matches.capture.offlineBanner', { count: pendingCount })}
+            </Alert>
+          </div>
+        )}
         {lastCaptured && canEditActions && (
           <div
             data-tour="match-detail-capture-last-play"

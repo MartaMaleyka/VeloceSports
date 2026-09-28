@@ -106,7 +106,6 @@ export const en = {
         passwordRequired: 'Enter your password',
         passwordMin: 'Password must be at least 8 characters',
         invalidCredentials: 'We could not sign you in. Check your credentials.',
-        sessionFailed: 'We could not save your session. Try again.',
         network: 'We could not reach the server. Check your connection and try again.',
       },
       noAcademy: "Don't have an account?",
@@ -1562,6 +1561,8 @@ export const en = {
       viewReportCard: 'View match report card',
     },
     capture: {
+      offlineBanner:
+        'Offline. Actions are saved on this device and will be sent when the connection returns ({count} pending).',
       coachOnly: 'coach only',
       forbiddenTitle: 'No capture access',
       forbiddenBody: 'Only the coach assigned to this match category can capture actions.',

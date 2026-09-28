@@ -3,6 +3,39 @@ import { useTranslation } from '@velocesport/i18n';
 import { cn } from '../utils/cn.js';
 import { Button } from './Button.js';
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+/** Mantiene el foco dentro de `container` al tabular (primer ↔ último elemento). */
+export function trapTabKey(event: KeyboardEvent, container: HTMLElement): void {
+  const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (el) => el.getClientRects().length > 0,
+  );
+  if (focusable.length === 0) {
+    event.preventDefault();
+    container.focus();
+    return;
+  }
+  const first = focusable[0]!;
+  const last = focusable[focusable.length - 1]!;
+  const active = document.activeElement;
+  const outside = !(active instanceof Node) || !container.contains(active);
+
+  if (event.shiftKey && (active === first || active === container || outside)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (active === last || outside)) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 export interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -20,21 +53,33 @@ export function Modal({ open, onClose, title, description, children, footer }: M
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  // Escape: callback estable vía ref — onClose inline del padre no debe re-suscribir el listener.
+  // Escape y Tab: callbacks estables vía ref — onClose inline del padre no debe
+  // re-suscribir el listener. Tab queda atrapado dentro del diálogo (aria-modal).
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        trapTabKey(e, dialogRef.current);
+      }
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [open]);
 
   // Foco inicial solo al abrir (false → true), nunca en re-renders del formulario interno.
+  // Al cerrar, el foco vuelve al elemento que abrió el modal.
   useEffect(() => {
-    if (open) {
-      dialogRef.current?.focus();
-    }
+    if (!open) return;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialogRef.current?.focus();
+    return () => {
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
   }, [open]);
 
   if (!open) return null;

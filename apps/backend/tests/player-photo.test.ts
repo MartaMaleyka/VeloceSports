@@ -144,18 +144,24 @@ describe('Player photo (MinIO)', () => {
     );
     pendingPlayerId = pending.insertId;
 
-    await pool.execute(
-      'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
+    // Igual que la app (parent-link.repository): dual-write en parent_players (compat)
+    // y player_viewers, que es la fuente de verdad que consulta el servicio de fotos.
+    const links: Array<[number, number, number]> = [
       [parentAId, playerAId, seed.academyAId],
-    );
-    await pool.execute(
-      'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
       [parentAId, pendingPlayerId, seed.academyAId],
-    );
-    await pool.execute(
-      'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
       [parentBId, playerBId, seed.academyBId],
-    );
+    ];
+    for (const [parentId, playerId, tenantId] of links) {
+      await pool.execute(
+        'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
+        [parentId, playerId, tenantId],
+      );
+      await pool.execute(
+        `INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship)
+         VALUES (?, ?, ?, 'PARENT')`,
+        [tenantId, playerId, parentId],
+      );
+    }
 
     parentAToken = await loginAs('parent-photo-a@test.com', 'ParentPhoto123!');
     parentBToken = await loginAs('parent-photo-b@test.com', 'ParentPhoto123!');

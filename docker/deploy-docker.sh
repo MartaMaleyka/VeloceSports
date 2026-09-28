@@ -39,5 +39,5 @@ sudo docker compose -f docker-compose.prod.yml ps
 
 echo ""
 curl -s -o /dev/null -w "web 9082: %{http_code}\n" http://127.0.0.1:9082/profe/login || true
-echo "App: https://aby.litomalone.dev/profe/login"
+echo "App: $(grep -E '^PUBLIC_SITE_URL=' .env.production | cut -d= -f2-)${ASTRO_BASE:-/profe}/login"
 df -h /home

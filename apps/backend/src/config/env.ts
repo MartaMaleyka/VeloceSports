@@ -2,7 +2,13 @@ import { z } from 'zod';
 import { parseJwtDurationToSeconds } from '@velocesport/shared';
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  /**
+   * Obligatorio: sin él el backend no debe asumir "development" (Swagger abierto,
+   * rate limit global desactivado, rutas de herramientas dev habilitadas).
+   */
+  NODE_ENV: z.enum(['development', 'test', 'production'], {
+    required_error: 'NODE_ENV es obligatorio (development | test | production)',
+  }),
   PORT: z.coerce.number().int().positive().default(3000),
 
   DB_HOST: z.string().min(1),
@@ -10,6 +16,8 @@ const envSchema = z.object({
   DB_USER: z.string().min(1),
   DB_PASSWORD: z.string(),
   DB_NAME: z.string().min(1),
+  /** Conexiones máximas del pool de MySQL. */
+  DB_POOL_SIZE: z.coerce.number().int().positive().default(10),
 
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
@@ -19,14 +27,25 @@ const envSchema = z.object({
   /** Tiempo máximo sin actividad antes de cerrar la sesión (ej. 60m, 1h). */
   SESSION_INACTIVITY_TIMEOUT: z.string().default('60m'),
 
-  CORS_ORIGINS: z.string().min(1),
+  /** Días que se conservan sesiones expiradas/revocadas antes de borrarlas. */
+  SESSION_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
 
-  SESSION_SECRET: z.string().min(16).optional(),
+  CORS_ORIGINS: z.string().min(1),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(2_000),
   AUTH_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+  /** Registro público (academias y cuentas personales), por IP. */
+  AUTH_SIGNUP_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(3_600_000),
+  AUTH_SIGNUP_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+
+  /**
+   * Proxies de confianza para leer la IP real desde X-Forwarded-For (valor de
+   * `trust proxy` de Express). Por defecto solo redes locales/privadas: el BFF de
+   * Astro en la red de Docker. Usa "false" si el backend queda expuesto directamente.
+   */
+  TRUST_PROXY: z.string().min(1).default('loopback, linklocal, uniquelocal'),
 
   /** Ventana para deshacer inmediato (borrado físico sin traza) */
   GAME_ACTION_IMMEDIATE_UNDO_WINDOW_SECONDS: z.coerce.number().int().positive().default(10),
@@ -80,6 +99,15 @@ export const env = parseEnv();
 
 export function getCorsOrigins(): string[] {
   return env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+}
+
+/** Convierte TRUST_PROXY al formato que acepta `app.set('trust proxy', ...)`. */
+export function parseTrustProxy(raw: string): boolean | number | string {
+  const value = raw.trim();
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value;
 }
 
 export function isProduction(): boolean {
