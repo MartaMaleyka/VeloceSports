@@ -22,6 +22,7 @@ import { fetchMyProfile } from '../../lib/profile-api';
 import { appPath } from '../../lib/app-path';
 import { ParentDashboardChart } from './ParentDashboardChart';
 import { ParentChildAvatar } from './ParentChildAvatar';
+import { ParentLiveMatchCard } from './ParentLiveMatchCard';
 import PlayerObservationsPanel from '../observations/PlayerObservationsPanel';
 
 function highlightChipClasses(impact: ActionImpact): string {
@@ -377,7 +378,12 @@ function ChildDashboardPanel({
 
   if (!data) return null;
 
-  return <ChildDashboardContent data={data} playerId={playerId} locale={locale} />;
+  return (
+    <div className="space-y-6">
+      <ParentLiveMatchCard playerId={playerId} />
+      <ChildDashboardContent data={data} playerId={playerId} locale={locale} />
+    </div>
+  );
 }
 
 export function ParentHomePage() {

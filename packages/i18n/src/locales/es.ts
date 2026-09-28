@@ -1076,6 +1076,18 @@ export const es = {
     },
   },
   parentDashboard: {
+    live: {
+      title: 'En vivo',
+      vs: 'vs {opponent}',
+      clock: 'Minuto {minute} · periodo {period}',
+      paused: 'En pausa · minuto {minute} · periodo {period}',
+      notInLineup: 'El partido ya empezó. Aún no aparece en la convocatoria.',
+      noActionsYet: 'Aún no tiene acciones registradas en este partido.',
+      summaryLabel: 'Acciones en este partido',
+      recentTitle: 'Últimas jugadas',
+      recentItem: 'Min {minute}: {action}',
+      autoRefresh: 'Se actualiza automáticamente mientras dura el partido.',
+    },
     periodLabel: 'Periodo',
     periodAll: 'Temporada completa',
     childTabs: 'Seleccionar hijo',
