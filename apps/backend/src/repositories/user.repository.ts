@@ -5,6 +5,8 @@ import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
 import { userRoleRepository } from './user-role.repository.js';
+import type { PaginationParams } from '@velocesport/shared';
+import { limitOffsetSql } from '../utils/pagination.js';
 
 const USER_COLUMNS =
   'id, email, first_name, last_name, password_hash, role, tenant_id, status, must_change_password, password_reset_at, password_reset_by, last_login_at, created_at, updated_at';
@@ -77,6 +79,78 @@ export class UserRepository extends TenantScopedRepository {
       [userId, tenantId],
     );
     return rows[0] ?? null;
+  }
+
+  /**
+   * Usuarios gestionables por el admin de la academia, filtrados en SQL para poder
+   * paginar y contar: rol principal gestionable y, si se filtra por rol, que el
+   * usuario tenga ese rol (ver condición abajo).
+   */
+  private buildManageableConditions(
+    tenantId: number,
+    manageableRoles: readonly UserRole[],
+    filters?: { role?: UserRole; status?: UserStatus; search?: string },
+  ): { where: string; params: (string | number)[] } {
+    const conditions = [
+      'u.tenant_id = ?',
+      `u.role IN (${manageableRoles.map(() => '?').join(', ')})`,
+    ];
+    const params: (string | number)[] = [tenantId, ...manageableRoles];
+
+    if (filters?.role) {
+      // Mismo criterio que la UI: el usuario TIENE ese rol (roles múltiples en
+      // user_roles; si no tiene filas ahí, cuenta su rol principal).
+      conditions.push(
+        `(EXISTS (SELECT 1 FROM user_roles r WHERE r.user_id = u.id AND r.role = ?)
+          OR (u.role = ? AND NOT EXISTS (SELECT 1 FROM user_roles r2 WHERE r2.user_id = u.id)))`,
+      );
+      params.push(filters.role, filters.role);
+    }
+    if (filters?.status) {
+      conditions.push('u.status = ?');
+      params.push(filters.status);
+    }
+    if (filters?.search) {
+      conditions.push(
+        '(u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR CONCAT(COALESCE(u.first_name, ""), " ", COALESCE(u.last_name, "")) LIKE ?)',
+      );
+      const term = `%${filters.search}%`;
+      params.push(term, term, term, term);
+    }
+    return { where: conditions.join(' AND '), params };
+  }
+
+  async findManageableByTenant(
+    tenantId: number,
+    manageableRoles: readonly UserRole[],
+    filters?: { role?: UserRole; status?: UserStatus; search?: string },
+    pagination?: PaginationParams | null,
+  ): Promise<UserRow[]> {
+    this.assertTenantId(tenantId);
+    const { where, params } = this.buildManageableConditions(tenantId, manageableRoles, filters);
+    const columns = USER_COLUMNS.split(',')
+      .map((c) => `u.${c.trim()}`)
+      .join(', ');
+    const [rows] = await getPool().execute<UserRow[]>(
+      `SELECT ${columns} FROM users u WHERE ${where} ORDER BY u.email ASC, u.id ASC
+       ${pagination ? limitOffsetSql(pagination) : ''}`,
+      params,
+    );
+    return rows;
+  }
+
+  async countManageableByTenant(
+    tenantId: number,
+    manageableRoles: readonly UserRole[],
+    filters?: { role?: UserRole; status?: UserStatus; search?: string },
+  ): Promise<number> {
+    this.assertTenantId(tenantId);
+    const { where, params } = this.buildManageableConditions(tenantId, manageableRoles, filters);
+    const [rows] = await getPool().execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt FROM users u WHERE ${where}`,
+      params,
+    );
+    return Number(rows[0]?.cnt ?? 0);
   }
 
   async findByTenantId(

@@ -8,6 +8,8 @@ import {
   UserRole,
   UserStatus,
 } from '@velocesport/shared';
+import { ACADEMY_LIST_SORT_KEYS, AcademyApprovalStatus } from '@velocesport/shared';
+import { paginationQueryShape } from './pagination.validator.js';
 
 const positiveInt = z.coerce.number().int().min(0);
 const moneyAmount = z.coerce.number().min(0).multipleOf(0.01);
@@ -88,7 +90,15 @@ export const listAcademiesQuerySchema = z.object({
   status: z.enum([AcademyStatus.ACTIVE, AcademyStatus.SUSPENDED, AcademyStatus.INACTIVE]).optional(),
   planId: z.coerce.number().int().positive().optional(),
   accountType: z.enum([AcademyAccountType.ACADEMY, AcademyAccountType.PERSONAL]).optional(),
+  approvalStatus: z
+    .enum([AcademyApprovalStatus.PENDING, AcademyApprovalStatus.APPROVED, AcademyApprovalStatus.REJECTED])
+    .optional(),
+  sort: z.enum(ACADEMY_LIST_SORT_KEYS).optional(),
+  direction: z.enum(['asc', 'desc']).optional(),
+  ...paginationQueryShape,
 });
+
+export type ListAcademiesQuery = z.infer<typeof listAcademiesQuerySchema>;
 
 export const rejectAcademyBodySchema = z.object({
   reason: z.string().trim().max(500).nullable().optional(),

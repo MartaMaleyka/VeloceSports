@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type {
   CategoryDto,
   CreateTenantUserResponseDto,
   PlayerDto,
+  PaginatedResponseDto,
   TenantManageableRole,
   TenantSearchResultDto,
   TenantUserDetailDto,
@@ -43,6 +44,7 @@ import { StatusBadge } from '../platform/StatusBadge';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
 import { ResetPasswordModal } from '../auth/ResetPasswordModal';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
+import { useDebouncedValue, usePaginatedList } from '../../hooks/usePaginatedList.js';
 
 const PAGE_SIZE = 12;
 
@@ -86,16 +88,14 @@ function TenantUsersContent() {
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [users, setUsers] = useState<TenantUserDto[]>([]);
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [kpis, setKpis] = useState<TenantUsersKpisDto | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
   const [resetTarget, setResetTarget] = useState<TenantUserDto | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -112,41 +112,48 @@ function TenantUsersContent() {
   const [childForm, setChildForm] = useState<ChildFormState>(emptyChildForm);
   const [childSubmitting, setChildSubmitting] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Usuarios paginados en servidor: búsqueda, rol (roles múltiples) y estado en SQL.
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const userList = usePaginatedList<TenantUserDto>({
+    fetchPage: (query) => tenantFetch<PaginatedResponseDto<TenantUserDto>>(`users?${query}`),
+    filters: { search: debouncedSearch, role: roleFilter, status: statusFilter },
+    pageSize: PAGE_SIZE,
+    errorMessage: (e) => (e instanceof TenantApiError ? (e as Error).message : t('tenant.errors.generic')),
+  });
+  const users = userList.items;
+  const hasActiveFilters = Boolean(debouncedSearch || roleFilter || statusFilter);
+
+  const loadMeta = useCallback(async () => {
+    setMetaLoading(true);
+    setMetaError(null);
     try {
-      const [userData, kpiData, categoryData, me] = await Promise.all([
-        tenantFetchList<TenantUserDto>('users'),
+      const [kpiData, categoryData, me] = await Promise.all([
         tenantFetch<TenantUsersKpisDto>('users/kpis'),
         tenantFetchList<CategoryDto>('categories'),
         fetchMyProfile().catch(() => null),
       ]);
-      setUsers(userData);
       setKpis(kpiData);
       setCategories(categoryData);
       if (me) setCurrentUserId(me.id);
     } catch (e) {
-      setError(e instanceof TenantApiError ? e.message : t('tenant.errors.generic'));
+      setMetaError(e instanceof TenantApiError ? e.message : t('tenant.errors.generic'));
     } finally {
-      setLoading(false);
+      setMetaLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadMeta();
+  }, [loadMeta]);
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return users.filter((u) => {
-      if (roleFilter && !(u.roles ?? [u.role]).includes(roleFilter as TenantManageableRole)) return false;
-      if (statusFilter && u.status !== statusFilter) return false;
-      if (!term) return true;
-      const haystack = `${u.email} ${u.firstName ?? ''} ${u.lastName ?? ''}`.toLowerCase();
-      return haystack.includes(term);
-    });
-  }, [users, search, roleFilter, statusFilter]);
+  /** Tras crear/editar/cambiar estado: KPIs y la página actual. */
+  const { reload: reloadUsers } = userList;
+  const load = useCallback(async () => {
+    await Promise.all([loadMeta(), reloadUsers()]);
+  }, [loadMeta, reloadUsers]);
+
+  const loading = metaLoading || userList.loading;
+  const error = metaError ?? userList.error;
 
   const openCreate = () => {
     setCreateForm({ ...emptyUserForm });
@@ -378,8 +385,8 @@ function TenantUsersContent() {
     <>
       <div data-tour="users-list">
       <DataView
-        items={filtered}
-        isSourceEmpty={users.length === 0}
+        items={users}
+        isSourceEmpty={userList.totalCount === 0 && !hasActiveFilters}
         getItemKey={(user) => user.id}
         loading={loading}
         error={error}
@@ -408,9 +415,9 @@ function TenantUsersContent() {
           })),
         ]}
         resultsLabel={
-          filtered.length === 1
+          userList.totalCount === 1
             ? t('dataView.resultsOne')
-            : t('dataView.results', { count: filtered.length })
+            : t('dataView.results', { count: userList.totalCount })
         }
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -484,9 +491,10 @@ function TenantUsersContent() {
         onEmptyAction={openCreate}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}
-        page={page}
+        page={userList.page}
         pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        totalItems={userList.totalCount}
+        onPageChange={userList.setPage}
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />

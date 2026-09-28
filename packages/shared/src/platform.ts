@@ -146,3 +146,26 @@ export interface UpdateInvoicePaymentResultDto {
   invoice: import('./billing.js').InvoiceDto;
   reactivationHint: InvoicePaymentReactivationHintDto | null;
 }
+
+/** KPIs de la lista de academias/cuentas (sobre todo el tipo de cuenta, sin búsqueda ni filtros). */
+export interface AcademyListSummaryDto {
+  total: number;
+  active: number;
+  suspendedInactive: number;
+  platformUsers: number;
+  pendingApproval: number;
+  approved: number;
+  rejected: number;
+}
+
+export const ACADEMY_LIST_SORT_KEYS = ['name', 'plan', 'users', 'status', 'created'] as const;
+export type AcademyListSortKey = (typeof ACADEMY_LIST_SORT_KEYS)[number];
+
+export interface AcademyListPageDto {
+  items: AcademyListItemDto[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  summary: AcademyListSummaryDto;
+}

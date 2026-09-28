@@ -1,6 +1,8 @@
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import type { InvoiceStatus, InvoiceType } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
+import type { PaginationParams } from '@velocesport/shared';
+import { limitOffsetSql } from '../utils/pagination.js';
 
 export interface InvoiceRow extends RowDataPacket {
   id: number;
@@ -95,7 +97,10 @@ export class InvoiceRepository {
     return { clause, params };
   }
 
-  async findAll(filters?: InvoiceFilters): Promise<InvoiceRow[]> {
+  async findAll(
+    filters?: InvoiceFilters,
+    pagination?: PaginationParams | null,
+  ): Promise<InvoiceRow[]> {
     const pool = getPool();
     const { clause, params } = this.buildWhere(filters);
     const [rows] = await pool.execute<InvoiceRow[]>(
@@ -104,10 +109,25 @@ export class InvoiceRepository {
        INNER JOIN academies a ON a.id = i.tenant_id
        INNER JOIN plans p ON p.id = i.plan_id
        ${clause}
-       ${LIST_ORDER}`,
+       ${LIST_ORDER}
+       ${pagination ? limitOffsetSql(pagination) : ''}`,
       params,
     );
     return rows;
+  }
+
+  async countAll(filters?: InvoiceFilters): Promise<number> {
+    const pool = getPool();
+    const { clause, params } = this.buildWhere(filters);
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt
+       FROM invoices i
+       INNER JOIN academies a ON a.id = i.tenant_id
+       INNER JOIN plans p ON p.id = i.plan_id
+       ${clause}`,
+      params,
+    );
+    return Number(rows[0]?.cnt ?? 0);
   }
 
   async findByTenantId(tenantId: number, filters?: Omit<InvoiceFilters, 'tenantId'>): Promise<InvoiceRow[]> {

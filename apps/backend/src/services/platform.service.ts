@@ -9,7 +9,6 @@ import type {
   ReactivateAcademyResultDto,
 } from '@velocesport/shared';
 import {
-  AcademyAccountType,
   AcademyApprovalStatus,
   AcademyBillingStatus as AcademyBillingStatusConst,
   AcademyStatus as AcademyStatusConst,
@@ -20,7 +19,11 @@ import {
   UserStatus,
 } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
-import { academyRepository, type AcademyWithPlanRow } from '../repositories/academy.repository.js';
+import {
+  academyRepository,
+  type AcademyListFilters,
+  type AcademyWithPlanRow,
+} from '../repositories/academy.repository.js';
 import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
@@ -47,17 +50,46 @@ import type {
   ReactivateAcademyBody,
   UpdateAcademyBody,
 } from '../validators/platform.validator.js';
+import {
+  buildPaginatedResponse,
+  type AcademyListPageDto,
+  type AcademyListSortKey,
+  type PaginationParams,
+} from '@velocesport/shared';
 
 const BCRYPT_ROUNDS = 10;
 
 export class PlatformService {
-  async listAcademies(filters?: {
-    search?: string;
-    status?: AcademyStatus;
-    planId?: number;
-    accountType?: AcademyAccountType;
-  }): Promise<AcademyListItemDto[]> {
+  async listAcademies(filters?: AcademyListFilters): Promise<AcademyListItemDto[]> {
     const rows = await academyRepository.findAllWithDetails(filters);
+    return this.toListItems(rows);
+  }
+
+  /** Página ordenada en servidor + KPIs globales del tipo de cuenta (sin búsqueda ni filtros). */
+  async listAcademiesPage(
+    filters: AcademyListFilters,
+    options: { sort?: AcademyListSortKey; direction?: 'asc' | 'desc'; pagination: PaginationParams },
+  ): Promise<AcademyListPageDto> {
+    const [rows, totalCount, summary] = await Promise.all([
+      academyRepository.findAllWithDetails(filters, options),
+      academyRepository.countAllWithDetails(filters),
+      academyRepository.summarizeByAccountType(filters.accountType),
+    ]);
+    return {
+      ...buildPaginatedResponse(await this.toListItems(rows), totalCount, options.pagination),
+      summary: {
+        total: summary.total,
+        active: summary.active,
+        suspendedInactive: summary.suspended_inactive,
+        platformUsers: summary.platform_users,
+        pendingApproval: summary.pending_approval,
+        approved: summary.approved,
+        rejected: summary.rejected,
+      },
+    };
+  }
+
+  private async toListItems(rows: AcademyWithPlanRow[]): Promise<AcademyListItemDto[]> {
     const tenantIds = rows.map((r) => r.id);
     const billingMap = await invoiceService.getBillingStatusMap(tenantIds);
     const overdueMap = await invoiceRepository.countOverdueByTenants(tenantIds);

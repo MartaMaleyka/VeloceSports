@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AcademyListItemDto, PlanDto } from '@velocesport/shared';
+import { useCallback, useEffect, useState } from 'react';
+import type { AcademyListItemDto, AcademyListPageDto, PlanDto } from '@velocesport/shared';
 import { AcademyApprovalStatus, AcademyStatus } from '@velocesport/shared';
 import {
   Badge,
@@ -36,6 +36,7 @@ import { ReactivateAcademyModal, type ReactivateAcademyTarget } from './Reactiva
 import { StatusBadge } from './StatusBadge';
 import { BillingStatusBadge } from './BillingBadges';
 import { RejectAccountModal, type RejectAccountTarget } from './RejectAccountModal';
+import { useDebouncedValue, usePaginatedList } from '../../hooks/usePaginatedList.js';
 
 const PAGE_SIZE = 12;
 
@@ -49,31 +50,11 @@ function academyInitials(name: string): string {
   return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase();
 }
 
-function compareAcademies(
-  a: AcademyListItemDto,
-  b: AcademyListItemDto,
-  key: SortKey,
-  direction: SortDirection,
-): number {
-  let cmp = 0;
-  if (key === 'name') {
-    cmp = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-  } else if (key === 'plan') {
-    cmp = (a.plan?.name ?? '').localeCompare(b.plan?.name ?? '', undefined, { sensitivity: 'base' });
-  } else if (key === 'users') {
-    cmp = a.userCount - b.userCount;
-  } else {
-    cmp = a.status.localeCompare(b.status);
-  }
-  return direction === 'asc' ? cmp : -cmp;
-}
-
 function AcademiesListContent() {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [academies, setAcademies] = useState<AcademyListItemDto[]>([]);
   const [plans, setPlans] = useState<PlanDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,18 +70,30 @@ function AcademiesListContent() {
   const [planFilter, setPlanFilter] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [page, setPage] = useState(1);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Academias paginadas y ordenadas en servidor; los KPIs llegan en `summary`
+  // (globales: no dependen de la página ni de los filtros).
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const academyList = usePaginatedList<AcademyListItemDto, AcademyListPageDto>({
+    fetchPage: (query) => platformFetch<AcademyListPageDto>(`academies?${query}`),
+    filters: {
+      accountType: 'academy',
+      search: debouncedSearch,
+      status: statusFilter === 'pending_approval' ? undefined : statusFilter,
+      approvalStatus: statusFilter === 'pending_approval' ? AcademyApprovalStatus.PENDING : undefined,
+      planId: planFilter,
+      sort: sortKey,
+      direction: sortDirection,
+    },
+    pageSize: PAGE_SIZE,
+    errorMessage: (e) => (e instanceof PlatformApiError ? (e as Error).message : t('platform.errors.generic')),
+  });
+  const academies = academyList.items;
+  const hasActiveFilters = Boolean(debouncedSearch || statusFilter || planFilter);
+
+  const loadPlans = useCallback(async () => {
     try {
-      const [academyData, planData] = await Promise.all([
-        platformFetchList<AcademyListItemDto>('academies?accountType=academy'),
-        platformFetchList<PlanDto>('plans'),
-      ]);
-      setAcademies(academyData);
-      setPlans(planData);
+      setPlans(await platformFetchList<PlanDto>('plans'));
     } catch (e) {
       setError(e instanceof PlatformApiError ? e.message : t('platform.errors.generic'));
     } finally {
@@ -109,44 +102,26 @@ function AcademiesListContent() {
   }, [t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadPlans();
+  }, [loadPlans]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter, planFilter, sortKey, sortDirection]);
+  /** Tras cambiar estado o aprobar: la página actual y sus KPIs. */
+  const load = academyList.reload;
 
-  const kpis = useMemo(() => {
-    const active = academies.filter((a) => a.status === AcademyStatus.ACTIVE).length;
-    const suspendedInactive = academies.filter((a) => a.status !== AcademyStatus.ACTIVE).length;
-    const platformUsers = academies.reduce((sum, a) => sum + a.userCount, 0);
-    const pendingApproval = academies.filter(
-      (a) => a.approvalStatus === AcademyApprovalStatus.PENDING,
-    ).length;
-    return { total: academies.length, active, suspendedInactive, platformUsers, pendingApproval };
-  }, [academies]);
-
-  const filteredAcademies = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return academies
-      .filter((academy) => {
-        if (statusFilter === 'pending_approval') {
-          if (academy.approvalStatus !== AcademyApprovalStatus.PENDING) return false;
-        } else if (statusFilter && academy.status !== statusFilter) {
-          return false;
-        }
-        if (planFilter && String(academy.plan?.id ?? '') !== planFilter) return false;
-        if (!term) return true;
-        const haystack = `${academy.name} ${academy.slug}`.toLowerCase();
-        return haystack.includes(term);
-      })
-      .sort((a, b) => compareAcademies(a, b, sortKey, sortDirection));
-  }, [academies, search, statusFilter, planFilter, sortKey, sortDirection]);
+  const kpis = academyList.data?.summary ?? {
+    total: 0,
+    active: 0,
+    suspendedInactive: 0,
+    platformUsers: 0,
+    pendingApproval: 0,
+    approved: 0,
+    rejected: 0,
+  };
 
   const resultsLabel =
-    filteredAcademies.length === 1
+    academyList.totalCount === 1
       ? t('dataView.resultsOne')
-      : t('dataView.results', { count: filteredAcademies.length });
+      : t('dataView.results', { count: academyList.totalCount });
 
   const handleSort = (key: string) => {
     const k = key as SortKey;
@@ -465,11 +440,11 @@ function AcademiesListContent() {
         </Badge>
       )}
       <DataView
-        items={filteredAcademies}
-        isSourceEmpty={academies.length === 0}
+        items={academies}
+        isSourceEmpty={academyList.totalCount === 0 && !hasActiveFilters}
         getItemKey={(academy) => academy.id}
-        loading={loading}
-        error={error}
+        loading={loading || academyList.loading}
+        error={error ?? academyList.error}
         onRetry={() => void load()}
         retryLabel={t('common.retry')}
         header={!loading && !error && academies.length > 0 ? kpiHeader : undefined}
@@ -496,7 +471,7 @@ function AcademiesListContent() {
           { value: '', label: t('platform.academies.allPlans') },
           ...plans.map((p) => ({ value: String(p.id), label: p.name })),
         ]}
-        resultCount={filteredAcademies.length}
+        resultCount={academyList.totalCount}
         resultsLabel={resultsLabel}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -525,9 +500,10 @@ function AcademiesListContent() {
         }}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}
-        page={page}
+        page={academyList.page}
         pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        totalItems={academyList.totalCount}
+        onPageChange={academyList.setPage}
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />

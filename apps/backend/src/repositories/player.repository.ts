@@ -4,6 +4,8 @@ import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
 import { playerViewerRepository } from './player-viewer.repository.js';
+import type { PaginationParams } from '@velocesport/shared';
+import { limitOffsetSql } from '../utils/pagination.js';
 
 export interface PlayerRow extends RowDataPacket {
   id: number;
@@ -49,18 +51,22 @@ export interface UpdatePlayerInput {
   categoryId?: number | null;
 }
 
+export interface PlayerListFilters {
+  search?: string;
+  status?: PlayerStatus;
+  categoryId?: number;
+}
+
 export class PlayerRepository extends TenantScopedRepository {
   private static readonly PLAYER_SELECT = `p.id, p.tenant_id, p.user_id, p.first_name, p.last_name, p.date_of_birth, p.jersey_number,
               p.position, p.category_id, p.status, p.rejection_reason,
               p.photo_object_key, p.photo_uploaded_at, p.photo_uploaded_by,
               p.deactivated_at, p.created_at, p.updated_at`;
 
-  async findByTenantId(
+  private buildListConditions(
     tenantId: number,
-    filters?: { search?: string; status?: PlayerStatus; categoryId?: number },
-  ): Promise<PlayerWithCategoryRow[]> {
-    this.assertTenantId(tenantId);
-    const pool = getPool();
+    filters?: PlayerListFilters,
+  ): { where: string; params: (string | number)[] } {
     const conditions = ['p.tenant_id = ?'];
     const params: (string | number)[] = [tenantId];
 
@@ -77,17 +83,40 @@ export class PlayerRepository extends TenantScopedRepository {
       const term = `%${filters.search}%`;
       params.push(term, term, term);
     }
+    return { where: conditions.join(' AND '), params };
+  }
+
+  async findByTenantId(
+    tenantId: number,
+    filters?: PlayerListFilters,
+    pagination?: PaginationParams | null,
+  ): Promise<PlayerWithCategoryRow[]> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const { where, params } = this.buildListConditions(tenantId, filters);
 
     const [rows] = await pool.execute<PlayerWithCategoryRow[]>(
       `SELECT ${PlayerRepository.PLAYER_SELECT},
               c.name AS category_name
        FROM players p
        LEFT JOIN categories c ON c.id = p.category_id AND c.tenant_id = p.tenant_id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY p.last_name ASC, p.first_name ASC`,
+       WHERE ${where}
+       ORDER BY p.last_name ASC, p.first_name ASC, p.id ASC
+       ${pagination ? limitOffsetSql(pagination) : ''}`,
       params,
     );
     return rows;
+  }
+
+  async countByTenantId(tenantId: number, filters?: PlayerListFilters): Promise<number> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const { where, params } = this.buildListConditions(tenantId, filters);
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt FROM players p WHERE ${where}`,
+      params,
+    );
+    return Number(rows[0]?.cnt ?? 0);
   }
 
   async findById(tenantId: number, playerId: number): Promise<PlayerWithCategoryRow | null> {
