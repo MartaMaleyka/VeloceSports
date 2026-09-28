@@ -4,6 +4,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { closePool, getPool } from './config/db.js';
 import { userSessionService } from './services/user-session.service.js';
+import { startOverdueInvoicesJob } from './jobs/overdue-invoices.job.js';
 
 const app = createApp();
 
@@ -12,6 +13,7 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 let server: Server | null = null;
 let purgeTimer: NodeJS.Timeout | null = null;
+let stopOverdueJob: (() => void) | null = null;
 
 async function purgeStaleSessions(): Promise<void> {
   try {
@@ -40,6 +42,8 @@ async function start(): Promise<void> {
     void purgeStaleSessions();
     purgeTimer = setInterval(() => void purgeStaleSessions(), SESSION_PURGE_INTERVAL_MS);
     purgeTimer.unref();
+
+    stopOverdueJob = startOverdueInvoicesJob();
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);
     process.exit(1);
@@ -50,6 +54,7 @@ async function start(): Promise<void> {
 function shutdown(signal: NodeJS.Signals): void {
   console.log(`${signal} recibido: cerrando servidor...`);
   if (purgeTimer) clearInterval(purgeTimer);
+  stopOverdueJob?.();
 
   const forceExit = setTimeout(() => {
     console.error('Cierre forzado tras timeout');

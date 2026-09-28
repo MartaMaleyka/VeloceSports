@@ -20,3 +20,6 @@ tmp-export-test/
 !.vscode/extensions.json
 .env.minio
 .keys/
+
+# Backups locales (docker-compose.prod.yml)
+backups/
