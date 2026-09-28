@@ -42,10 +42,13 @@ export const bulkPlayerItemSchema = z.object({
     .min(0)
     .max(999),
   position: optionalText(50),
-  categoryId: z.number({
-    required_error: 'La categoría es obligatoria',
-    invalid_type_error: 'La categoría es obligatoria',
-  }).int().positive(),
+  categoryId: z
+    .number({
+      required_error: 'La categoría es obligatoria',
+      invalid_type_error: 'Elige una categoría válida de la lista',
+    })
+    .int()
+    .positive(),
   parentEmails: z
     .array(z.string().trim().toLowerCase().email('Correo de padre inválido'))
     .max(5, 'Máximo 5 padres por jugador')
@@ -74,10 +77,13 @@ export const bulkCategoryItemSchema = z
   });
 
 export const bulkMatchItemSchema = z.object({
-  categoryId: z.number({
-    required_error: 'La categoría es obligatoria',
-    invalid_type_error: 'La categoría es obligatoria',
-  }).int().positive(),
+  categoryId: z
+    .number({
+      required_error: 'La categoría es obligatoria',
+      invalid_type_error: 'Elige una categoría válida de la lista',
+    })
+    .int()
+    .positive(),
   opponent: z.string().trim().min(1, 'El rival es obligatorio').max(150),
   matchDatetime: z
     .string()
