@@ -173,6 +173,27 @@ export class CategoryRepository extends TenantScopedRepository {
     ]);
   }
 
+  /** Lo que impide desactivar la categoría: jugadores activos y partidos sin terminar. */
+  async countUsage(
+    tenantId: number,
+    categoryId: number,
+  ): Promise<{ activePlayers: number; openMatches: number }> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<Array<{ players: number; matches: number } & RowDataPacket>>(
+      `SELECT
+         (SELECT COUNT(*) FROM players
+           WHERE tenant_id = ? AND category_id = ? AND status = 'active') AS players,
+         (SELECT COUNT(*) FROM matches
+           WHERE tenant_id = ? AND category_id = ? AND status IN ('scheduled', 'in_progress')) AS matches`,
+      [tenantId, categoryId, tenantId, categoryId],
+    );
+    return {
+      activePlayers: Number(rows[0]?.players ?? 0),
+      openMatches: Number(rows[0]?.matches ?? 0),
+    };
+  }
+
   async setCoach(
     tenantId: number,
     categoryId: number,

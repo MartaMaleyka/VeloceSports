@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type {
   AcademyListItemDto,
   GeneratePeriodInvoicesResultDto,
   InvoiceDto,
+  PaginatedResponseDto,
   InvoiceMonthlyKpisDto,
   InvoicePaymentReactivationHintDto,
   UpdateInvoicePaymentResultDto,
@@ -38,6 +39,7 @@ import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/pl
 import { BillingStatusBadge, InvoiceStatusBadge, InvoiceTypeBadge } from './BillingBadges';
 import { ReactivateAfterPaymentModal } from './ReactivateAcademyModal';
 import { RowActionsMenu } from './RowActionsMenu';
+import { useDebouncedValue, usePaginatedList } from '../../hooks/usePaginatedList.js';
 
 const PAGE_SIZE = 12;
 
@@ -57,11 +59,10 @@ function InvoicesListContent() {
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
   const [academies, setAcademies] = useState<AcademyListItemDto[]>([]);
   const [kpis, setKpis] = useState<InvoiceMonthlyKpisDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -75,7 +76,6 @@ function InvoicesListContent() {
   }, []);
   const [academyFilter, setAcademyFilter] = useState('');
   const [monthFilter, setMonthFilter] = useState(currentMonth());
-  const [page, setPage] = useState(1);
 
   const [showCreate, setShowCreate] = useState(false);
   const [createTenantId, setCreateTenantId] = useState('');
@@ -89,50 +89,56 @@ function InvoicesListContent() {
   );
   const [showReactivateModal, setShowReactivateModal] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Facturas paginadas en servidor (antes: lista completa + nueva petición por cada tecla).
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const invoiceList = usePaginatedList<InvoiceDto>({
+    fetchPage: (query) => platformFetch<PaginatedResponseDto<InvoiceDto>>(`invoices?${query}`),
+    filters: {
+      status: statusFilter,
+      tenantId: academyFilter,
+      month: monthFilter,
+      search: debouncedSearch,
+    },
+    pageSize: PAGE_SIZE,
+    errorMessage: (e) => (e instanceof PlatformApiError ? (e as Error).message : t('platform.errors.generic')),
+  });
+  const invoices = invoiceList.items;
+  const hasActiveFilters = Boolean(statusFilter || academyFilter || monthFilter || debouncedSearch);
+
+  const loadMeta = useCallback(async () => {
+    setMetaLoading(true);
+    setMetaError(null);
     try {
-      const [invoiceData, academyData, kpiData] = await Promise.all([
-        platformFetchList<InvoiceDto>('invoices', {
-          status: statusFilter || undefined,
-          tenantId: academyFilter || undefined,
-          month: monthFilter || undefined,
-          search: search || undefined,
-        }),
+      const [academyData, kpiData] = await Promise.all([
         platformFetchList<AcademyListItemDto>('academies'),
         platformFetch<InvoiceMonthlyKpisDto>(`invoices/kpis?month=${monthFilter || currentMonth()}`),
       ]);
-      setInvoices(invoiceData);
       setAcademies(academyData);
       setKpis(kpiData);
     } catch (e) {
-      setError(e instanceof PlatformApiError ? e.message : t('platform.errors.generic'));
+      setMetaError(e instanceof PlatformApiError ? e.message : t('platform.errors.generic'));
     } finally {
-      setLoading(false);
+      setMetaLoading(false);
     }
-  }, [statusFilter, academyFilter, monthFilter, search, t]);
+  }, [monthFilter, t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadMeta();
+  }, [loadMeta]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter, academyFilter, monthFilter]);
+  /** Tras crear/pagar/cancelar: KPIs y la página actual. */
+  const { reload: reloadInvoices } = invoiceList;
+  const load = useCallback(async () => {
+    await Promise.all([loadMeta(), reloadInvoices()]);
+  }, [loadMeta, reloadInvoices]);
 
-  const filteredInvoices = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return invoices;
-    return invoices.filter((inv) =>
-      (inv.academyName ?? '').toLowerCase().includes(term),
-    );
-  }, [invoices, search]);
+  const loading = metaLoading || invoiceList.loading;
+  const error = metaError ?? invoiceList.error;
 
   const resultsLabel =
-    filteredInvoices.length === 1
+    invoiceList.totalCount === 1
       ? t('dataView.resultsOne')
-      : t('dataView.results', { count: filteredInvoices.length });
+      : t('dataView.results', { count: invoiceList.totalCount });
 
   const invoiceDetailLine = (invoice: InvoiceDto) => {
     if (
@@ -426,8 +432,8 @@ function InvoicesListContent() {
       )}
 
       <DataView
-        items={filteredInvoices}
-        isSourceEmpty={invoices.length === 0}
+        items={invoices}
+        isSourceEmpty={invoiceList.totalCount === 0 && !hasActiveFilters}
         getItemKey={(inv) => inv.id}
         loading={loading}
         error={error}
@@ -492,9 +498,10 @@ function InvoicesListContent() {
         onEmptyAction={() => setShowCreate(true)}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}
-        page={page}
+        page={invoiceList.page}
         pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        totalItems={invoiceList.totalCount}
+        onPageChange={invoiceList.setPage}
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />

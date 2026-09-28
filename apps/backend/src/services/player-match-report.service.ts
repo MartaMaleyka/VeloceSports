@@ -1,6 +1,7 @@
 import {
   ActionCatalogStatus,
   MatchLineupRole,
+  MatchStatus,
   UserRole,
   averagePerMinute,
   buildDimensionCountsFromActions,
@@ -169,7 +170,7 @@ export class PlayerMatchReportService {
     matchId: number,
   ): Promise<PlayerMatchReportCardDto> {
     await this.assertParentAccess(tenantId, parentUserId, playerId);
-    return this.buildReportCard(tenantId, playerId, matchId);
+    return this.buildReportCard(tenantId, playerId, matchId, { requireFinished: true });
   }
 
   async getReportCardForViewer(
@@ -179,7 +180,7 @@ export class PlayerMatchReportService {
     matchId: number,
   ): Promise<PlayerMatchReportCardDto> {
     await this.assertViewerAccess(tenantId, viewerUserId, playerId);
-    return this.buildReportCard(tenantId, playerId, matchId);
+    return this.buildReportCard(tenantId, playerId, matchId, { requireFinished: true });
   }
 
   async getReportCardForStaff(
@@ -201,9 +202,15 @@ export class PlayerMatchReportService {
     tenantId: number,
     playerId: number,
     matchId: number,
+    options: { requireFinished?: boolean } = {},
   ): Promise<PlayerMatchReportCardDto> {
     const match = await matchRepository.findById(tenantId, matchId);
     if (!match) throw new NotFoundError('Partido no encontrado');
+    // Familias y jugadores solo ven la ficha cerrada: con el partido en curso los datos son
+    // parciales (y el resumen de IA se generaría sobre ellos).
+    if (options.requireFinished && match.status !== MatchStatus.FINISHED) {
+      throw new NotFoundError('La ficha estará disponible cuando termine el partido');
+    }
 
     const player = await playerRepository.findById(tenantId, playerId);
     if (!player) throw new NotFoundError('Jugador no encontrado');

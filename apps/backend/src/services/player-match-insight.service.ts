@@ -44,6 +44,18 @@ function readyDto(row: PlayerMatchInsightRow, audience: Audience): PlayerMatchIn
   };
 }
 
+/**
+ * Huella de los datos que alimentan el resumen (y del idioma en que se redacta).
+ * Si una corrección cambia las acciones (RN-17) o se pide en otro idioma, la huella
+ * cambia y el resumen guardado deja de ser válido.
+ */
+function computeFactsHash(reportCard: PlayerMatchReportCardDto, locale: Locale) {
+  const facts = buildInsightFacts(reportCard);
+  const factsJson = JSON.stringify(facts);
+  const factsHash = createHash('sha256').update(`${locale}\n${factsJson}`).digest('hex');
+  return { factsJson, factsHash };
+}
+
 const pendingDto: PlayerMatchInsightDto = {
   status: 'pending',
   text: null,
@@ -139,7 +151,12 @@ export class PlayerMatchInsightService {
         playerId,
         matchId,
       );
-      if (cached?.status === 'ready') return readyDto(cached, audience);
+      if (
+        cached?.status === 'ready' &&
+        cached.facts_hash === computeFactsHash(reportCard, locale).factsHash
+      ) {
+        return readyDto(cached, audience);
+      }
     }
 
     const gotLock = await playerMatchInsightRepository.tryMarkGenerating(
@@ -166,8 +183,7 @@ export class PlayerMatchInsightService {
   ): Promise<void> {
     try {
       const facts = buildInsightFacts(reportCard);
-      const factsJson = JSON.stringify(facts);
-      const factsHash = createHash('sha256').update(factsJson).digest('hex');
+      const { factsJson, factsHash } = computeFactsHash(reportCard, locale);
       const { result, source } = await generatePlayerMatchInsight(facts, locale);
 
       await playerMatchInsightRepository.upsertReady({

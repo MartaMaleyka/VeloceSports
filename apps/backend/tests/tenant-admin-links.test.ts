@@ -232,6 +232,10 @@ describe('Tenant admin links and editing', () => {
     );
 
     const restrictedToken = await loginAs('admin-link-restricted@test.com', 'Restricted123!');
+    const [restrictedCategory] = await pool.execute<ResultSetHeader>(
+      'INSERT INTO categories (tenant_id, name) VALUES (?, ?)',
+      [restrictedAcademyId, 'Sub-8 Restricted'],
+    );
 
     await request(app)
       .post(`/api/tenant/users/${restrictedParentId}/players`)
@@ -240,6 +244,7 @@ describe('Tenant admin links and editing', () => {
         firstName: 'Hijo',
         lastName: 'Uno',
         jerseyNumber: 1,
+        categoryId: restrictedCategory.insertId,
       })
       .expect(201);
 

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { InvoiceStatus, InvoiceType } from '@velocesport/shared';
+import { paginationQueryShape } from './pagination.validator.js';
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -14,6 +15,7 @@ export const listInvoicesQuerySchema = z.object({
   invoiceType: z.enum([InvoiceType.MONTHLY, InvoiceType.ANNUAL]).optional(),
   month: z.string().regex(monthRegex, 'Formato de mes inválido (YYYY-MM)').optional(),
   search: z.string().trim().max(200).optional(),
+  ...paginationQueryShape,
 });
 
 export type ListInvoicesQuery = z.infer<typeof listInvoicesQuerySchema>;

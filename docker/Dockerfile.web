@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN pnpm --filter @velocesport/web build
 RUN pnpm --filter @velocesport/web deploy --prod /out \
  && rm -rf /out/dist && cp -r apps/web/dist /out/dist
 
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 # Astro standalone embebe rutas absolutas al directorio de build (/app/apps/web/dist).
 WORKDIR /app/apps/web
 
