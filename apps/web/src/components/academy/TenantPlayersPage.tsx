@@ -37,6 +37,7 @@ import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
+import { BulkAddLink } from '../data-grid/BulkAddLink';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
 import { PlayerAvatar } from '../players/PlayerAvatar';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
@@ -600,15 +601,18 @@ function TenantPlayersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button
-            type="button"
-            data-tour="players-create-button"
-            onClick={openCreate}
-            className="gap-1.5"
-          >
-            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
-            {t('tenant.players.create')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <BulkAddLink href="/dashboard/academy-admin/players/bulk" />
+            <Button
+              type="button"
+              data-tour="players-create-button"
+              onClick={openCreate}
+              className="gap-1.5"
+            >
+              <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+              {t('tenant.players.create')}
+            </Button>
+          </div>
         }
         renderCard={(player) => (
           <DataCard>

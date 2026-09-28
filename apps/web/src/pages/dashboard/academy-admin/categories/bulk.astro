@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import DashboardShell from '../../../../components/layout/DashboardShell';
+import { getSession } from '../../../../lib/session';
+import { redirectUnlessRole } from '../../../../lib/page-access';
+import { t } from '@velocesport/i18n';
+
+const session = getSession(Astro.cookies);
+const accessDenied = redirectUnlessRole(session, 'academy_admin');
+if (accessDenied) return Astro.redirect(accessDenied);
+
+const locale = Astro.locals.locale;
+---
+
+<BaseLayout locale={locale} title={`${t('bulk.categories.title', locale)} — ${t('common.appName', locale)}`}>
+  <DashboardShell
+    client:load
+    initialLocale={locale}
+    role={session.role}
+    userId={session.userId}
+    roles={session.roles}
+    activeNavId="categories"
+    contentKey="academyAdmin"
+    pageTitle={t('bulk.categories.title', locale)}
+    pageDescription={t('bulk.categories.description', locale)}
+    hideWelcome
+    pageId="categoriesBulk"
+    headerSectionAccent="brand"
+  />
+</BaseLayout>

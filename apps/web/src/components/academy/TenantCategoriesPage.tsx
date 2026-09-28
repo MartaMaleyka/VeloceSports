@@ -32,6 +32,7 @@ import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { TenantApiError, tenantFetch, tenantFetchList } from '../../lib/tenant-api';
 import { readUrlSearchFlag } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
+import { BulkAddLink } from '../data-grid/BulkAddLink';
 import { StatusBadge } from '../platform/StatusBadge';
 
 function coachInitials(email: string): string {
@@ -295,15 +296,18 @@ function TenantCategoriesContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button
-            type="button"
-            data-tour="categories-create-button"
-            onClick={openCreate}
-            className="gap-1.5"
-          >
-            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
-            {t('tenant.categories.create')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <BulkAddLink href="/dashboard/academy-admin/categories/bulk" />
+            <Button
+              type="button"
+              data-tour="categories-create-button"
+              onClick={openCreate}
+              className="gap-1.5"
+            >
+              <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+              {t('tenant.categories.create')}
+            </Button>
+          </div>
         }
         renderCard={(category) => (
           <DataCard>
