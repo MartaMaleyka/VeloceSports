@@ -1516,6 +1516,7 @@ export const es = {
     periodsFromAcademy: 'config. academia',
     periodsCustom: 'personalizado',
     createdBy: 'Creado por',
+    categoryLocked: 'La categoría solo se puede cambiar mientras el partido está programado y sin asistencia.',
     validation: {
       categoryRequired: 'Selecciona una categoría',
       opponentRequired: 'El rival es obligatorio',
@@ -1576,6 +1577,7 @@ export const es = {
       collisionTitle: 'Dorsales duplicados',
       jerseyCollision: 'Los dorsales {jerseys} están repetidos entre jugadores presentes.',
       jerseyCollisionServer: 'Hay dorsales duplicados. Corrige los números antes de guardar.',
+      playerHasActionsServer: 'No puedes marcar como ausente a un jugador que ya tiene acciones en este partido. Anula antes sus acciones.',
       forbiddenCategory:
         'No eres el entrenador asignado a la categoría de este partido. Solo el coach de esa categoría puede ver y marcar la asistencia.',
       serverError:
