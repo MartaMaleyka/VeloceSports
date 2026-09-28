@@ -1129,7 +1129,9 @@ export const es = {
       globalDescription:
         'Recibe avisos cuando tu hijo brille en partido (gol, asistencia y más).',
       inApp: 'Recibir notificaciones en la app',
-      emailComingSoon: 'Las notificaciones por correo estarán disponibles próximamente.',
+      emailTitle: 'Avisos por correo',
+      emailDescription: 'Recibe también un correo con cada momento destacado. Silenciar a un hijo lo silencia en todos los canales.',
+      email: 'Recibir avisos por correo',
       byChildTitle: 'Por hijo',
       byChildDescription: 'Activa o pausa los avisos para cada hijo vinculado.',
       inAppFor: 'Notificaciones para {name}',
@@ -2062,7 +2064,7 @@ export const es = {
       notifications: {
         page: { title: 'Tus notificaciones', body: 'Desde aquí controlas qué avisos recibes sobre los partidos de tus hijos.' },
         globalToggle: { title: 'Activar o desactivar todo', body: 'Este interruptor controla si recibes notificaciones dentro de la app. Actívalo o desactívalo cuando quieras.' },
-        emailNote: { title: 'Más canales próximamente', body: 'Por ahora las notificaciones llegan dentro de la app; pronto sumaremos aviso por correo.' },
+        emailNote: { title: 'Avisos por correo', body: 'Si lo prefieres, activa aquí los avisos por correo además de los de la app.' },
       },
       children: {
         page: { title: 'Tus hijos', body: 'Administra a los jugadores registrados: revisa su estado y agrega uno nuevo si lo necesitas.' },

@@ -57,29 +57,45 @@ function toDto(row: {
 }
 
 export class ParentNotificationService {
-  async canNotifyParent(
+  /**
+   * Canales por los que avisar a un padre de una acción de su hijo (RN-09/RN-18):
+   * - la academia debe tener las notificaciones activas;
+   * - in-app está activo salvo que el padre lo apague; el email solo si lo activó;
+   * - silenciar a un hijo concreto lo silencia en todos los canales.
+   */
+  async resolveChannels(
     tenantId: number,
     parentUserId: number,
     playerId: number,
-  ): Promise<boolean> {
+  ): Promise<{ inApp: boolean; email: boolean }> {
+    const off = { inApp: false, email: false };
     const academyEnabled =
       await notificationPreferenceRepository.isAcademyNotificationsEnabled(tenantId);
-    if (!academyEnabled) return false;
-
-    const globalPref = await notificationPreferenceRepository.findParentPreference(
-      tenantId,
-      parentUserId,
-    );
-    if (globalPref && !globalPref.in_app_enabled) return false;
+    if (!academyEnabled) return off;
 
     const playerPref = await notificationPreferenceRepository.findPlayerOverride(
       tenantId,
       parentUserId,
       playerId,
     );
-    if (playerPref && !playerPref.in_app_enabled) return false;
+    if (playerPref && !playerPref.in_app_enabled) return off;
 
-    return true;
+    const globalPref = await notificationPreferenceRepository.findParentPreference(
+      tenantId,
+      parentUserId,
+    );
+    return {
+      inApp: globalPref ? Boolean(globalPref.in_app_enabled) : true,
+      email: globalPref ? Boolean(globalPref.email_enabled) : false,
+    };
+  }
+
+  async canNotifyParent(
+    tenantId: number,
+    parentUserId: number,
+    playerId: number,
+  ): Promise<boolean> {
+    return (await this.resolveChannels(tenantId, parentUserId, playerId)).inApp;
   }
 
   async listForParent(

@@ -20,12 +20,15 @@ import {
   UserStatus,
 } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
+import { emailLocaleFrom } from '../lib/email-template.js';
 import { academyRepository, type AcademyWithPlanRow } from '../repositories/academy.repository.js';
+import { emailRecipientRepository } from '../repositories/email-recipient.repository.js';
 import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { auditService } from './audit.service.js';
+import { emailNotificationService } from './email-notification.service.js';
 import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
 import { invoiceService } from './invoice.service.js';
 import { userSessionService } from './user-session.service.js';
@@ -320,7 +323,27 @@ export class PlatformService {
       { approvalStatus: after.approvalStatus, status: after.status },
     );
 
+    await this.notifyAccountDecision(academyId, true, null);
     return after;
+  }
+
+  /** Avisa por correo al solicitante del resultado de la revisión (no bloquea si falla). */
+  private async notifyAccountDecision(
+    academyId: number,
+    approved: boolean,
+    reason: string | null,
+  ): Promise<void> {
+    const academy = await academyRepository.findById(academyId);
+    if (!academy) return;
+    const to = await emailRecipientRepository.findAccountOwnerEmails(academyId);
+    if (to.length === 0) return;
+    await emailNotificationService.sendAccountDecisionEmail({
+      to,
+      locale: emailLocaleFrom(academy.locale),
+      accountName: academy.name,
+      approved,
+      reason,
+    });
   }
 
   /** Rechaza una cuenta autorregistrada (personal o academia) pendiente de revisión. */
@@ -348,6 +371,7 @@ export class PlatformService {
       { approvalStatus: after.approvalStatus, approvalReason: after.approvalReason },
     );
 
+    await this.notifyAccountDecision(academyId, false, reason);
     return after;
   }
 

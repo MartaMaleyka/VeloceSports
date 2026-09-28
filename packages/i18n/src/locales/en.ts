@@ -1126,7 +1126,9 @@ export const en = {
       globalDescription:
         'Get alerts when your child shines in a match (goal, assist, and more).',
       inApp: 'Receive in-app notifications',
-      emailComingSoon: 'Email notifications will be available soon.',
+      emailTitle: 'Email alerts',
+      emailDescription: 'Also get an email for each highlight. Muting a child mutes them on every channel.',
+      email: 'Receive email alerts',
       byChildTitle: 'Per child',
       byChildDescription: 'Turn alerts on or off for each linked child.',
       inAppFor: 'Notifications for {name}',
@@ -2058,7 +2060,7 @@ export const en = {
       notifications: {
         page: { title: 'Your notifications', body: "Control which alerts you get about your children's matches from here." },
         globalToggle: { title: 'Turn everything on or off', body: 'This switch controls whether you get in-app notifications. Turn it on or off anytime.' },
-        emailNote: { title: 'More channels coming soon', body: 'For now notifications arrive in-app; email alerts are coming soon.' },
+        emailNote: { title: 'Email alerts', body: 'If you prefer, turn on email alerts here in addition to in-app ones.' },
       },
       children: {
         page: { title: 'Your children', body: 'Manage your registered players: check their status and add a new one if needed.' },

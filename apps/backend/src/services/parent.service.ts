@@ -11,6 +11,10 @@ import {
 import { categoryRepository } from '../repositories/category.repository.js';
 import { playerRepository, type PlayerWithCategoryRow } from '../repositories/player.repository.js';
 import { auditService } from './audit.service.js';
+import { emailLocaleFrom } from '../lib/email-template.js';
+import { academyRepository } from '../repositories/academy.repository.js';
+import { emailRecipientRepository } from '../repositories/email-recipient.repository.js';
+import { emailNotificationService } from './email-notification.service.js';
 import { planLimitService } from './plan-limit.service.js';
 import { playerService } from './tenant.service.js';
 import { playerPhotoService } from './player-photo.service.js';
@@ -243,6 +247,7 @@ export class ParentPlayerAdminService {
       },
     );
 
+    await this.notifyEnrollmentDecision(tenantId, playerId, before, true, null);
     return playerService.getPlayer(tenantId, playerId);
   }
 
@@ -273,7 +278,31 @@ export class ParentPlayerAdminService {
       { status: PlayerStatus.INACTIVE, rejectionReason: reason },
     );
 
+    await this.notifyEnrollmentDecision(tenantId, playerId, before, false, reason);
     return playerService.getPlayer(tenantId, playerId);
+  }
+
+  /** Avisa por correo a la familia del resultado de la inscripción (no bloquea si falla). */
+  private async notifyEnrollmentDecision(
+    tenantId: number,
+    playerId: number,
+    player: { first_name: string; last_name: string },
+    approved: boolean,
+    reason: string | null,
+  ): Promise<void> {
+    const [academy, to] = await Promise.all([
+      academyRepository.findById(tenantId),
+      emailRecipientRepository.findFamilyEmails(tenantId, playerId),
+    ]);
+    if (!academy || to.length === 0) return;
+    await emailNotificationService.sendEnrollmentDecisionEmail({
+      to,
+      locale: emailLocaleFrom(academy.locale),
+      playerName: `${player.first_name} ${player.last_name}`.trim(),
+      academyName: academy.name,
+      approved,
+      reason,
+    });
   }
 }
 
