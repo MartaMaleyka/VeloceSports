@@ -1,9 +1,6 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import AuthBrandPage from '../components/auth/AuthBrandPage.astro';
 import LoginFormIsland from '../components/auth/LoginFormIsland';
-import LoginHeroBrandMark from '../components/auth/LoginHeroBrandMark.astro';
-import LoginHeroDecor from '../components/auth/LoginHeroDecor.astro';
-import LoginPanelDecor from '../components/auth/LoginPanelDecor.astro';
 import { resolveLocale, t } from '@velocesport/i18n';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
@@ -12,62 +9,14 @@ const apiUrl = `${base}/api/auth`;
 const redirectPath = Astro.url.searchParams.get('redirect') ?? undefined;
 const sessionEndReason =
   Astro.url.searchParams.get('reason') === 'inactivity' ? 'inactivity' : undefined;
-
-const heroFeatures = [
-  t('auth.login.heroFeatures.capture', locale),
-  t('auth.login.heroFeatures.progress', locale),
-  t('auth.login.heroFeatures.alerts', locale),
-];
 ---
 
-<BaseLayout
-  locale={locale}
-  title={t('meta.loginTitle', locale)}
-  description={t('meta.appDescription', locale)}
->
-  <div class="ds-brand-page">
-    <div class="ds-brand-page__shell md:grid-cols-2">
-      <aside class="ds-brand-page__hero ds-brand-page__hero--asymmetric" aria-label={t('common.appName', locale)}>
-        <LoginHeroDecor />
-
-        <div class="ds-brand-page__hero-content ds-brand-page__hero-content--asymmetric ds-stagger-enter">
-          <div class="ds-stagger-item ds-brand-page__hero-brand">
-            <LoginHeroBrandMark />
-          </div>
-
-          <div class="ds-stagger-item ds-brand-page__hero-copy">
-            <div class="ds-brand-page__hero-accent" aria-hidden="true"></div>
-            <h1 class="sr-only">{t('common.appName', locale)}</h1>
-            <span class="ds-brand-tagline ds-brand-tagline--compact">
-              {t('common.brandSlogan', locale)}
-            </span>
-          </div>
-
-          <ul class="ds-brand-page__features ds-brand-page__features--flow ds-brand-page__features--asymmetric ds-stagger-item">
-            {
-              heroFeatures.map((feature, index) => (
-                <li class="ds-brand-page__feature" style={`--feature-index: ${index}`}>
-                  <span class="ds-brand-page__feature-icon" aria-hidden="true">
-                    ✓
-                  </span>
-                  {feature}
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </aside>
-
-      <main class="ds-brand-page__panel">
-        <LoginPanelDecor />
-        <LoginFormIsland
-          client:idle
-          initialLocale={locale}
-          apiUrl={apiUrl}
-          redirectPath={redirectPath}
-          sessionEndReason={sessionEndReason}
-        />
-      </main>
-    </div>
-  </div>
-</BaseLayout>
+<AuthBrandPage locale={locale} title={t('meta.loginTitle', locale)}>
+  <LoginFormIsland
+    client:idle
+    initialLocale={locale}
+    apiUrl={apiUrl}
+    redirectPath={redirectPath}
+    sessionEndReason={sessionEndReason}
+  />
+</AuthBrandPage>

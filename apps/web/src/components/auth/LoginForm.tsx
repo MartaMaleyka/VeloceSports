@@ -164,6 +164,14 @@ function LoginFormInner({ apiUrl, redirectPath, sessionEndReason }: LoginFormInn
             {fieldErrors.password}
           </p>
         )}
+        <p className="mt-2 text-right text-sm">
+          <a
+            href={appPath('/forgot-password')}
+            className="font-medium text-action-primary underline-offset-2 hover:underline"
+          >
+            {t('auth.login.forgotPassword')}
+          </a>
+        </p>
       </div>
 
       <Button type="submit" loading={loading} disabled={loading} className="w-full" size="lg">

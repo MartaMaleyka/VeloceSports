@@ -3,6 +3,7 @@ import type { SignupAcademyBody, SignupIndependentBody } from '@velocesport/shar
 import { authService } from '../services/auth.service.js';
 import { independentSignupService } from '../services/independent-signup.service.js';
 import { academySignupService } from '../services/academy-signup.service.js';
+import { passwordRecoveryService } from '../services/password-recovery.service.js';
 import { UnauthorizedError } from '../types/index.js';
 
 function readClientContext(req: Request): {
@@ -62,6 +63,29 @@ export class AuthController {
       const { refreshToken } = req.body as { refreshToken?: string };
       await authService.logout(refreshToken);
       res.status(200).json({ success: true, data: { loggedOut: true } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /** Siempre 202 y sin esperar al envío: ni el contenido ni el tiempo revelan si la cuenta existe. */
+  async requestPasswordRecovery(req: Request, res: Response): Promise<void> {
+    const { email } = req.body as { email: string };
+    const locale = req.headers['accept-language']?.toLowerCase().startsWith('en') ? 'en' : 'es';
+    void passwordRecoveryService
+      .request(email, { ipAddress: readClientContext(req).ipAddress, locale })
+      .catch((error) => console.error('[password-recovery] Error al procesar la solicitud:', error));
+    res.status(202).json({
+      success: true,
+      data: { message: 'Si el correo está registrado, recibirás un enlace para restablecer la contraseña.' },
+    });
+  }
+
+  async confirmPasswordRecovery(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { token, newPassword } = req.body as { token: string; newPassword: string };
+      await passwordRecoveryService.confirm(token, newPassword);
+      res.status(200).json({ success: true, data: { passwordReset: true } });
     } catch (error) {
       next(error);
     }

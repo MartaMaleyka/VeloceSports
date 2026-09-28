@@ -4,6 +4,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { closePool, getPool } from './config/db.js';
 import { userSessionService } from './services/user-session.service.js';
+import { passwordRecoveryService } from './services/password-recovery.service.js';
 
 const app = createApp();
 
@@ -18,6 +19,10 @@ async function purgeStaleSessions(): Promise<void> {
     const deleted = await userSessionService.purgeStaleSessions(env.SESSION_RETENTION_DAYS);
     if (deleted > 0) {
       console.log(`Sesiones antiguas eliminadas: ${deleted}`);
+    }
+    const tokens = await passwordRecoveryService.purgeStaleTokens(env.SESSION_RETENTION_DAYS);
+    if (tokens > 0) {
+      console.log(`Tokens de recuperación antiguos eliminados: ${tokens}`);
     }
   } catch (error) {
     console.error('No se pudieron limpiar las sesiones antiguas:', error);

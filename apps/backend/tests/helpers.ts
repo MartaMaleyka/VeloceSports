@@ -31,6 +31,7 @@ export async function cleanDatabase(): Promise<void> {
   const pool = getPool();
   await pool.query('SET FOREIGN_KEY_CHECKS = 0');
   await pool.query('TRUNCATE TABLE user_sessions');
+  await pool.query('TRUNCATE TABLE password_recovery_tokens');
   await pool.query('TRUNCATE TABLE audit_log');
   await pool.query('TRUNCATE TABLE invoices');
   await pool.query('TRUNCATE TABLE notifications');

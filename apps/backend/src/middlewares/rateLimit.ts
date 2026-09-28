@@ -71,3 +71,16 @@ export const playerInsightRateLimiter = rateLimit({
     message: 'Demasiadas solicitudes de análisis. Intenta de nuevo más tarde.',
   },
 });
+
+/** Recuperación de contraseña: por IP (solicitudes y canjes) para frenar spam y fuerza bruta. */
+export const passwordRecoveryRateLimiter = rateLimit({
+  windowMs: env.PASSWORD_RECOVERY_RATE_LIMIT_WINDOW_MS,
+  max: env.PASSWORD_RECOVERY_RATE_LIMIT_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: clientIpKey,
+  message: {
+    success: false,
+    message: 'Demasiadas solicitudes de recuperación. Intenta de nuevo más tarde.',
+  },
+});
