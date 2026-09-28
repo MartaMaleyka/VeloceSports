@@ -46,6 +46,8 @@ import {
   resetPasswordUserParamSchema,
 } from '../validators/password-reset.validator.js';
 import { passwordResetController } from '../controllers/password-reset.controller.js';
+import { bulkCreateController } from '../controllers/bulk-create.controller.js';
+import { bulkEnvelopeSchema, bulkUsersEnvelopeSchema } from '../validators/bulk.validator.js';
 
 const router = Router();
 
@@ -83,6 +85,11 @@ router.post(
   validate(createTenantUserBodySchema),
   (req, res, next) => tenantController.createUser(req, res, next),
 );
+
+// Altas masivas (tabla tipo hoja de cálculo): errores por fila, dryRun para validar.
+router.post('/users/bulk', validate(bulkUsersEnvelopeSchema), bulkCreateController.users);
+router.post('/categories/bulk', validate(bulkEnvelopeSchema), bulkCreateController.categories);
+router.post('/players/bulk', validate(bulkEnvelopeSchema), bulkCreateController.players);
 
 router.get(
   '/users/:userId/roles',

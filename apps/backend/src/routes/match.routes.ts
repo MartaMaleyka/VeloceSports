@@ -9,6 +9,8 @@ import { authenticate } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/rbac.js';
 import { tenant } from '../middlewares/tenant.js';
 import { validate } from '../middlewares/validate.js';
+import { bulkCreateController } from '../controllers/bulk-create.controller.js';
+import { bulkEnvelopeSchema } from '../validators/bulk.validator.js';
 import {
   createMatchBodySchema,
   listMatchesQuerySchema,
@@ -147,6 +149,8 @@ router.post(
   validate(createMatchBodySchema),
   (req, res, next) => matchController.createMatch(req, res, next),
 );
+
+router.post('/bulk', validate(bulkEnvelopeSchema), bulkCreateController.matches);
 
 router.patch(
   '/:matchId',
