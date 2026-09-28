@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { UserStatus } from '@velocesport/shared';
-import { env, getCorsOrigins } from '../config/env.js';
+import { env } from '../config/env.js';
+import { escapeHtml, publicBaseUrl } from '../lib/email-template.js';
 import { getMailSender, type OutgoingMail } from '../lib/mailer.js';
 import { passwordRecoveryRepository } from '../repositories/password-recovery.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
@@ -17,17 +18,6 @@ type Locale = 'es' | 'en';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token, 'utf8').digest('hex');
-}
-
-function publicBaseUrl(): string {
-  const base = env.APP_PUBLIC_URL ?? getCorsOrigins()[0] ?? 'http://localhost:4321';
-  return base.replace(/\/+$/, '');
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
-  );
 }
 
 export function buildRecoveryEmail(

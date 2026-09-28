@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ParentNotificationPreferencesDto } from '@velocesport/shared';
 import { Alert, Button, Skeleton, cn } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
-import { Info } from 'lucide-react';
 import { ParentApiError } from '../../lib/parent-api';
 import {
   fetchParentNotificationPreferences,
@@ -81,6 +80,18 @@ export default function ParentNotificationPreferencesPage() {
     setSaving(true);
     try {
       const data = await updateParentNotificationPreferences({ inAppEnabled });
+      setPrefs(data);
+    } catch (e) {
+      setError(e instanceof ParentApiError ? e.message : t('parent.errors.generic'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEmailToggle = async (emailEnabled: boolean) => {
+    setSaving(true);
+    try {
+      const data = await updateParentNotificationPreferences({ emailEnabled });
       setPrefs(data);
     } catch (e) {
       setError(e instanceof ParentApiError ? e.message : t('parent.errors.generic'));
@@ -200,14 +211,30 @@ export default function ParentNotificationPreferencesPage() {
         </section>
       )}
 
-      <p
+      <section
         data-tour="notifications-email-note"
-        className="ds-stagger-item flex items-start gap-2 rounded-lg border border-border bg-bg-muted/40 px-3 py-3 text-xs text-text-muted"
+        className="ds-stagger-item rounded-xl border border-border bg-bg-surface p-5 sm:p-6"
         style={{ ['--stagger-index' as string]: 2 }}
       >
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-section-brand-fg" aria-hidden="true" />
-        <span>{t('parentNotifications.preferences.emailComingSoon')}</span>
-      </p>
+        <h2 className="font-display text-base font-semibold text-text-primary">
+          {t('parentNotifications.preferences.emailTitle')}
+        </h2>
+        <p className="mt-1 text-sm text-text-secondary">
+          {t('parentNotifications.preferences.emailDescription')}
+        </p>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-text-primary">
+            {t('parentNotifications.preferences.email')}
+          </span>
+          <BrandToggle
+            id="parent-notif-email"
+            checked={prefs.emailEnabled}
+            disabled={saving}
+            label={t('parentNotifications.preferences.email')}
+            onChange={(next) => void handleEmailToggle(next)}
+          />
+        </div>
+      </section>
     </div>
   );
 }

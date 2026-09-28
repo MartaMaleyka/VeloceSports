@@ -4,6 +4,8 @@ import { notificationPreferenceRepository } from '../repositories/notification-p
 import { playerViewerRepository } from '../repositories/player-viewer.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
+import { emailLocaleFrom } from '../lib/email-template.js';
+import { academyRepository } from '../repositories/academy.repository.js';
 import { buildGameActionNotificationMessage } from '../utils/notification-message.js';
 import { emailNotificationService } from './email-notification.service.js';
 import { parentNotificationService } from './parent-notification.service.js';
@@ -60,44 +62,56 @@ export class GameActionNotificationService {
       payload.minute,
     );
 
+    const academy = await academyRepository.findById(payload.tenantId);
+    const emailLocale = emailLocaleFrom(academy?.locale);
+
     let createdCount = 0;
+    let emailedCount = 0;
     for (const parentUserId of parentIds) {
-      const allowed = await parentNotificationService.canNotifyParent(
+      const channels = await parentNotificationService.resolveChannels(
         payload.tenantId,
         parentUserId,
         payload.playerId,
       );
-      if (!allowed) continue;
+      if (!channels.inApp && !channels.email) continue;
 
-      const notificationId = await notificationRepository.createIfNotExists({
-        tenantId: payload.tenantId,
-        recipientUserId: parentUserId,
-        playerId: payload.playerId,
-        matchId: payload.matchId,
-        gameActionId: payload.gameActionId,
-        type: NotificationType.GAME_ACTION,
-        title: message.title,
-        body: message.body,
-        payload: message.payload,
-      });
-
-      if (notificationId == null) continue;
-
-      createdCount += 1;
-
-      const parentUser = await userRepository.findById(payload.tenantId, parentUserId);
-      if (parentUser?.email) {
-        await emailNotificationService.sendEmailNotification({
+      if (channels.inApp) {
+        const notificationId = await notificationRepository.createIfNotExists({
           tenantId: payload.tenantId,
           recipientUserId: parentUserId,
-          recipientEmail: parentUser.email,
-          subject: message.title,
+          playerId: payload.playerId,
+          matchId: payload.matchId,
+          gameActionId: payload.gameActionId,
+          type: NotificationType.GAME_ACTION,
+          title: message.title,
           body: message.body,
-          notificationId,
+          payload: message.payload,
         });
+        // null = ya existía (reintento): no se vuelve a avisar por ningún canal.
+        if (notificationId == null) continue;
+        createdCount += 1;
+      }
+
+      if (channels.email) {
+        const parentUser = await userRepository.findById(payload.tenantId, parentUserId);
+        if (parentUser?.email) {
+          // Sin await: el SMTP no debe retrasar la captura en vivo. El servicio no lanza.
+          void emailNotificationService.sendGameActionEmail({
+            to: parentUser.email,
+            locale: emailLocale,
+            playerFirstName,
+            actionCode: payload.actionCode,
+            actionName: payload.actionName,
+            minute: payload.minute,
+          });
+          emailedCount += 1;
+        }
       }
     }
 
+    if (createdCount === 0 && emailedCount > 0) {
+      return { queued: true, createdCount: 0 };
+    }
     if (createdCount === 0) {
       return { queued: false, createdCount: 0, skippedReason: 'all_parents_opted_out' };
     }
