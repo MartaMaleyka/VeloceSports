@@ -39,6 +39,7 @@ import { fetchMyProfile } from '../../lib/profile-api';
 import { pickPrimaryTenantRole, syncTenantUserRoles } from '../../lib/tenant-roles';
 import { RoleBadgesList, RoleCheckboxGroup } from './RoleFields';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
+import { BulkAddLink } from '../data-grid/BulkAddLink';
 import { StatusBadge } from '../platform/StatusBadge';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
 import { ResetPasswordModal } from '../auth/ResetPasswordModal';
@@ -417,15 +418,18 @@ function TenantUsersContent() {
         viewCardsLabel={t('dataView.viewCards')}
         viewTableLabel={t('dataView.viewTable')}
         toolbarExtra={
-          <Button
-            type="button"
-            data-tour="users-create-button"
-            onClick={openCreate}
-            className="gap-1.5"
-          >
-            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
-            {t('tenant.users.createSubmit')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <BulkAddLink href="/dashboard/academy-admin/users/bulk" />
+            <Button
+              type="button"
+              data-tour="users-create-button"
+              onClick={openCreate}
+              className="gap-1.5"
+            >
+              <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+              {t('tenant.users.createSubmit')}
+            </Button>
+          </div>
         }
         renderCard={(user) => (
           <DataCard>

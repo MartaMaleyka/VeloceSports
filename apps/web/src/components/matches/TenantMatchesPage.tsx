@@ -33,6 +33,7 @@ import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n'
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
 import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
 import { appPath } from '../../lib/app-path';
+import { BulkAddLink } from '../data-grid/BulkAddLink';
 import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
 
@@ -438,16 +439,19 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         ]}
         secondaryFilterTourId="matches-list-category-filter"
         toolbarExtra={
-          <Button
-            type="button"
-            data-tour="matches-list-create-button"
-            onClick={openCreate}
-            disabled={categories.length === 0}
-            className="gap-1.5"
-          >
-            <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
-            {t('matches.create')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {categories.length > 0 && <BulkAddLink href={`${basePath}/bulk`} />}
+            <Button
+              type="button"
+              data-tour="matches-list-create-button"
+              onClick={openCreate}
+              disabled={categories.length === 0}
+              className="gap-1.5"
+            >
+              <Plus className="ds-btn-sport__icon h-4 w-4" aria-hidden="true" />
+              {t('matches.create')}
+            </Button>
+          </div>
         }
         resultsLabel={
           filtered.length === 1
