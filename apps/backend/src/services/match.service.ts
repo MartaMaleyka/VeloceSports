@@ -13,7 +13,11 @@ import {
 import { getPool } from '../config/db.js';
 import { categoryRepository } from '../repositories/category.repository.js';
 import { coachCategoryRepository } from '../repositories/coach-category.repository.js';
+import { gameActionRepository } from '../repositories/game-action.repository.js';
+import { matchAttendanceRepository } from '../repositories/match-attendance.repository.js';
 import { matchRepository, type MatchWithCategoryRow } from '../repositories/match.repository.js';
+import { assertAssignableCategory } from '../utils/category-rules.js';
+import { notificationRepository } from '../repositories/notification.repository.js';
 import { buildClockDtoFromRow } from '../utils/match-clock-mapper.js';
 import { auditService } from './audit.service.js';
 import { gameActionService } from './game-action.service.js';
@@ -229,6 +233,7 @@ export class MatchService {
 
   async createMatch(actor: MatchActorContext, input: CreateMatchBody): Promise<MatchDto> {
     await this.assertCategoryAccess(actor, input.categoryId);
+    await assertAssignableCategory(actor.tenantId, input.categoryId);
 
     const matchId = await matchRepository.create({
       tenantId: actor.tenantId,
@@ -263,8 +268,24 @@ export class MatchService {
       throw new ValidationError('No se puede editar un partido finalizado o cancelado');
     }
 
-    if (input.categoryId !== undefined) {
+    if (input.categoryId !== undefined && input.categoryId !== before.category_id) {
+      // La asistencia y las acciones pertenecen a jugadores de la categoría original:
+      // solo se puede mover un partido programado que aún no tiene asistencia.
+      if (before.status !== MatchStatus.SCHEDULED) {
+        throw new ValidationError(
+          'Solo se puede cambiar la categoría de un partido programado',
+          'MATCH_CATEGORY_LOCKED',
+        );
+      }
+      const attendance = await matchAttendanceRepository.findByMatchId(actor.tenantId, matchId);
+      if (attendance.length > 0) {
+        throw new ValidationError(
+          'No se puede cambiar la categoría: el partido ya tiene asistencia registrada',
+          'MATCH_CATEGORY_LOCKED',
+        );
+      }
       await this.assertCategoryAccess(actor, input.categoryId);
+      await assertAssignableCategory(actor.tenantId, input.categoryId, before.category_id);
     }
 
     await matchRepository.update(actor.tenantId, matchId, {
@@ -308,13 +329,26 @@ export class MatchService {
 
     await matchRepository.updateStatus(actor.tenantId, matchId, nextStatus);
 
+    // Un partido cancelado no cuenta: sus acciones se anulan (con traza, RN-13) y las
+    // notificaciones ya enviadas a los padres se marcan como anuladas.
+    let voidedActions = 0;
+    if (nextStatus === MatchStatus.CANCELLED) {
+      voidedActions = await gameActionRepository.voidAllActiveByMatch(
+        actor.tenantId,
+        matchId,
+        actor.user.userId,
+        'Partido cancelado',
+      );
+      await notificationRepository.markVoidedByMatchId(actor.tenantId, matchId);
+    }
+
     await auditService.log(
       this.auditCtx(actor),
       'match',
       matchId,
       'status_change',
       { status: before.status },
-      { status: nextStatus },
+      voidedActions > 0 ? { status: nextStatus, voidedActions } : { status: nextStatus },
     );
 
     return this.getMatch(actor, matchId);

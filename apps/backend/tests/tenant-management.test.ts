@@ -222,10 +222,11 @@ describe('Tenant management API (academy_admin)', () => {
         { firstName: 'Pendiente', lastName: 'Tres', jerseyNumber: 11, categoryId },
       );
 
+      // Una inscripción pendiente se activa aprobándola.
       const activateRes = await request(app)
-        .patch(`/api/tenant/players/${pending.id}/status`)
+        .post(`/api/tenant/players/${pending.id}/approve`)
         .set('Authorization', `Bearer ${restrictedAdminToken}`)
-        .send({ status: PlayerStatus.ACTIVE })
+        .send({})
         .expect(422);
 
       expect(activateRes.body.code).toBe('PLAN_LIMIT_EXCEEDED');

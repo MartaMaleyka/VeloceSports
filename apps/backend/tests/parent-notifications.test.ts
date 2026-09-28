@@ -178,16 +178,32 @@ describe('Parent in-app notifications', () => {
       [parentAResult.insertId, playerAId, seed.academyAId],
     );
     await pool.execute(
+      "INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship) VALUES (?, ?, ?, 'PARENT')",
+      [seed.academyAId, playerAId, parentAResult.insertId],
+    );
+    await pool.execute(
       'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
       [parentBResult.insertId, playerBId, seed.academyBId],
+    );
+    await pool.execute(
+      "INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship) VALUES (?, ?, ?, 'PARENT')",
+      [seed.academyBId, playerBId, parentBResult.insertId],
     );
     await pool.execute(
       'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
       [parentDualResult.insertId, playerDual1Id, seed.academyAId],
     );
     await pool.execute(
+      "INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship) VALUES (?, ?, ?, 'PARENT')",
+      [seed.academyAId, playerDual1Id, parentDualResult.insertId],
+    );
+    await pool.execute(
       'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
       [parentDualResult.insertId, playerDual2Id, seed.academyAId],
+    );
+    await pool.execute(
+      "INSERT INTO player_viewers (tenant_id, player_id, viewer_id, relationship) VALUES (?, ?, ?, 'PARENT')",
+      [seed.academyAId, playerDual2Id, parentDualResult.insertId],
     );
 
     parentAToken = await loginAs('parent-notif-a@test.com', parentPassword);

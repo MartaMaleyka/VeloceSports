@@ -62,6 +62,8 @@ const envSchema = z.object({
     .default(false)
     .transform((v) => v === true || v === 'true' || v === '1'),
   BILLING_OVERDUE_JOB_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(6),
+  /** Días entre el aviso de impago y la suspensión (0 = suspender en la misma ejecución). */
+  BILLING_OVERDUE_GRACE_DAYS: z.coerce.number().int().min(0).max(90).default(7),
 
   /** Object storage (MinIO) — fotos de jugadores */
   MINIO_ENDPOINT: z.string().min(1).default('127.0.0.1'),

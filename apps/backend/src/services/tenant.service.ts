@@ -41,7 +41,11 @@ import {
   NotFoundError,
   ValidationError,
 } from '../types/index.js';
+import { assertAssignableCategory, assertCategoryForActivePlayer } from '../utils/category-rules.js';
 import { generateTemporaryPassword } from '../utils/strings.js';
+import { buildPaginatedResponse, type PaginatedResponseDto } from '@velocesport/shared';
+import { resolvePagination } from '../validators/pagination.validator.js';
+import type { PlayerListFilters } from '../repositories/player.repository.js';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -107,18 +111,27 @@ export class TenantUserService {
     return { ...dto, linkedPlayers };
   }
 
+  /** Con `page` devuelve una página (y el total); sin ella, la lista completa como antes. */
   async listUsers(
     tenantId: number,
-    filters?: { search?: string; role?: TenantUserDto['role']; status?: UserStatus },
-  ): Promise<TenantUserDto[]> {
-    const users = await userRepository.findByTenantId(tenantId, filters);
-    const dtos = await Promise.all(
-      users
-        .filter((u) => (TENANT_MANAGEABLE_ROLES as readonly string[]).includes(u.role))
-        .map((u) => this.toDto(u)),
-    );
-    if (!filters?.role) return dtos;
-    return dtos.filter((u) => u.roles.includes(filters.role!));
+    query?: {
+      search?: string;
+      role?: TenantUserDto['role'];
+      status?: UserStatus;
+      page?: number;
+      pageSize?: number;
+    },
+  ): Promise<TenantUserDto[] | PaginatedResponseDto<TenantUserDto>> {
+    const filters = { search: query?.search, role: query?.role, status: query?.status };
+    const pagination = resolvePagination(query ?? {});
+    const [users, totalCount] = await Promise.all([
+      userRepository.findManageableByTenant(tenantId, TENANT_MANAGEABLE_ROLES, filters, pagination),
+      pagination
+        ? userRepository.countManageableByTenant(tenantId, TENANT_MANAGEABLE_ROLES, filters)
+        : Promise.resolve(0),
+    ]);
+    const items = await Promise.all(users.map((u) => this.toDto(u)));
+    return pagination ? buildPaginatedResponse(items, totalCount, pagination) : items;
   }
 
   async getUsersKpis(tenantId: number): Promise<TenantUsersKpisDto> {
@@ -457,6 +470,19 @@ export class CategoryService extends TenantUserService {
     const before = await categoryRepository.findById(tenantId, categoryId);
     if (!before) throw new NotFoundError('Categoría no encontrada');
 
+    if (status === 'inactive' && before.status !== 'inactive') {
+      // RN-05: sus jugadores activos se quedarían sin poder jugar y sus partidos abiertos
+      // sin categoría operativa. Hay que moverlos (o cerrarlos) antes.
+      const usage = await categoryRepository.countUsage(tenantId, categoryId);
+      if (usage.activePlayers > 0 || usage.openMatches > 0) {
+        throw new ValidationError(
+          'No se puede desactivar: la categoría tiene jugadores activos o partidos sin terminar',
+          'CATEGORY_IN_USE',
+          usage,
+        );
+      }
+    }
+
     await categoryRepository.updateStatus(tenantId, categoryId, status);
 
     await auditService.log(
@@ -512,11 +538,6 @@ async function toPlayerDto(
 }
 
 export class PlayerService extends CategoryService {
-  private async assertCategoryInTenant(tenantId: number, categoryId: number): Promise<void> {
-    const category = await categoryRepository.findById(tenantId, categoryId);
-    if (!category) throw new ValidationError('La categoría seleccionada no pertenece a esta academia');
-  }
-
   private async assertParentsInTenant(tenantId: number, parentUserIds: number[]): Promise<void> {
     for (const parentId of parentUserIds) {
       const parent = await userRepository.findById(tenantId, parentId);
@@ -526,17 +547,30 @@ export class PlayerService extends CategoryService {
     }
   }
 
+  /** Con `page` devuelve una página (y el total); sin ella, la lista completa como antes. */
   async listPlayers(
     tenantId: number,
-    filters?: { search?: string; status?: PlayerDto['status']; categoryId?: number },
-  ): Promise<PlayerDto[]> {
-    const rows = await playerRepository.findByTenantId(tenantId, filters);
+    query?: PlayerListFilters & { page?: number; pageSize?: number },
+  ): Promise<PlayerDto[] | PaginatedResponseDto<PlayerDto>> {
+    const filters: PlayerListFilters = {
+      search: query?.search,
+      status: query?.status,
+      categoryId: query?.categoryId,
+    };
+    const pagination = resolvePagination(query ?? {});
+    const [rows, totalCount] = await Promise.all([
+      playerRepository.findByTenantId(tenantId, filters, pagination),
+      pagination ? playerRepository.countByTenantId(tenantId, filters) : Promise.resolve(0),
+    ]);
     const playerIds = rows.map((r) => r.id);
     const [parentsMap, historyIds] = await Promise.all([
       playerRepository.findParentsForPlayers(tenantId, playerIds),
       playerRepository.findPlayerIdsWithMatchHistory(tenantId, playerIds),
     ]);
-    return Promise.all(rows.map((r) => toPlayerDto(tenantId, r, parentsMap, historyIds)));
+    const items = await Promise.all(
+      rows.map((r) => toPlayerDto(tenantId, r, parentsMap, historyIds)),
+    );
+    return pagination ? buildPaginatedResponse(items, totalCount, pagination) : items;
   }
 
   async getPlayersKpis(tenantId: number): Promise<PlayersKpisDto> {
@@ -572,10 +606,7 @@ export class PlayerService extends CategoryService {
     const status = PlayerStatus.ACTIVE;
 
     await planLimitService.assertMaxActivePlayers(ctx, tenantId);
-
-    if (input.categoryId) {
-      await this.assertCategoryInTenant(tenantId, input.categoryId);
-    }
+    await assertCategoryForActivePlayer(tenantId, input.categoryId);
 
     const parentUserIds = input.parentUserIds ?? [];
     if (parentUserIds.length > 0) {
@@ -618,15 +649,35 @@ export class PlayerService extends CategoryService {
     if (!before) throw new NotFoundError('Jugador no encontrado');
 
     if (input.categoryId !== undefined && input.categoryId !== null) {
-      await this.assertCategoryInTenant(tenantId, input.categoryId);
+      await assertAssignableCategory(tenantId, input.categoryId, before.category_id);
     }
 
     if (input.parentUserIds !== undefined) {
       await this.assertParentsInTenant(tenantId, input.parentUserIds);
     }
 
+    const nextStatus = input.status ?? before.status;
+    const nextCategoryId = input.categoryId !== undefined ? input.categoryId : before.category_id;
     if (input.status !== undefined && input.status !== before.status) {
-      await this.applyPlayerStatusChange(ctx, tenantId, playerId, before.status, input.status);
+      this.assertManualStatusChange(before.status, input.status);
+    }
+    if (
+      nextStatus === PlayerStatus.ACTIVE &&
+      before.status === PlayerStatus.ACTIVE &&
+      nextCategoryId !== before.category_id
+    ) {
+      await assertCategoryForActivePlayer(tenantId, nextCategoryId);
+    }
+
+    if (input.status !== undefined && input.status !== before.status) {
+      await this.applyPlayerStatusChange(
+        ctx,
+        tenantId,
+        playerId,
+        before.status,
+        input.status,
+        nextCategoryId,
+      );
     }
 
     await playerRepository.update(tenantId, playerId, {
@@ -657,6 +708,28 @@ export class PlayerService extends CategoryService {
   }
 
   /**
+   * Las inscripciones pendientes solo se resuelven con aprobar/rechazar (validan categoría y
+   * guardan el motivo); tampoco se puede devolver un jugador a "pendiente" a mano.
+   */
+  private assertManualStatusChange(
+    before: PlayerDto['status'],
+    next: PlayerDto['status'],
+  ): void {
+    if (before === PlayerStatus.PENDING) {
+      throw new ValidationError(
+        'Esta inscripción está pendiente: apruébala o recházala',
+        'PLAYER_PENDING_REQUIRES_REVIEW',
+      );
+    }
+    if (next === PlayerStatus.PENDING) {
+      throw new ValidationError(
+        'No se puede devolver un jugador a pendiente',
+        'PLAYER_STATUS_INVALID',
+      );
+    }
+  }
+
+  /**
    * Aplica cambio de status con reglas de baja/reactivación.
    * - active → limpia deactivated_at
    * - inactive (vía admin) → deactivated_at = NOW()
@@ -668,10 +741,17 @@ export class PlayerService extends CategoryService {
     playerId: number,
     beforeStatus: PlayerDto['status'],
     status: PlayerDto['status'],
+    categoryId: number | null,
   ): Promise<void> {
     if (status === PlayerStatus.ACTIVE) {
       await planLimitService.assertMaxActivePlayers(ctx, tenantId, playerId);
+      await assertCategoryForActivePlayer(tenantId, categoryId);
       await playerRepository.activate(tenantId, playerId);
+      // Simétrico a la baja: el jugador adulto recupera su acceso al reactivarse.
+      const after = await playerRepository.findById(tenantId, playerId);
+      if (after?.user_id != null) {
+        await userRepository.updateStatusInTenant(tenantId, after.user_id, UserStatus.ACTIVE);
+      }
       return;
     }
     if (status === PlayerStatus.INACTIVE) {
@@ -703,7 +783,15 @@ export class PlayerService extends CategoryService {
     if (!before) throw new NotFoundError('Jugador no encontrado');
 
     if (before.status !== status) {
-      await this.applyPlayerStatusChange(ctx, tenantId, playerId, before.status, status);
+      this.assertManualStatusChange(before.status, status);
+      await this.applyPlayerStatusChange(
+        ctx,
+        tenantId,
+        playerId,
+        before.status,
+        status,
+        before.category_id,
+      );
       await auditService.log(
         ctx,
         'player',
@@ -791,14 +879,11 @@ export class PlayerService extends CategoryService {
       throw new ValidationError('El usuario debe ser un padre/acudiente de esta academia');
     }
 
-    if (input.categoryId) {
-      await this.assertCategoryInTenant(tenantId, input.categoryId);
-    }
-
     const conn = await getPool().getConnection();
     try {
       await conn.beginTransaction();
       await planLimitService.assertMaxActivePlayers(ctx, tenantId, undefined, conn);
+      await assertCategoryForActivePlayer(tenantId, input.categoryId);
 
       const playerId = await playerRepository.create(
         {
@@ -845,7 +930,7 @@ export class PlayerService extends CategoryService {
     const status = PlayerStatus.PENDING;
 
     if (input.categoryId) {
-      await this.assertCategoryInTenant(tenantId, input.categoryId);
+      await assertAssignableCategory(tenantId, input.categoryId);
     }
 
     const playerId = await playerRepository.create({

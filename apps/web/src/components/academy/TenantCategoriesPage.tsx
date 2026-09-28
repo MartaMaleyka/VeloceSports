@@ -195,7 +195,12 @@ function TenantCategoriesContent() {
     } catch (e) {
       showToast({
         variant: 'error',
-        message: e instanceof TenantApiError ? e.message : t('tenant.errors.generic'),
+        message:
+          e instanceof TenantApiError && e.code === 'CATEGORY_IN_USE'
+            ? t('tenant.categories.inUse')
+            : e instanceof TenantApiError
+              ? e.message
+              : t('tenant.errors.generic'),
       });
     }
   };

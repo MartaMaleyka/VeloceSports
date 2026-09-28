@@ -8,6 +8,7 @@ import {
   type PlayerDto,
   type RejectPlayerBody,
 } from '@velocesport/shared';
+import { assertCategoryForActivePlayer } from '../utils/category-rules.js';
 import { categoryRepository } from '../repositories/category.repository.js';
 import { playerRepository, type PlayerWithCategoryRow } from '../repositories/player.repository.js';
 import { auditService } from './audit.service.js';
@@ -219,11 +220,8 @@ export class ParentPlayerAdminService {
     }
 
     await planLimitService.assertMaxActivePlayers(ctx, tenantId, playerId);
-
-    if (input.categoryId !== undefined && input.categoryId !== null) {
-      const category = await categoryRepository.findById(tenantId, input.categoryId);
-      if (!category) throw new ValidationError('La categoría seleccionada no pertenece a esta academia');
-    }
+    // RN-05: al aprobar, el jugador queda activo y necesita una categoría activa.
+    await assertCategoryForActivePlayer(tenantId, input.categoryId ?? before.category_id);
 
     await playerRepository.approvePlayer(tenantId, playerId, {
       categoryId: input.categoryId,

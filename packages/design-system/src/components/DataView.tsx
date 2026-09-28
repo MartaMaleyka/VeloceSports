@@ -65,6 +65,11 @@ export interface DataViewProps<T> {
   filteredEmptyDescription?: string;
   page?: number;
   pageSize?: number;
+  /**
+   * Paginación en servidor: `items` ya es la página actual y este es el total de
+   * resultados. Sin él, DataView pagina en cliente cortando `items`.
+   */
+  totalItems?: number;
   onPageChange?: (page: number) => void;
   pagePrevLabel?: string;
   pageNextLabel?: string;
@@ -112,6 +117,7 @@ export function DataView<T>({
   filteredEmptyDescription,
   page = 1,
   pageSize,
+  totalItems,
   onPageChange,
   pagePrevLabel = 'Previous',
   pageNextLabel = 'Next',
@@ -129,13 +135,15 @@ export function DataView<T>({
     }
   }, [loading, isSourceEmpty]);
 
+  const serverPaginated = totalItems != null;
   const paginatedItems =
-    pageSize && pageSize > 0
+    pageSize && pageSize > 0 && !serverPaginated
       ? items.slice((page - 1) * pageSize, page * pageSize)
       : items;
 
-  const totalPages = pageSize && pageSize > 0 ? Math.max(1, Math.ceil(items.length / pageSize)) : 1;
-  const showPagination = pageSize && pageSize > 0 && items.length > pageSize && onPageChange;
+  const itemCount = serverPaginated ? totalItems : items.length;
+  const totalPages = pageSize && pageSize > 0 ? Math.max(1, Math.ceil(itemCount / pageSize)) : 1;
+  const showPagination = pageSize && pageSize > 0 && itemCount > pageSize && onPageChange;
 
   if (loading) {
     return (
