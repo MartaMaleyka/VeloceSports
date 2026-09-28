@@ -8,9 +8,27 @@ import type {
 import { getPool } from '../config/db.js';
 import type { DbConnection } from '../config/db.js';
 import { TenantScopedRepository } from './base.repository.js';
+import type { AcademyListSortKey, PaginationParams } from '@velocesport/shared';
+import { limitOffsetSql } from '../utils/pagination.js';
 
 const ACADEMY_COLUMNS =
   'id, name, slug, status, account_type, approval_status, approval_reason, suspension_reason, plan_id, timezone, locale, currency, billing_anchor_day, logo_url, contact_email, contact_phone, address, default_periods_count, default_period_duration_minutes, notifications_enabled, created_at, updated_at';
+
+export interface AcademyListFilters {
+  search?: string;
+  status?: AcademyStatus;
+  approvalStatus?: AcademyApprovalStatus;
+  planId?: number;
+  accountType?: AcademyAccountType;
+}
+
+const ACADEMY_SORT_COLUMNS: Record<AcademyListSortKey, string> = {
+  name: 'a.name',
+  plan: 'p.name',
+  users: 'user_count',
+  status: 'a.status',
+  created: 'a.created_at',
+};
 
 export interface AcademyRow extends RowDataPacket {
   id: number;
@@ -99,19 +117,17 @@ export class AcademyRepository extends TenantScopedRepository {
     return rows[0] ?? null;
   }
 
-  async findAllWithDetails(filters?: {
-    search?: string;
-    status?: AcademyStatus;
-    planId?: number;
-    accountType?: AcademyAccountType;
-  }): Promise<AcademyWithPlanRow[]> {
-    const pool = getPool();
+  private buildListWhere(filters?: AcademyListFilters): { where: string; params: (string | number)[] } {
     const conditions: string[] = [];
-    const params: (string | number | null)[] = [];
+    const params: (string | number)[] = [];
 
     if (filters?.status) {
       conditions.push('a.status = ?');
       params.push(filters.status);
+    }
+    if (filters?.approvalStatus) {
+      conditions.push('a.approval_status = ?');
+      params.push(filters.approvalStatus);
     }
     if (filters?.planId) {
       conditions.push('a.plan_id = ?');
@@ -126,8 +142,18 @@ export class AcademyRepository extends TenantScopedRepository {
       const term = `%${filters.search}%`;
       params.push(term, term);
     }
+    return { where: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '', params };
+  }
 
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  async findAllWithDetails(
+    filters?: AcademyListFilters,
+    options?: { sort?: AcademyListSortKey; direction?: 'asc' | 'desc'; pagination?: PaginationParams | null },
+  ): Promise<AcademyWithPlanRow[]> {
+    const pool = getPool();
+    const { where, params } = this.buildListWhere(filters);
+    const direction = options?.direction === 'desc' ? 'DESC' : 'ASC';
+    // Columnas de una lista blanca: el orden nunca se arma con texto del cliente.
+    const sortColumn = ACADEMY_SORT_COLUMNS[options?.sort ?? 'name'];
 
     const [rows] = await pool.execute<AcademyWithPlanRow[]>(
       `SELECT a.id, a.name, a.slug, a.status, a.account_type, a.approval_status, a.approval_reason,
@@ -137,10 +163,56 @@ export class AcademyRepository extends TenantScopedRepository {
        FROM academies a
        LEFT JOIN plans p ON p.id = a.plan_id
        ${where}
-       ORDER BY a.name ASC`,
+       ORDER BY ${sortColumn} ${direction}, a.name ASC, a.id ASC
+       ${options?.pagination ? limitOffsetSql(options.pagination) : ''}`,
       params,
     );
     return rows;
+  }
+
+  async countAllWithDetails(filters?: AcademyListFilters): Promise<number> {
+    const { where, params } = this.buildListWhere(filters);
+    const [rows] = await getPool().execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt FROM academies a ${where}`,
+      params,
+    );
+    return Number(rows[0]?.cnt ?? 0);
+  }
+
+  /** KPIs globales de un tipo de cuenta, independientes de la página y de la búsqueda. */
+  async summarizeByAccountType(accountType?: AcademyAccountType): Promise<{
+    total: number;
+    active: number;
+    suspended_inactive: number;
+    platform_users: number;
+    pending_approval: number;
+    approved: number;
+    rejected: number;
+  }> {
+    const [rows] = await getPool().execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total,
+              COALESCE(SUM(a.status = 'active'), 0) AS active,
+              COALESCE(SUM(a.status <> 'active'), 0) AS suspended_inactive,
+              COALESCE(SUM(a.approval_status = 'pending'), 0) AS pending_approval,
+              COALESCE(SUM(a.approval_status = 'approved'), 0) AS approved,
+              COALESCE(SUM(a.approval_status = 'rejected'), 0) AS rejected,
+              (SELECT COUNT(*) FROM users u INNER JOIN academies a2 ON a2.id = u.tenant_id
+                WHERE u.role IN ('academy_admin', 'coach', 'parent')
+                  ${accountType ? 'AND a2.account_type = ?' : ''}) AS platform_users
+       FROM academies a
+       ${accountType ? 'WHERE a.account_type = ?' : ''}`,
+      accountType ? [accountType, accountType] : [],
+    );
+    const row = rows[0] ?? {};
+    return {
+      total: Number(row.total ?? 0),
+      active: Number(row.active ?? 0),
+      suspended_inactive: Number(row.suspended_inactive ?? 0),
+      platform_users: Number(row.platform_users ?? 0),
+      pending_approval: Number(row.pending_approval ?? 0),
+      approved: Number(row.approved ?? 0),
+      rejected: Number(row.rejected ?? 0),
+    };
   }
 
   async findByIdWithDetails(academyId: number): Promise<AcademyWithPlanRow | null> {

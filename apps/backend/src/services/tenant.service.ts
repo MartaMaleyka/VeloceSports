@@ -43,6 +43,9 @@ import {
 } from '../types/index.js';
 import { assertAssignableCategory, assertCategoryForActivePlayer } from '../utils/category-rules.js';
 import { generateTemporaryPassword } from '../utils/strings.js';
+import { buildPaginatedResponse, type PaginatedResponseDto } from '@velocesport/shared';
+import { resolvePagination } from '../validators/pagination.validator.js';
+import type { PlayerListFilters } from '../repositories/player.repository.js';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -108,18 +111,27 @@ export class TenantUserService {
     return { ...dto, linkedPlayers };
   }
 
+  /** Con `page` devuelve una página (y el total); sin ella, la lista completa como antes. */
   async listUsers(
     tenantId: number,
-    filters?: { search?: string; role?: TenantUserDto['role']; status?: UserStatus },
-  ): Promise<TenantUserDto[]> {
-    const users = await userRepository.findByTenantId(tenantId, filters);
-    const dtos = await Promise.all(
-      users
-        .filter((u) => (TENANT_MANAGEABLE_ROLES as readonly string[]).includes(u.role))
-        .map((u) => this.toDto(u)),
-    );
-    if (!filters?.role) return dtos;
-    return dtos.filter((u) => u.roles.includes(filters.role!));
+    query?: {
+      search?: string;
+      role?: TenantUserDto['role'];
+      status?: UserStatus;
+      page?: number;
+      pageSize?: number;
+    },
+  ): Promise<TenantUserDto[] | PaginatedResponseDto<TenantUserDto>> {
+    const filters = { search: query?.search, role: query?.role, status: query?.status };
+    const pagination = resolvePagination(query ?? {});
+    const [users, totalCount] = await Promise.all([
+      userRepository.findManageableByTenant(tenantId, TENANT_MANAGEABLE_ROLES, filters, pagination),
+      pagination
+        ? userRepository.countManageableByTenant(tenantId, TENANT_MANAGEABLE_ROLES, filters)
+        : Promise.resolve(0),
+    ]);
+    const items = await Promise.all(users.map((u) => this.toDto(u)));
+    return pagination ? buildPaginatedResponse(items, totalCount, pagination) : items;
   }
 
   async getUsersKpis(tenantId: number): Promise<TenantUsersKpisDto> {
@@ -535,17 +547,30 @@ export class PlayerService extends CategoryService {
     }
   }
 
+  /** Con `page` devuelve una página (y el total); sin ella, la lista completa como antes. */
   async listPlayers(
     tenantId: number,
-    filters?: { search?: string; status?: PlayerDto['status']; categoryId?: number },
-  ): Promise<PlayerDto[]> {
-    const rows = await playerRepository.findByTenantId(tenantId, filters);
+    query?: PlayerListFilters & { page?: number; pageSize?: number },
+  ): Promise<PlayerDto[] | PaginatedResponseDto<PlayerDto>> {
+    const filters: PlayerListFilters = {
+      search: query?.search,
+      status: query?.status,
+      categoryId: query?.categoryId,
+    };
+    const pagination = resolvePagination(query ?? {});
+    const [rows, totalCount] = await Promise.all([
+      playerRepository.findByTenantId(tenantId, filters, pagination),
+      pagination ? playerRepository.countByTenantId(tenantId, filters) : Promise.resolve(0),
+    ]);
     const playerIds = rows.map((r) => r.id);
     const [parentsMap, historyIds] = await Promise.all([
       playerRepository.findParentsForPlayers(tenantId, playerIds),
       playerRepository.findPlayerIdsWithMatchHistory(tenantId, playerIds),
     ]);
-    return Promise.all(rows.map((r) => toPlayerDto(tenantId, r, parentsMap, historyIds)));
+    const items = await Promise.all(
+      rows.map((r) => toPlayerDto(tenantId, r, parentsMap, historyIds)),
+    );
+    return pagination ? buildPaginatedResponse(items, totalCount, pagination) : items;
   }
 
   async getPlayersKpis(tenantId: number): Promise<PlayersKpisDto> {

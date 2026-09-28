@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { planService } from '../services/plan.service.js';
 import { platformService } from '../services/platform.service.js';
 import type { AuthUser } from '../types/index.js';
+import { resolvePagination } from '../validators/pagination.validator.js';
+import type { ListAcademiesQuery } from '../validators/platform.validator.js';
 
 function getActor(req: Request): AuthUser {
   return req.user as AuthUser;
@@ -64,13 +66,24 @@ export class PlatformController {
   // --- Academies ---
   async listAcademies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const academies = await platformService.listAcademies({
-        search: req.query.search as string | undefined,
-        status: req.query.status as never,
-        planId: req.query.planId ? Number(req.query.planId) : undefined,
-        accountType: req.query.accountType as never,
-      });
-      res.status(200).json({ success: true, data: academies });
+      // Query ya validada y convertida por listAcademiesQuerySchema.
+      const query = req.query as unknown as ListAcademiesQuery;
+      const filters = {
+        search: query.search,
+        status: query.status,
+        approvalStatus: query.approvalStatus,
+        planId: query.planId,
+        accountType: query.accountType,
+      };
+      const pagination = resolvePagination(query);
+      const data = pagination
+        ? await platformService.listAcademiesPage(filters, {
+            sort: query.sort,
+            direction: query.direction,
+            pagination,
+          })
+        : await platformService.listAcademies(filters);
+      res.status(200).json({ success: true, data });
     } catch (error) {
       next(error);
     }

@@ -181,9 +181,11 @@ export default function MatchAttendancePanel({
       const message =
         e instanceof MatchesApiError && e.code === 'JERSEY_COLLISION'
           ? t('matches.attendance.jerseyCollisionServer')
-          : e instanceof MatchesApiError
-            ? e.message
-            : t('matches.errors.generic');
+          : e instanceof MatchesApiError && e.code === 'PLAYER_HAS_ACTIONS'
+            ? t('matches.attendance.playerHasActionsServer')
+            : e instanceof MatchesApiError
+              ? e.message
+              : t('matches.errors.generic');
       showToast({ variant: 'error', message });
     } finally {
       setSaving(false);

@@ -1,15 +1,18 @@
 import { env } from '../config/env.js';
-import { invoiceService } from '../services/invoice.service.js';
+import { billingDunningService } from '../services/billing-dunning.service.js';
 import { runExclusive, scheduleDailyUtc } from './scheduler.js';
 
 const LOCK_NAME = 'squadveloce:job:overdue-invoices';
 
-/** Marca facturas vencidas y suspende las academias afectadas (idempotente). */
-export async function runOverdueInvoicesJob(asOf: Date = new Date()): Promise<void> {
+/**
+ * Avisa de las facturas recién vencidas y suspende las academias cuyo periodo de
+ * gracia terminó sin pago (idempotente: cada factura se avisa una sola vez).
+ */
+export async function runOverdueInvoicesJob(now: Date = new Date()): Promise<void> {
   const ran = await runExclusive(LOCK_NAME, async () => {
-    const result = await invoiceService.processOverdueInvoices(asOf);
+    const result = await billingDunningService.run(now);
     console.log(
-      `[jobs] Facturas vencidas procesadas: ${result.processedCount}; ` +
+      `[jobs] Facturas avisadas: ${result.warnedInvoiceIds.length}; ` +
         `academias suspendidas: ${result.suspendedAcademyIds.join(', ') || 'ninguna'}`,
     );
   });
@@ -22,7 +25,10 @@ export async function runOverdueInvoicesJob(asOf: Date = new Date()): Promise<vo
  */
 export function startOverdueInvoicesJob(): (() => void) | null {
   if (!env.BILLING_OVERDUE_JOB_ENABLED) return null;
-  console.log(`[jobs] Facturas vencidas: diario a las ${env.BILLING_OVERDUE_JOB_HOUR_UTC}:00 UTC`);
+  console.log(
+    `[jobs] Facturas vencidas: diario a las ${env.BILLING_OVERDUE_JOB_HOUR_UTC}:00 UTC, ` +
+      `${env.BILLING_OVERDUE_GRACE_DAYS} días de gracia tras el aviso`,
+  );
   return scheduleDailyUtc(env.BILLING_OVERDUE_JOB_HOUR_UTC, () => {
     runOverdueInvoicesJob().catch((error) =>
       console.error('[jobs] Error procesando facturas vencidas:', error),
