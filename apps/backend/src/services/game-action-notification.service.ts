@@ -1,7 +1,7 @@
 import { NotificationType } from '@velocesport/shared';
 import { notificationRepository } from '../repositories/notification.repository.js';
 import { notificationPreferenceRepository } from '../repositories/notification-preference.repository.js';
-import { parentLinkRepository } from '../repositories/parent-link.repository.js';
+import { playerViewerRepository } from '../repositories/player-viewer.repository.js';
 import { playerRepository } from '../repositories/player.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { emailLocaleFrom } from '../lib/email-template.js';
@@ -44,7 +44,7 @@ export class GameActionNotificationService {
       return { queued: false, createdCount: 0, skippedReason: 'academy_disabled' };
     }
 
-    const parentIds = await parentLinkRepository.findParentUserIdsForPlayer(
+    const parentIds = await playerViewerRepository.findNotifiableViewerIds(
       payload.tenantId,
       payload.playerId,
     );

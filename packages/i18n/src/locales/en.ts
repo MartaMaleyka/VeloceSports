@@ -555,6 +555,8 @@ export const en = {
         upcomingDescription: 'You have an invoice for {amount} due on {date}. Pay before the due date to avoid academy suspension.',
         overdueTitle: 'Overdue invoice',
         overdueDescription: 'You have an overdue invoice for {amount} (due {date}). Your academy may be suspended if payment is not resolved. Contact platform support.',
+        overdueSuspensionDate:
+          'You have an overdue invoice for {amount} (due {date}). If payment is not registered by {suspensionDate}, the academy account will be suspended. If you already paid, send the receipt to support.',
       },
       summary: {
         currentPlan: 'Current plan',
@@ -1514,6 +1516,7 @@ export const en = {
     periodsFromAcademy: 'academy default',
     periodsCustom: 'custom',
     createdBy: 'Created by',
+    categoryLocked: 'The category can only be changed while the match is scheduled and has no attendance.',
     validation: {
       categoryRequired: 'Select a category',
       opponentRequired: 'Opponent is required',
@@ -1574,6 +1577,7 @@ export const en = {
       collisionTitle: 'Duplicate jerseys',
       jerseyCollision: 'Jerseys {jerseys} are duplicated among present players.',
       jerseyCollisionServer: 'Duplicate jerseys detected. Fix the numbers before saving.',
+      playerHasActionsServer: 'You cannot mark a player absent who already has actions in this match. Void their actions first.',
       forbiddenCategory:
         'You are not the coach assigned to this match category. Only that category coach can view and mark attendance.',
       serverError:

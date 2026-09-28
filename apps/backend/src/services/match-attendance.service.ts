@@ -9,6 +9,7 @@ import {
   type SaveMatchAttendanceBody,
 } from '@velocesport/shared';
 import { coachCategoryRepository } from '../repositories/coach-category.repository.js';
+import { gameActionRepository } from '../repositories/game-action.repository.js';
 import { matchRepository, type MatchWithCategoryRow } from '../repositories/match.repository.js';
 import {
   matchAttendanceRepository,
@@ -237,6 +238,22 @@ export class MatchAttendanceService {
     }
 
     const patchByPlayer = new Map(input.entries.map((e) => [e.playerId, e]));
+
+    // RN-07: solo asistentes reciben acciones. No se puede marcar ausente a quien ya tiene
+    // acciones vigentes; primero hay que anularlas para no dejar estadísticas huérfanas.
+    const markedAbsent = input.entries.filter((e) => !e.attended).map((e) => e.playerId);
+    const withActions = await gameActionRepository.findPlayerIdsWithActiveActions(
+      actor.tenantId,
+      matchId,
+      markedAbsent,
+    );
+    if (withActions.length > 0) {
+      throw new ValidationError(
+        'No puedes marcar como ausente a un jugador con acciones registradas en este partido. Anula antes sus acciones.',
+        'PLAYER_HAS_ACTIONS',
+        { playerIds: withActions },
+      );
+    }
 
     const normalized = current.entries.map((existing) => {
       const patch = patchByPlayer.get(existing.playerId);

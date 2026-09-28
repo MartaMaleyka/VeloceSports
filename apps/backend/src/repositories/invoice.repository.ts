@@ -1,6 +1,8 @@
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import type { InvoiceStatus, InvoiceType } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
+import type { PaginationParams } from '@velocesport/shared';
+import { limitOffsetSql } from '../utils/pagination.js';
 
 export interface InvoiceRow extends RowDataPacket {
   id: number;
@@ -19,6 +21,8 @@ export interface InvoiceRow extends RowDataPacket {
   status: InvoiceStatus;
   paid_at: Date | null;
   paid_by: number | null;
+  overdue_warning_sent_at: Date | null;
+  suspension_scheduled_for: Date | null;
   notes: string | null;
   created_at: Date;
   updated_at: Date;
@@ -93,7 +97,10 @@ export class InvoiceRepository {
     return { clause, params };
   }
 
-  async findAll(filters?: InvoiceFilters): Promise<InvoiceRow[]> {
+  async findAll(
+    filters?: InvoiceFilters,
+    pagination?: PaginationParams | null,
+  ): Promise<InvoiceRow[]> {
     const pool = getPool();
     const { clause, params } = this.buildWhere(filters);
     const [rows] = await pool.execute<InvoiceRow[]>(
@@ -102,10 +109,25 @@ export class InvoiceRepository {
        INNER JOIN academies a ON a.id = i.tenant_id
        INNER JOIN plans p ON p.id = i.plan_id
        ${clause}
-       ${LIST_ORDER}`,
+       ${LIST_ORDER}
+       ${pagination ? limitOffsetSql(pagination) : ''}`,
       params,
     );
     return rows;
+  }
+
+  async countAll(filters?: InvoiceFilters): Promise<number> {
+    const pool = getPool();
+    const { clause, params } = this.buildWhere(filters);
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt
+       FROM invoices i
+       INNER JOIN academies a ON a.id = i.tenant_id
+       INNER JOIN plans p ON p.id = i.plan_id
+       ${clause}`,
+      params,
+    );
+    return Number(rows[0]?.cnt ?? 0);
   }
 
   async findByTenantId(tenantId: number, filters?: Omit<InvoiceFilters, 'tenantId'>): Promise<InvoiceRow[]> {
@@ -230,6 +252,54 @@ export class InvoiceRepository {
   async cancel(invoiceId: number): Promise<void> {
     const pool = getPool();
     await pool.execute(`UPDATE invoices SET status = 'cancelled' WHERE id = ?`, [invoiceId]);
+  }
+
+  /**
+   * Marca la factura como vencida y registra el aviso y la fecha de suspensión.
+   * Devuelve false si otra ejecución ya la había avisado (o dejó de estar pendiente).
+   */
+  async markOverdueWithWarning(
+    invoiceId: number,
+    warnedAt: Date,
+    suspensionScheduledFor: Date,
+  ): Promise<boolean> {
+    const pool = getPool();
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE invoices
+       SET status = 'overdue', overdue_warning_sent_at = ?, suspension_scheduled_for = ?
+       WHERE id = ? AND status = 'pending' AND overdue_warning_sent_at IS NULL`,
+      [warnedAt, suspensionScheduledFor, invoiceId],
+    );
+    return result.affectedRows === 1;
+  }
+
+  /** Facturas avisadas, aún impagas, cuya fecha de suspensión ya llegó. */
+  async findDueForSuspension(now: Date): Promise<InvoiceRow[]> {
+    const pool = getPool();
+    const [rows] = await pool.execute<InvoiceRow[]>(
+      `SELECT i.*, a.name AS academy_name, p.name AS plan_name
+       FROM invoices i
+       INNER JOIN academies a ON a.id = i.tenant_id
+       INNER JOIN plans p ON p.id = i.plan_id
+       WHERE i.status = 'overdue' AND i.suspension_scheduled_for IS NOT NULL
+         AND i.suspension_scheduled_for <= ?
+       ORDER BY i.suspension_scheduled_for ASC`,
+      [now],
+    );
+    return rows;
+  }
+
+  /**
+   * Tras suspender, la programación se consume: si un super admin reactiva la
+   * academia a sabiendas de la deuda, el job no la vuelve a suspender cada día.
+   */
+  async clearSuspensionSchedule(tenantId: number): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE invoices SET suspension_scheduled_for = NULL
+       WHERE tenant_id = ? AND status = 'overdue' AND suspension_scheduled_for IS NOT NULL`,
+      [tenantId],
+    );
   }
 
   async findPendingPastDue(asOfDate: string): Promise<InvoiceRow[]> {
