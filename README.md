@@ -34,7 +34,7 @@ Navegador ──► apps/web (Astro SSR + islands React)  ──►  apps/backen
 
 ## Desarrollo local
 
-Requisitos: Node 20+, pnpm 9 (`corepack enable`) y Docker.
+Requisitos: Node 22.12+, pnpm 9 (`corepack enable`) y Docker.
 
 ```bash
 pnpm install                                   # compila también shared, i18n y design-system

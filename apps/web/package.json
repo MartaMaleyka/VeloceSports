@@ -11,15 +11,15 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/node": "^9.1.0",
-    "@astrojs/react": "^4.2.0",
-    "@astrojs/tailwind": "^6.0.1",
+    "@astrojs/node": "^11.1.6",
+    "@astrojs/react": "^7.0.0",
     "@velocesport/design-system": "workspace:*",
     "@velocesport/i18n": "workspace:*",
     "@velocesport/shared": "workspace:*",
-    "astro": "^5.18.0",
+    "astro": "^7.3.5",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.21.0",
+    "oxc-transform-react": "^0.145.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-image-crop": "^11.1.2",
@@ -31,6 +31,8 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.23",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
   }
