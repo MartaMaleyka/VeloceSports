@@ -34,17 +34,28 @@ import type {
   ListInvoicesQuery,
   UpdateInvoicePaymentBody,
 } from '../validators/invoice.validator.js';
+import { buildPaginatedResponse, type PaginatedResponseDto } from '@velocesport/shared';
+import { resolvePagination } from '../validators/pagination.validator.js';
 
 export class InvoiceService {
-  async listPlatform(filters: ListInvoicesQuery): Promise<InvoiceDto[]> {
-    const rows = await invoiceRepository.findAll({
-      tenantId: filters.tenantId,
-      status: filters.status,
-      invoiceType: filters.invoiceType,
-      month: filters.month,
-      search: filters.search,
-    });
-    return rows.map((row) => this.toDto(row));
+  /** Con `page` devuelve una página (y el total); sin ella, la lista completa como antes. */
+  async listPlatform(
+    query: ListInvoicesQuery,
+  ): Promise<InvoiceDto[] | PaginatedResponseDto<InvoiceDto>> {
+    const filters = {
+      tenantId: query.tenantId,
+      status: query.status,
+      invoiceType: query.invoiceType,
+      month: query.month,
+      search: query.search,
+    };
+    const pagination = resolvePagination(query);
+    const [rows, totalCount] = await Promise.all([
+      invoiceRepository.findAll(filters, pagination),
+      pagination ? invoiceRepository.countAll(filters) : Promise.resolve(0),
+    ]);
+    const items = rows.map((row) => this.toDto(row));
+    return pagination ? buildPaginatedResponse(items, totalCount, pagination) : items;
   }
 
   async listForTenant(tenantId: number, filters: Omit<ListInvoicesQuery, 'tenantId' | 'search'>): Promise<InvoiceDto[]> {

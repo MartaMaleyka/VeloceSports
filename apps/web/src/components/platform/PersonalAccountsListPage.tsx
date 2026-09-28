@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AcademyListItemDto } from '@velocesport/shared';
+import { useState } from 'react';
+import type { AcademyListItemDto, AcademyListPageDto } from '@velocesport/shared';
 import { AcademyApprovalStatus } from '@velocesport/shared';
 import {
   Badge,
@@ -20,7 +20,8 @@ import {
 import { useTranslation } from '@velocesport/i18n';
 import { CheckCircle2, Clock3, Users, XCircle } from 'lucide-react';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
-import { PlatformApiError, platformFetch, platformFetchList } from '../../lib/platform-api';
+import { PlatformApiError, platformFetch } from '../../lib/platform-api';
+import { useDebouncedValue, usePaginatedList } from '../../hooks/usePaginatedList.js';
 import { appPath } from '../../lib/app-path';
 import { RowActionsMenu } from './RowActionsMenu';
 import { StatusBadge } from './StatusBadge';
@@ -39,60 +40,45 @@ function PersonalAccountsContent() {
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [accounts, setAccounts] = useState<AcademyListItemDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [approveTarget, setApproveTarget] = useState<AcademyListItemDto | null>(null);
   const [rejectTarget, setRejectTarget] = useState<RejectAccountTarget | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await platformFetchList<AcademyListItemDto>('academies?accountType=personal');
-      setAccounts(data);
-    } catch (e) {
-      setError(e instanceof PlatformApiError ? e.message : t('platform.errors.generic'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  // Cuentas personales paginadas en servidor (más recientes primero); KPIs en `summary`.
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const accountList = usePaginatedList<AcademyListItemDto, AcademyListPageDto>({
+    fetchPage: (query) => platformFetch<AcademyListPageDto>(`academies?${query}`),
+    filters: {
+      accountType: 'personal',
+      search: debouncedSearch,
+      approvalStatus: statusFilter,
+      sort: 'created',
+      direction: 'desc',
+    },
+    pageSize: PAGE_SIZE,
+    errorMessage: (e) => (e instanceof PlatformApiError ? (e as Error).message : t('platform.errors.generic')),
+  });
+  const accounts = accountList.items;
+  const hasActiveFilters = Boolean(debouncedSearch || statusFilter);
+  const load = accountList.reload;
+  const loading = accountList.loading;
+  const error = accountList.error;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter]);
-
-  const kpis = useMemo(() => {
-    const pending = accounts.filter((a) => a.approvalStatus === AcademyApprovalStatus.PENDING).length;
-    const approved = accounts.filter((a) => a.approvalStatus === AcademyApprovalStatus.APPROVED).length;
-    const rejected = accounts.filter((a) => a.approvalStatus === AcademyApprovalStatus.REJECTED).length;
-    return { total: accounts.length, pending, approved, rejected };
-  }, [accounts]);
-
-  const filteredAccounts = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return accounts
-      .filter((account) => {
-        if (statusFilter && account.approvalStatus !== statusFilter) return false;
-        if (!term) return true;
-        return `${account.name} ${account.slug}`.toLowerCase().includes(term);
-      })
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }, [accounts, search, statusFilter]);
+  const summary = accountList.data?.summary;
+  const kpis = {
+    total: summary?.total ?? 0,
+    pending: summary?.pendingApproval ?? 0,
+    approved: summary?.approved ?? 0,
+    rejected: summary?.rejected ?? 0,
+  };
 
   const resultsLabel =
-    filteredAccounts.length === 1
+    accountList.totalCount === 1
       ? t('dataView.resultsOne')
-      : t('dataView.results', { count: filteredAccounts.length });
+      : t('dataView.results', { count: accountList.totalCount });
 
   const approveAccount = async () => {
     if (!approveTarget) return;
@@ -233,14 +219,14 @@ function PersonalAccountsContent() {
         </Badge>
       )}
       <DataView
-        items={filteredAccounts}
-        isSourceEmpty={accounts.length === 0}
+        items={accounts}
+        isSourceEmpty={accountList.totalCount === 0 && !hasActiveFilters}
         getItemKey={(account) => account.id}
         loading={loading}
         error={error}
         onRetry={() => void load()}
         retryLabel={t('common.retry')}
-        header={!loading && !error && accounts.length > 0 ? kpiHeader : undefined}
+        header={!loading && !error && kpis.total > 0 ? kpiHeader : undefined}
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder={t('platform.personalAccounts.searchPlaceholder')}
@@ -253,7 +239,7 @@ function PersonalAccountsContent() {
           { value: AcademyApprovalStatus.APPROVED, label: t('platform.personalAccounts.approvalStatus.approved') },
           { value: AcademyApprovalStatus.REJECTED, label: t('platform.personalAccounts.approvalStatus.rejected') },
         ]}
-        resultCount={filteredAccounts.length}
+        resultCount={accountList.totalCount}
         resultsLabel={resultsLabel}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -264,9 +250,10 @@ function PersonalAccountsContent() {
         emptyTitle={t('platform.personalAccounts.empty')}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}
-        page={page}
+        page={accountList.page}
         pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        totalItems={accountList.totalCount}
+        onPageChange={accountList.setPage}
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
