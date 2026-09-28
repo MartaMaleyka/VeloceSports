@@ -68,3 +68,12 @@ export const changePasswordSchema = z
       path: ['newPassword'],
     },
   );
+
+export const passwordRecoveryRequestSchema = z.object({
+  email: z.string().trim().email('Correo electrónico inválido'),
+});
+
+export const passwordRecoveryConfirmSchema = z.object({
+  token: z.string().trim().min(20, 'Enlace inválido').max(200, 'Enlace inválido'),
+  newPassword: strongPasswordSchema,
+});

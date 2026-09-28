@@ -77,6 +77,26 @@ const envSchema = z.object({
   MINIO_PUBLIC_ENDPOINT: z.string().min(1).optional(),
   MINIO_PUBLIC_PORT: z.coerce.number().int().positive().optional(),
 
+  /**
+   * Correo saliente (recuperación de contraseña). SMTP genérico: sirve para Resend,
+   * SES, Postmark, Gmail, etc. Sin SMTP_HOST, en desarrollo el enlace se imprime en
+   * el log; en producción solo se registra un aviso.
+   */
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_SECURE: z
+    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+    .default(false)
+    .transform((v) => v === true || v === 'true' || v === '1'),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASSWORD: z.string().min(1).optional(),
+  MAIL_FROM: z.string().min(3).default('SquadVeloce <no-reply@localhost>'),
+  /** URL pública de la web (incluida la base, p. ej. https://app.example.com/profe) para los enlaces del email. */
+  APP_PUBLIC_URL: z.string().url().optional(),
+  PASSWORD_RECOVERY_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  PASSWORD_RECOVERY_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(3_600_000),
+  PASSWORD_RECOVERY_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+
   /** Agente de interpretación de estadísticas — modelo local vía Ollama (sin datos a terceros). */
   OLLAMA_ENABLED: z
     .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
