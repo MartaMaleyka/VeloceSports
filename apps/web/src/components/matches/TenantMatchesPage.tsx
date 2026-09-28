@@ -203,6 +203,9 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
+  // El backend solo permite mover de categoría un partido programado (sin asistencia).
+  const categoryLocked = editing !== null && editing.status !== 'scheduled';
+
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
@@ -584,7 +587,14 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
               value={form.categoryId}
               onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
               options={categoryOptions}
+              disabled={categoryLocked}
+              aria-describedby={categoryLocked ? 'm-category-locked' : undefined}
             />
+            {categoryLocked && (
+              <p id="m-category-locked" className="text-sm text-text-secondary">
+                {t('matches.categoryLocked')}
+              </p>
+            )}
             {fieldErrors.categoryId && (
               <p className="text-sm text-feedback-error">{fieldErrors.categoryId}</p>
             )}

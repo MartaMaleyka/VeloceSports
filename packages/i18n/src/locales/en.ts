@@ -1514,6 +1514,7 @@ export const en = {
     periodsFromAcademy: 'academy default',
     periodsCustom: 'custom',
     createdBy: 'Created by',
+    categoryLocked: 'The category can only be changed while the match is scheduled and has no attendance.',
     validation: {
       categoryRequired: 'Select a category',
       opponentRequired: 'Opponent is required',
@@ -1574,6 +1575,7 @@ export const en = {
       collisionTitle: 'Duplicate jerseys',
       jerseyCollision: 'Jerseys {jerseys} are duplicated among present players.',
       jerseyCollisionServer: 'Duplicate jerseys detected. Fix the numbers before saving.',
+      playerHasActionsServer: 'You cannot mark a player absent who already has actions in this match. Void their actions first.',
       forbiddenCategory:
         'You are not the coach assigned to this match category. Only that category coach can view and mark attendance.',
       serverError:
