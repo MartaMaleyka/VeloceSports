@@ -103,6 +103,30 @@ Variables principales (ver los `.env*.example` para la lista completa):
 | `OLLAMA_*` | backend | Agente de insights |
 | `SMTP_*`, `MAIL_FROM`, `APP_PUBLIC_URL` | backend | Correos de recuperación de contraseña (cualquier proveedor SMTP) |
 
+## Backups y tareas programadas
+
+**Backups** (servicios `backup-mysql` y `backup-minio` de `docker-compose.prod.yml`, activos por defecto):
+
+- MySQL: `mysqldump --single-transaction` comprimido cada 24 h en `${BACKUP_DIR:-./backups}/mysql`,
+  con retención de `BACKUP_RETENTION_DAYS` (14). Un volcado incompleto se descarta: nunca queda
+  un backup vacío con apariencia de válido.
+- Fotos: `mc mirror` incremental del bucket a `${BACKUP_DIR}/minio/<bucket>`.
+- Los archivos quedan en el mismo servidor: **cópialos también fuera** (rsync, S3, etc.).
+
+Backup manual y restauración:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm backup-mysql --once
+gunzip -c backups/mysql/<DB_NAME>-<fecha>.sql.gz \
+  | docker exec -i velocesport-mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+docker exec velocesport-backup-minio mc mirror --overwrite /backups/minio/<bucket> src/<bucket>
+```
+
+**Facturas vencidas:** con `BILLING_OVERDUE_JOB_ENABLED=true`, el backend marca cada día
+(a `BILLING_OVERDUE_JOB_HOUR_UTC`, 6:00 UTC por defecto) las facturas vencidas y **suspende las
+academias afectadas**. Está desactivado por defecto porque es una decisión de negocio; con varias
+réplicas solo una lo ejecuta (lock de MySQL). Ejecución manual: `pnpm --filter @velocesport/backend billing:process-overdue`.
+
 ## Documentación
 
 - [`docs/dominio.md`](docs/dominio.md): entidades, módulos y reglas de negocio.

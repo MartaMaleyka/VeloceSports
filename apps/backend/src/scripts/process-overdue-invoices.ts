@@ -1,8 +1,9 @@
 /**
  * Script manual para procesar facturas vencidas.
- * Uso: pnpm --filter @velocesport/backend exec tsx src/scripts/process-overdue-invoices.ts
+ * Uso: pnpm --filter @velocesport/backend billing:process-overdue
  *
- * Conectar a cron/tarea programada junto con generación automática futura.
+ * El backend puede ejecutarlo a diario por sí mismo con BILLING_OVERDUE_JOB_ENABLED=true
+ * (ver src/jobs/overdue-invoices.job.ts).
  */
 import { invoiceService } from '../services/invoice.service.js';
 import { closePool } from '../config/db.js';
