@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
-import { authLoginRateLimiter, authSignupRateLimiter } from '../middlewares/rateLimit.js';
+import {
+  authLoginRateLimiter,
+  authSignupRateLimiter,
+  passwordRecoveryRateLimiter,
+} from '../middlewares/rateLimit.js';
 import { validate } from '../middlewares/validate.js';
 import {
   loginSchema,
@@ -11,6 +15,8 @@ import {
   changePasswordSchema,
   signupIndependentSchema,
   signupAcademySchema,
+  passwordRecoveryRequestSchema,
+  passwordRecoveryConfirmSchema,
 } from '../validators/auth.validator.js';
 
 const router = Router();
@@ -189,6 +195,45 @@ router.post(
   '/logout',
   validate(logoutSchema),
   (req, res, next) => authController.logout(req, res, next),
+);
+
+/**
+ * @openapi
+ * /auth/password-recovery/request:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Solicitar enlace de recuperación de contraseña por email
+ *     description: Responde 202 siempre (no revela si el correo existe).
+ *     responses:
+ *       202:
+ *         description: Solicitud aceptada
+ *       429:
+ *         description: Demasiadas solicitudes
+ */
+router.post(
+  '/password-recovery/request',
+  passwordRecoveryRateLimiter,
+  validate(passwordRecoveryRequestSchema),
+  (req, res) => authController.requestPasswordRecovery(req, res),
+);
+
+/**
+ * @openapi
+ * /auth/password-recovery/confirm:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Restablecer la contraseña con el token recibido por email
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada y sesiones cerradas
+ *       400:
+ *         description: Token inválido, usado o expirado (code PASSWORD_RECOVERY_INVALID)
+ */
+router.post(
+  '/password-recovery/confirm',
+  passwordRecoveryRateLimiter,
+  validate(passwordRecoveryConfirmSchema),
+  (req, res, next) => authController.confirmPasswordRecovery(req, res, next),
 );
 
 /**

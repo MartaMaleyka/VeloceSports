@@ -375,6 +375,23 @@ export class UserRepository extends TenantScopedRepository {
     );
   }
 
+  /**
+   * Contraseña restablecida por el propio usuario (enlace por email). Estampa
+   * password_reset_at: invalida los access tokens vigentes (middleware authenticate).
+   */
+  async updatePasswordAfterRecovery(userId: number, passwordHash: string, at: Date): Promise<void> {
+    const pool = getPool();
+    await pool.execute(
+      `UPDATE users
+       SET password_hash = ?,
+           must_change_password = FALSE,
+           password_reset_at = ?,
+           password_reset_by = ?
+       WHERE id = ?`,
+      [passwordHash, at, userId, userId],
+    );
+  }
+
   async clearMustChangePassword(userId: number, passwordHash: string): Promise<void> {
     const pool = getPool();
     await pool.execute(

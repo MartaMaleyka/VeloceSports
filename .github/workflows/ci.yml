@@ -56,6 +56,7 @@ jobs:
           # Las suites hacen muchos logins/insights desde la misma IP en pocos segundos.
           AUTH_LOGIN_RATE_LIMIT_MAX=10000
           PLAYER_INSIGHT_RATE_LIMIT_MAX=10000
+          PASSWORD_RECOVERY_RATE_LIMIT_MAX=10000
           ENV
       - name: Compilar backend (tsc)
         run: pnpm --filter @velocesport/backend build

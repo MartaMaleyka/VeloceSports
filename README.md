@@ -56,6 +56,8 @@ pnpm dev:web                                   # http://localhost:8065
 
 - **Fotos (MinIO):** el servicio `minio-init` crea el bucket privado `squadveloce-players`.
   Consola en <http://localhost:9101>. El backend solo entrega URLs firmadas.
+- **Recuperar contraseña:** sin `SMTP_HOST`, el enlace del correo se imprime en el log del
+  backend, así que el flujo `/forgot-password` → `/reset-password` se puede probar sin proveedor.
 - **Insights IA (opcional):** con `OLLAMA_ENABLED=true` y `ollama pull llama3.2:3b`. Sin
   Ollama, el análisis usa un texto de respaldo determinístico.
 
@@ -99,6 +101,7 @@ Variables principales (ver los `.env*.example` para la lista completa):
 | `INTERNAL_API_URL` | web | URL del backend dentro de la red |
 | `MINIO_*` | backend | Almacenamiento de fotos |
 | `OLLAMA_*` | backend | Agente de insights |
+| `SMTP_*`, `MAIL_FROM`, `APP_PUBLIC_URL` | backend | Correos de recuperación de contraseña (cualquier proveedor SMTP) |
 
 ## Documentación
 
