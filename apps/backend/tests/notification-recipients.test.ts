@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -120,5 +123,25 @@ describe('Destinatarios de notificaciones (player_viewers)', () => {
       .expect(200);
     const all = [...res.body.data.upcoming, ...res.body.data.past] as Array<{ playerId: number }>;
     expect(all.some((m) => m.playerId === playerId)).toBe(true);
+  });
+
+  it('la migración 033 copia a player_viewers los vínculos que solo estaban en parent_players', async () => {
+    const legacyParentId = await createUser('parent-legacy@test.com', UserRole.PARENT);
+    const pool = getPool();
+    await pool.execute(
+      'INSERT INTO parent_players (parent_user_id, player_id, tenant_id) VALUES (?, ?, ?)',
+      [legacyParentId, playerId, tenantId],
+    );
+
+    const dir = path.dirname(fileURLToPath(import.meta.url));
+    const sql = await readFile(path.resolve(dir, '../db/migrations/033_backfill_parent_viewers.sql'), 'utf-8');
+    await pool.query(sql);
+    await pool.query(sql); // idempotente
+
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      "SELECT COUNT(*) AS c FROM player_viewers WHERE viewer_id = ? AND player_id = ? AND relationship = 'PARENT'",
+      [legacyParentId, playerId],
+    );
+    expect(Number(rows[0]!.c)).toBe(1);
   });
 });
