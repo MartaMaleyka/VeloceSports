@@ -111,7 +111,12 @@ Variables principales (ver los `.env*.example` para la lista completa):
   con retención de `BACKUP_RETENTION_DAYS` (14). Un volcado incompleto se descarta: nunca queda
   un backup vacío con apariencia de válido.
 - Fotos: `mc mirror` incremental del bucket a `${BACKUP_DIR}/minio/<bucket>`.
-- Los archivos quedan en el mismo servidor: **cópialos también fuera** (rsync, S3, etc.).
+- Los archivos quedan en el mismo servidor: **cópialos también fuera**. Basta con copiar
+  periódicamente la carpeta `${BACKUP_DIR}` completa (por defecto `./backups` junto al
+  `docker-compose.prod.yml`):
+  - `backups/mysql/*.sql.gz`: volcados diarios de la base de datos (los últimos
+    `BACKUP_RETENTION_DAYS` días).
+  - `backups/minio/<bucket>/`: copia espejo de las fotos de jugadores.
 
 Backup manual y restauración:
 
@@ -122,10 +127,18 @@ gunzip -c backups/mysql/<DB_NAME>-<fecha>.sql.gz \
 docker exec velocesport-backup-minio mc mirror --overwrite /backups/minio/<bucket> src/<bucket>
 ```
 
-**Facturas vencidas:** con `BILLING_OVERDUE_JOB_ENABLED=true`, el backend marca cada día
-(a `BILLING_OVERDUE_JOB_HOUR_UTC`, 6:00 UTC por defecto) las facturas vencidas y **suspende las
-academias afectadas**. Está desactivado por defecto porque es una decisión de negocio; con varias
-réplicas solo una lo ejecuta (lock de MySQL). Ejecución manual: `pnpm --filter @velocesport/backend billing:process-overdue`.
+**Facturas vencidas** (`BILLING_OVERDUE_JOB_ENABLED=true`, cada día a `BILLING_OVERDUE_JOB_HOUR_UTC`, 6:00 UTC):
+
+1. **Aviso:** la primera ejecución tras el vencimiento marca la factura como vencida, envía un
+   correo a los administradores y al email de contacto de la academia, y fija la fecha de
+   suspensión (hoy + `BILLING_OVERDUE_GRACE_DAYS`, 7 por defecto). La página de facturación de
+   la academia muestra esa fecha. Cada factura se avisa una sola vez.
+2. **Suspensión:** solo cuando llega esa fecha y la factura sigue impagada. Pagar antes la evita.
+   Si un super admin reactiva la academia a sabiendas de la deuda, el job no la vuelve a suspender.
+
+Con varias réplicas solo una lo ejecuta (lock de MySQL). El botón "procesar vencidas" del super
+admin (`POST /api/platform/invoices/process-overdue`) sigue suspendiendo de inmediato. Requiere
+SMTP configurado para que los avisos lleguen.
 
 ## Documentación
 

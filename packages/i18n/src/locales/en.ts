@@ -555,6 +555,8 @@ export const en = {
         upcomingDescription: 'You have an invoice for {amount} due on {date}. Pay before the due date to avoid academy suspension.',
         overdueTitle: 'Overdue invoice',
         overdueDescription: 'You have an overdue invoice for {amount} (due {date}). Your academy may be suspended if payment is not resolved. Contact platform support.',
+        overdueSuspensionDate:
+          'You have an overdue invoice for {amount} (due {date}). If payment is not registered by {suspensionDate}, the academy account will be suspended. If you already paid, send the receipt to support.',
       },
       summary: {
         currentPlan: 'Current plan',
