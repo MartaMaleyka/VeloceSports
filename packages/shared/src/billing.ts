@@ -59,6 +59,8 @@ export interface InvoiceDto {
   status: InvoiceStatus;
   paidAt: string | null;
   paidBy: number | null;
+  /** Fecha a partir de la cual se suspende la academia si sigue impaga (tras el aviso). */
+  suspensionScheduledFor: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;

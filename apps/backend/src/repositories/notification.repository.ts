@@ -167,6 +167,17 @@ export class NotificationRepository extends TenantScopedRepository {
     );
     return result.affectedRows;
   }
+
+  async markVoidedByMatchId(tenantId: number, matchId: number): Promise<number> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE notifications SET voided_at = COALESCE(voided_at, CURRENT_TIMESTAMP)
+       WHERE tenant_id = ? AND match_id = ? AND voided_at IS NULL`,
+      [tenantId, matchId],
+    );
+    return result.affectedRows;
+  }
 }
 
 export const notificationRepository = new NotificationRepository();

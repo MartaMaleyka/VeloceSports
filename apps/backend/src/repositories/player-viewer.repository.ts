@@ -111,6 +111,25 @@ export class PlayerViewerRepository extends TenantScopedRepository {
     }
   }
 
+  /**
+   * Destinatarios de avisos sobre un jugador (RN-09/RN-18): familia vinculada (PARENT o
+   * GUARDIAN) con cuenta activa. player_viewers es la fuente de verdad de los vínculos.
+   */
+  async findNotifiableViewerIds(tenantId: number, playerId: number): Promise<number[]> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT DISTINCT pv.viewer_id
+       FROM player_viewers pv
+       INNER JOIN users u ON u.id = pv.viewer_id AND u.status = 'active'
+       WHERE pv.tenant_id = ? AND pv.player_id = ?
+         AND pv.relationship IN ('PARENT', 'GUARDIAN')
+       ORDER BY pv.viewer_id`,
+      [tenantId, playerId],
+    );
+    return rows.map((r) => Number(r.viewer_id));
+  }
+
   async isLinked(
     tenantId: number,
     viewerId: number,

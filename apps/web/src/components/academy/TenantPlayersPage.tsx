@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type {
   CategoryDto,
   InviteAdultPlayerResponseDto,
   PlayerDto,
+  PaginatedResponseDto,
   PlayersKpisDto,
   TenantSearchResultDto,
 } from '@velocesport/shared';
@@ -39,6 +40,7 @@ import { RowActionsMenu } from '../platform/RowActionsMenu';
 import { TenantEntityAutocomplete } from './TenantEntityAutocomplete';
 import { PlayerAvatar } from '../players/PlayerAvatar';
 import { TemporaryPasswordModal } from '../platform/TemporaryPasswordModal';
+import { useDebouncedValue, usePaginatedList } from '../../hooks/usePaginatedList.js';
 
 const PAGE_SIZE = 12;
 
@@ -173,17 +175,15 @@ function TenantPlayersContent() {
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [players, setPlayers] = useState<PlayerDto[]>([]);
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [kpis, setKpis] = useState<PlayersKpisDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(
     () => readUrlSearchParam('status') || PlayerStatus.ACTIVE,
   );
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [page, setPage] = useState(1);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<PlayerDto | null>(null);
@@ -205,39 +205,46 @@ function TenantPlayersContent() {
     password: string;
   } | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Jugadores paginados en servidor: búsqueda, estado y categoría se filtran en SQL.
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const playerList = usePaginatedList<PlayerDto>({
+    fetchPage: (query) => tenantFetch<PaginatedResponseDto<PlayerDto>>(`players?${query}`),
+    filters: { search: debouncedSearch, status: statusFilter, categoryId: categoryFilter },
+    pageSize: PAGE_SIZE,
+    errorMessage: (e) => (e instanceof TenantApiError ? (e as Error).message : t('tenant.errors.generic')),
+  });
+  const players = playerList.items;
+  const hasActiveFilters = Boolean(debouncedSearch || statusFilter || categoryFilter);
+
+  const loadMeta = useCallback(async () => {
+    setMetaLoading(true);
+    setMetaError(null);
     try {
-      const [playerData, kpiData, categoryData] = await Promise.all([
-        tenantFetchList<PlayerDto>('players'),
+      const [kpiData, categoryData] = await Promise.all([
         tenantFetch<PlayersKpisDto>('players/kpis'),
         tenantFetchList<CategoryDto>('categories'),
       ]);
-      setPlayers(playerData);
       setKpis(kpiData);
       setCategories(categoryData);
     } catch (e) {
-      setError(e instanceof TenantApiError ? e.message : t('tenant.errors.generic'));
+      setMetaError(e instanceof TenantApiError ? e.message : t('tenant.errors.generic'));
     } finally {
-      setLoading(false);
+      setMetaLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadMeta();
+  }, [loadMeta]);
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return players.filter((p) => {
-      if (statusFilter && p.status !== statusFilter) return false;
-      if (categoryFilter && String(p.categoryId ?? '') !== categoryFilter) return false;
-      if (!term) return true;
-      const full = `${p.firstName} ${p.lastName} ${p.jerseyNumber}`.toLowerCase();
-      return full.includes(term);
-    });
-  }, [players, search, statusFilter, categoryFilter]);
+  /** Tras crear/editar/aprobar: KPIs, categorías y la página actual. */
+  const { reload: reloadPlayers } = playerList;
+  const load = useCallback(async () => {
+    await Promise.all([loadMeta(), reloadPlayers()]);
+  }, [loadMeta, reloadPlayers]);
+
+  const loading = metaLoading || playerList.loading;
+  const error = metaError ?? playerList.error;
 
   const openCreate = () => {
     setEditing(null);
@@ -294,6 +301,13 @@ function TenantPlayersContent() {
 
     if (wantsInvite && !form.inviteEmail.trim()) {
       setFormError(t('tenant.players.adultInvite.emailRequired'));
+      return;
+    }
+
+    // RN-05: un jugador activo necesita categoría.
+    const resultingStatus = editing ? form.status : PlayerStatus.ACTIVE;
+    if (resultingStatus === PlayerStatus.ACTIVE && !form.categoryId) {
+      setFormError(t('tenant.players.categoryRequiredActive'));
       return;
     }
 
@@ -502,9 +516,12 @@ function TenantPlayersContent() {
     return { primaryActions: actions };
   };
 
-  const categoryOptions = [
+  // Solo categorías activas son asignables; la actual se mantiene para no forzar un cambio.
+  const assignableCategoryOptions = (currentId: number | null | undefined) => [
     { value: '', label: t('tenant.players.noCategory') },
-    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
+    ...categories
+      .filter((c) => c.status === 'active' || c.id === currentId)
+      .map((c) => ({ value: String(c.id), label: c.name })),
   ];
 
   const kpiHeader = kpis ? (
@@ -545,8 +562,8 @@ function TenantPlayersContent() {
 
       <div data-tour="players-list">
       <DataView
-        items={filtered}
-        isSourceEmpty={players.length === 0}
+        items={players}
+        isSourceEmpty={playerList.totalCount === 0 && !hasActiveFilters}
         getItemKey={(p) => p.id}
         loading={loading}
         error={error}
@@ -574,9 +591,9 @@ function TenantPlayersContent() {
           ...categories.map((c) => ({ value: String(c.id), label: c.name })),
         ]}
         resultsLabel={
-          filtered.length === 1
+          playerList.totalCount === 1
             ? t('dataView.resultsOne')
-            : t('dataView.results', { count: filtered.length })
+            : t('dataView.results', { count: playerList.totalCount })
         }
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -685,9 +702,10 @@ function TenantPlayersContent() {
         onEmptyAction={openCreate}
         filteredEmptyTitle={t('dataView.noResults')}
         filteredEmptyDescription={t('dataView.noResultsDescription')}
-        page={page}
+        page={playerList.page}
         pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        totalItems={playerList.totalCount}
+        onPageChange={playerList.setPage}
         pagePrevLabel={t('dataView.pagePrev')}
         pageNextLabel={t('dataView.pageNext')}
       />
@@ -771,7 +789,7 @@ function TenantPlayersContent() {
                     : alreadyInvited,
                 }));
               }}
-              options={categoryOptions}
+              options={assignableCategoryOptions(editing?.categoryId)}
             />
           </div>
           {editing && (
@@ -781,8 +799,21 @@ function TenantPlayersContent() {
                 id="p-status"
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                options={statusOptions}
+                options={
+                  editing.status === PlayerStatus.PENDING
+                    ? statusOptions
+                    : statusOptions.filter((o) => o.value !== PlayerStatus.PENDING)
+                }
+                disabled={editing.status === PlayerStatus.PENDING}
+                aria-describedby={
+                  editing.status === PlayerStatus.PENDING ? 'p-status-pending' : undefined
+                }
               />
+              {editing.status === PlayerStatus.PENDING && (
+                <p id="p-status-pending" className="text-sm text-text-secondary">
+                  {t('tenant.players.pendingStatusHint')}
+                </p>
+              )}
             </div>
           )}
           {showAdultToggle && (
@@ -876,14 +907,23 @@ function TenantPlayersContent() {
               id="approve-category"
               value={approveCategoryId}
               onChange={(e) => setApproveCategoryId(e.target.value)}
-              options={categoryOptions}
+              options={assignableCategoryOptions(approveTarget?.categoryId)}
             />
+            {!approveCategoryId && (
+              <p className="text-sm text-text-secondary">
+                {t('tenant.players.categoryRequiredActive')}
+              </p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setApproveTarget(null)}>
               {t('common.cancel')}
             </Button>
-            <Button type="button" disabled={actionLoading} onClick={() => void submitApprove()}>
+            <Button
+              type="button"
+              disabled={actionLoading || !approveCategoryId}
+              onClick={() => void submitApprove()}
+            >
               {actionLoading ? t('common.loading') : t('tenant.players.approve')}
             </Button>
           </div>

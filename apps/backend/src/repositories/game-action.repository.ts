@@ -157,6 +157,41 @@ export class GameActionRepository extends TenantScopedRepository {
     return result.affectedRows > 0;
   }
 
+  /** Anula todas las acciones vigentes de un partido (p. ej. al cancelarlo). */
+  async voidAllActiveByMatch(
+    tenantId: number,
+    matchId: number,
+    voidedBy: number,
+    reason: string,
+  ): Promise<number> {
+    this.assertTenantId(tenantId);
+    const pool = getPool();
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE game_actions
+       SET status = 'voided', voided_by = ?, voided_at = CURRENT_TIMESTAMP, void_reason = ?
+       WHERE tenant_id = ? AND match_id = ? AND status = 'active'`,
+      [voidedBy, reason, tenantId, matchId],
+    );
+    return result.affectedRows;
+  }
+
+  /** Jugadores (de la lista dada) que tienen acciones vigentes en el partido. */
+  async findPlayerIdsWithActiveActions(
+    tenantId: number,
+    matchId: number,
+    playerIds: number[],
+  ): Promise<number[]> {
+    this.assertTenantId(tenantId);
+    if (playerIds.length === 0) return [];
+    const pool = getPool();
+    const [rows] = await pool.query<Array<{ player_id: number } & RowDataPacket>>(
+      `SELECT DISTINCT player_id FROM game_actions
+       WHERE tenant_id = ? AND match_id = ? AND status = 'active' AND player_id IN (?)`,
+      [tenantId, matchId, playerIds],
+    );
+    return rows.map((r) => Number(r.player_id));
+  }
+
   async countActiveByMatch(tenantId: number, matchId: number): Promise<number> {
     this.assertTenantId(tenantId);
     const pool = getPool();

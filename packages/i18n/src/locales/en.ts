@@ -555,6 +555,8 @@ export const en = {
         upcomingDescription: 'You have an invoice for {amount} due on {date}. Pay before the due date to avoid academy suspension.',
         overdueTitle: 'Overdue invoice',
         overdueDescription: 'You have an overdue invoice for {amount} (due {date}). Your academy may be suspended if payment is not resolved. Contact platform support.',
+        overdueSuspensionDate:
+          'You have an overdue invoice for {amount} (due {date}). If payment is not registered by {suspensionDate}, the academy account will be suspended. If you already paid, send the receipt to support.',
       },
       summary: {
         currentPlan: 'Current plan',
@@ -1126,7 +1128,9 @@ export const en = {
       globalDescription:
         'Get alerts when your child shines in a match (goal, assist, and more).',
       inApp: 'Receive in-app notifications',
-      emailComingSoon: 'Email notifications will be available soon.',
+      emailTitle: 'Email alerts',
+      emailDescription: 'Also get an email for each highlight. Muting a child mutes them on every channel.',
+      email: 'Receive email alerts',
       byChildTitle: 'Per child',
       byChildDescription: 'Turn alerts on or off for each linked child.',
       inAppFor: 'Notifications for {name}',
@@ -1331,6 +1335,7 @@ export const en = {
       successCreate: 'Category created',
       successUpdate: 'Category updated',
       successStatus: 'Category status updated',
+      inUse: 'You cannot deactivate it: it has active players or unfinished matches. Move them to another category first.',
       activate: 'Activate',
       deactivate: 'Deactivate',
       requiresGuardian: {
@@ -1356,6 +1361,8 @@ export const en = {
       position: 'Position',
       category: 'Category',
       noCategory: 'No category',
+      categoryRequiredActive: 'Assign an active category: an active player needs one to play.',
+      pendingStatusHint: 'Pending enrollment: approve or reject it from the players list.',
       parents: 'Linked parents',
       noParents: 'No parents',
       searchParents: 'Search parents/guardians…',
@@ -1512,6 +1519,7 @@ export const en = {
     periodsFromAcademy: 'academy default',
     periodsCustom: 'custom',
     createdBy: 'Created by',
+    categoryLocked: 'The category can only be changed while the match is scheduled and has no attendance.',
     validation: {
       categoryRequired: 'Select a category',
       opponentRequired: 'Opponent is required',
@@ -1572,6 +1580,7 @@ export const en = {
       collisionTitle: 'Duplicate jerseys',
       jerseyCollision: 'Jerseys {jerseys} are duplicated among present players.',
       jerseyCollisionServer: 'Duplicate jerseys detected. Fix the numbers before saving.',
+      playerHasActionsServer: 'You cannot mark a player absent who already has actions in this match. Void their actions first.',
       forbiddenCategory:
         'You are not the coach assigned to this match category. Only that category coach can view and mark attendance.',
       serverError:
@@ -2058,7 +2067,7 @@ export const en = {
       notifications: {
         page: { title: 'Your notifications', body: "Control which alerts you get about your children's matches from here." },
         globalToggle: { title: 'Turn everything on or off', body: 'This switch controls whether you get in-app notifications. Turn it on or off anytime.' },
-        emailNote: { title: 'More channels coming soon', body: 'For now notifications arrive in-app; email alerts are coming soon.' },
+        emailNote: { title: 'Email alerts', body: 'If you prefer, turn on email alerts here in addition to in-app ones.' },
       },
       children: {
         page: { title: 'Your children', body: 'Manage your registered players: check their status and add a new one if needed.' },

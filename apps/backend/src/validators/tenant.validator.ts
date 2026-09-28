@@ -5,11 +5,13 @@ import {
   TENANT_MANAGEABLE_ROLES,
   UserStatus,
 } from '@velocesport/shared';
+import { paginationQueryShape } from './pagination.validator.js';
 
 export const listTenantUsersQuerySchema = z.object({
   search: z.string().trim().optional(),
   role: z.enum(TENANT_MANAGEABLE_ROLES).optional(),
   status: z.enum([UserStatus.ACTIVE, UserStatus.INACTIVE]).optional(),
+  ...paginationQueryShape,
 });
 
 export const createTenantUserBodySchema = z.object({
@@ -127,6 +129,7 @@ export const listPlayersQuerySchema = z.object({
     ])
     .optional(),
   categoryId: z.coerce.number().int().positive().optional(),
+  ...paginationQueryShape,
 });
 
 export const createPlayerBodySchema = z.object({

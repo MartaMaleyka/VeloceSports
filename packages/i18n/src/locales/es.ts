@@ -556,6 +556,8 @@ export const es = {
         upcomingDescription: 'Tienes una factura de {amount} que vence el {date}. Realiza el pago antes del vencimiento para evitar la suspensión de tu academia.',
         overdueTitle: 'Factura vencida',
         overdueDescription: 'Tienes una factura vencida de {amount} (venció el {date}). Tu academia puede ser suspendida si no se regulariza el pago. Contacta al soporte de la plataforma.',
+        overdueSuspensionDate:
+          'Tienes una factura vencida de {amount} (venció el {date}). Si el pago no se registra antes del {suspensionDate}, la cuenta de la academia se suspenderá. Si ya pagaste, envía el comprobante al soporte.',
       },
       summary: {
         currentPlan: 'Plan actual',
@@ -1129,7 +1131,9 @@ export const es = {
       globalDescription:
         'Recibe avisos cuando tu hijo brille en partido (gol, asistencia y más).',
       inApp: 'Recibir notificaciones en la app',
-      emailComingSoon: 'Las notificaciones por correo estarán disponibles próximamente.',
+      emailTitle: 'Avisos por correo',
+      emailDescription: 'Recibe también un correo con cada momento destacado. Silenciar a un hijo lo silencia en todos los canales.',
+      email: 'Recibir avisos por correo',
       byChildTitle: 'Por hijo',
       byChildDescription: 'Activa o pausa los avisos para cada hijo vinculado.',
       inAppFor: 'Notificaciones para {name}',
@@ -1335,6 +1339,7 @@ export const es = {
       successCreate: 'Categoría creada',
       successUpdate: 'Categoría actualizada',
       successStatus: 'Estado de categoría actualizado',
+      inUse: 'No puedes desactivarla: tiene jugadores activos o partidos sin terminar. Muévelos a otra categoría primero.',
       activate: 'Activar',
       deactivate: 'Desactivar',
       requiresGuardian: {
@@ -1360,6 +1365,8 @@ export const es = {
       position: 'Posición',
       category: 'Categoría',
       noCategory: 'Sin categoría',
+      categoryRequiredActive: 'Asigna una categoría activa: un jugador activo la necesita para jugar.',
+      pendingStatusHint: 'Inscripción pendiente: apruébala o recházala desde la lista de jugadores.',
       parents: 'Padres vinculados',
       noParents: 'Sin padres',
       searchParents: 'Buscar padres/acudientes…',
@@ -1516,6 +1523,7 @@ export const es = {
     periodsFromAcademy: 'config. academia',
     periodsCustom: 'personalizado',
     createdBy: 'Creado por',
+    categoryLocked: 'La categoría solo se puede cambiar mientras el partido está programado y sin asistencia.',
     validation: {
       categoryRequired: 'Selecciona una categoría',
       opponentRequired: 'El rival es obligatorio',
@@ -1576,6 +1584,7 @@ export const es = {
       collisionTitle: 'Dorsales duplicados',
       jerseyCollision: 'Los dorsales {jerseys} están repetidos entre jugadores presentes.',
       jerseyCollisionServer: 'Hay dorsales duplicados. Corrige los números antes de guardar.',
+      playerHasActionsServer: 'No puedes marcar como ausente a un jugador que ya tiene acciones en este partido. Anula antes sus acciones.',
       forbiddenCategory:
         'No eres el entrenador asignado a la categoría de este partido. Solo el coach de esa categoría puede ver y marcar la asistencia.',
       serverError:
@@ -2062,7 +2071,7 @@ export const es = {
       notifications: {
         page: { title: 'Tus notificaciones', body: 'Desde aquí controlas qué avisos recibes sobre los partidos de tus hijos.' },
         globalToggle: { title: 'Activar o desactivar todo', body: 'Este interruptor controla si recibes notificaciones dentro de la app. Actívalo o desactívalo cuando quieras.' },
-        emailNote: { title: 'Más canales próximamente', body: 'Por ahora las notificaciones llegan dentro de la app; pronto sumaremos aviso por correo.' },
+        emailNote: { title: 'Avisos por correo', body: 'Si lo prefieres, activa aquí los avisos por correo además de los de la app.' },
       },
       children: {
         page: { title: 'Tus hijos', body: 'Administra a los jugadores registrados: revisa su estado y agrega uno nuevo si lo necesitas.' },
