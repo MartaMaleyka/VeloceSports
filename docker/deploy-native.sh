@@ -23,11 +23,11 @@ if [ ! -s "$NVM_DIR/nvm.sh" ]; then
 fi
 # shellcheck source=/dev/null
 . "$NVM_DIR/nvm.sh"
-if ! nvm ls 20 >/dev/null 2>&1; then
-  log "Instalando Node 20..."
-  nvm install 20
+if ! nvm ls 22 >/dev/null 2>&1; then
+  log "Instalando Node 22..."
+  nvm install 22
 fi
-nvm use 20
+nvm use 22
 corepack enable
 corepack prepare pnpm@9.15.0 --activate
 
