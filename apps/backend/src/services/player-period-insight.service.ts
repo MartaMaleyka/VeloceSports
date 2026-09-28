@@ -47,8 +47,26 @@ const pendingDto: PlayerPeriodInsightDto = {
   hasEnoughData: null,
 };
 
-function hashFilters(filters: CoachAnalysisFiltersDto): string {
+/** JSON con claves ordenadas: MySQL reordena las claves de las columnas JSON. */
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
+  }
+  // Los decimales se redondean para no depender de cómo MySQL serializa los DOUBLE.
+  if (typeof value === 'number' && !Number.isInteger(value)) {
+    return JSON.stringify(Number(value.toPrecision(12)));
+  }
+  return JSON.stringify(value);
+}
+
+/** El idioma forma parte de la clave: un resumen en español no sirve a quien lo pide en inglés. */
+function hashFilters(filters: CoachAnalysisFiltersDto, locale: Locale): string {
   const normalized = {
+    locale,
     categoryId: filters.categoryId ?? null,
     matchId: filters.matchId ?? null,
     dateFrom: filters.dateFrom ?? null,
@@ -67,10 +85,9 @@ export class PlayerPeriodInsightService {
     options: GetOrGenerateOptions = {},
   ): Promise<PlayerPeriodInsightDto> {
     const detail = await coachAnalysisService.getPlayerDetail(actor, playerId, query);
-    const filtersHash = hashFilters(detail.filters);
-
     const forceRegenerate = options.forceRegenerate ?? false;
     const locale = options.locale ?? 'es';
+    const filtersHash = hashFilters(detail.filters, locale);
 
     if (!forceRegenerate) {
       const cached = await playerPeriodInsightRepository.findByPlayerAndFilters(
@@ -78,7 +95,14 @@ export class PlayerPeriodInsightService {
         playerId,
         filtersHash,
       );
-      if (cached?.status === 'ready') return readyDto(cached);
+      // RN-17: si las acciones del periodo cambiaron (correcciones, anulaciones, partidos
+      // nuevos), el resumen guardado ya no describe los datos y se regenera.
+      if (
+        cached?.status === 'ready' &&
+        canonicalJson(cached.facts_json) === canonicalJson(buildPeriodInsightFacts(detail))
+      ) {
+        return readyDto(cached);
+      }
     }
 
     const gotLock = await playerPeriodInsightRepository.tryMarkGenerating(
