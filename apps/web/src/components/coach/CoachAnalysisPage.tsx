@@ -7,6 +7,12 @@ import type {
   MatchDto,
 } from '@velocesport/shared';
 import { ActionImpact } from '@velocesport/shared';
+
+function calculatePositiveActionsPercentage(actions: Array<{ impact: ActionImpact }>): number {
+  if (actions.length === 0) return 0;
+  const positive = actions.filter((a) => a.impact === ActionImpact.POSITIVE).length;
+  return (positive / actions.length) * 100;
+}
 import {
   Button,
   EmptyState,
@@ -313,9 +319,9 @@ function CoachAnalysisPageInner() {
           }))
         }
         className={cn(
-          'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+          'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-200',
           active
-            ? 'border-action-primary bg-action-primary/15 text-text-primary'
+            ? 'border-action-primary bg-action-primary/15 text-text-primary shadow-sm'
             : 'border-border bg-bg-surface text-text-secondary hover:border-action-primary/40',
         )}
       >
@@ -346,24 +352,24 @@ function CoachAnalysisPageInner() {
         </div>
       </div>
 
-      <section className="rounded-xl border border-border bg-bg-surface" data-tour="analysis-filters">
+      <section className="rounded-xl border border-border bg-bg-surface transition-all duration-200" data-tour="analysis-filters">
         <button
           type="button"
-          className="flex w-full min-h-touch items-center justify-between gap-3 px-4 py-3 text-left sm:px-5 md:pointer-events-none"
+          className="flex w-full min-h-touch items-center justify-between gap-3 px-4 py-3 text-left sm:px-5 md:pointer-events-none transition-colors duration-200 hover:bg-bg-muted/30"
           onClick={() => setFiltersOpen((o) => !o)}
           aria-expanded={filtersOpen}
         >
           <span className="inline-flex items-center gap-2 font-display text-base font-bold text-text-primary">
-            <Filter className="h-4 w-4 text-action-primary" aria-hidden="true" />
+            <Filter className="h-4 w-4 text-action-primary transition-transform duration-200" aria-hidden="true" />
             {t('dashboard.coach.analysis.filters.title')}
           </span>
-          <span className="md:hidden text-text-muted">
+          <span className="md:hidden text-text-muted transition-transform duration-200">
             {filtersOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </span>
         </button>
 
         {filtersOpen && (
-          <div className="space-y-4 border-t border-border px-4 py-4 sm:px-5">
+          <div className="space-y-4 border-t border-border px-4 py-4 sm:px-5 animate-in fade-in duration-200">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
                 {t('dashboard.coach.analysis.filters.category')}
@@ -373,10 +379,10 @@ function CoachAnalysisPageInner() {
                   type="button"
                   onClick={() => setDraft((p) => ({ ...p, categoryId: undefined }))}
                   className={cn(
-                    'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium',
+                    'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-200',
                     draft.categoryId == null
-                      ? 'border-action-primary bg-action-primary/15'
-                      : 'border-border',
+                      ? 'border-action-primary bg-action-primary/15 shadow-sm'
+                      : 'border-border hover:border-action-primary/40',
                   )}
                 >
                   {t('dashboard.coach.analysis.filters.allCategories')}
@@ -387,10 +393,10 @@ function CoachAnalysisPageInner() {
                     type="button"
                     onClick={() => setDraft((p) => ({ ...p, categoryId: c.id }))}
                     className={cn(
-                      'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium',
+                      'min-h-touch rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-200',
                       draft.categoryId === c.id
-                        ? 'border-action-primary bg-action-primary/15'
-                        : 'border-border',
+                        ? 'border-action-primary bg-action-primary/15 shadow-sm'
+                        : 'border-border hover:border-action-primary/40',
                     )}
                   >
                     {c.name}
@@ -400,8 +406,8 @@ function CoachAnalysisPageInner() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <Label htmlFor="analysis-match">{t('dashboard.coach.analysis.filters.match')}</Label>
+              <div className="transition-all duration-200">
+                <Label htmlFor="analysis-match" className="transition-colors duration-200">{t('dashboard.coach.analysis.filters.match')}</Label>
                 <Select
                   id="analysis-match"
                   value={draft.matchId != null ? String(draft.matchId) : ''}
@@ -412,10 +418,11 @@ function CoachAnalysisPageInner() {
                       matchId: e.target.value ? Number(e.target.value) : undefined,
                     }))
                   }
+                  className="transition-all duration-200"
                 />
               </div>
-              <div>
-                <Label htmlFor="analysis-from">{t('dashboard.coach.analysis.filters.dateFrom')}</Label>
+              <div className="transition-all duration-200">
+                <Label htmlFor="analysis-from" className="transition-colors duration-200">{t('dashboard.coach.analysis.filters.dateFrom')}</Label>
                 <Input
                   id="analysis-from"
                   type="date"
@@ -427,10 +434,11 @@ function CoachAnalysisPageInner() {
                       dateFrom: e.target.value || undefined,
                     }))
                   }
+                  className="transition-all duration-200"
                 />
               </div>
-              <div>
-                <Label htmlFor="analysis-to">{t('dashboard.coach.analysis.filters.dateTo')}</Label>
+              <div className="transition-all duration-200">
+                <Label htmlFor="analysis-to" className="transition-colors duration-200">{t('dashboard.coach.analysis.filters.dateTo')}</Label>
                 <Input
                   id="analysis-to"
                   type="date"
@@ -442,10 +450,11 @@ function CoachAnalysisPageInner() {
                       dateTo: e.target.value || undefined,
                     }))
                   }
+                  className="transition-all duration-200"
                 />
               </div>
-              <div>
-                <Label htmlFor="analysis-action">{t('dashboard.coach.analysis.filters.action')}</Label>
+              <div className="transition-all duration-200">
+                <Label htmlFor="analysis-action" className="transition-colors duration-200">{t('dashboard.coach.analysis.filters.action')}</Label>
                 <Select
                   id="analysis-action"
                   value={draft.actionCode != null ? String(draft.actionCode) : ''}
@@ -456,6 +465,7 @@ function CoachAnalysisPageInner() {
                       actionCode: e.target.value ? Number(e.target.value) : undefined,
                     }))
                   }
+                  className="transition-all duration-200"
                 />
               </div>
             </div>
@@ -534,9 +544,9 @@ function CoachAnalysisPageInner() {
             onClick={() => void handleExport('pdf')}
             disabled={exporting !== null || loading}
             loading={exporting === 'pdf'}
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 transition-all duration-200"
           >
-            <Download className="h-4 w-4" aria-hidden="true" />
+            <Download className={`h-4 w-4 transition-transform duration-300 ${exporting === 'pdf' ? 'animate-bounce' : ''}`} aria-hidden="true" />
             {exporting === 'pdf'
               ? t('dashboard.coach.analysis.exporting')
               : t('dashboard.coach.analysis.exportPdf')}
@@ -547,9 +557,9 @@ function CoachAnalysisPageInner() {
             onClick={() => void handleExport('csv')}
             disabled={exporting !== null || loading}
             loading={exporting === 'csv'}
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 transition-all duration-200"
           >
-            <Download className="h-4 w-4" aria-hidden="true" />
+            <Download className={`h-4 w-4 transition-transform duration-300 ${exporting === 'csv' ? 'animate-bounce' : ''}`} aria-hidden="true" />
             {exporting === 'csv'
               ? t('dashboard.coach.analysis.exporting')
               : t('dashboard.coach.analysis.exportCsv')}
@@ -583,62 +593,71 @@ function CoachAnalysisPageInner() {
 
           {viewMode === 'cards' || isMobile ? (
             <ul
-              className="ds-stagger-enter grid grid-cols-1 gap-3 sm:grid-cols-2"
+              className="ds-stagger-enter grid grid-cols-1 gap-4 sm:grid-cols-2"
               data-tour="analysis-player-list"
             >
-              {paged.map((player) => (
-                <li key={player.playerId} className="ds-stagger-item">
-                  <button
-                    type="button"
-                    onClick={() => openDetail(player.playerId)}
-                    className="ds-card-interactive group relative w-full overflow-hidden rounded-xl border border-border border-l-[3px] border-l-action-primary bg-bg-surface p-4 text-left"
-                  >
-                    <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
-                    <div className="relative z-[1] flex items-start gap-3">
-                      <PlayerAvatar
-                        player={{
-                          firstName: player.firstName,
-                          lastName: player.lastName,
-                          photoUrl: player.photoUrl ?? null,
-                        }}
-                        size="md"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-display text-lg font-bold text-text-primary">
-                            {player.playerName}
-                          </p>
-                          <span className="rounded bg-bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums">
-                            #{player.dorsal}
-                          </span>
-                          <span className="ds-club-pill text-xs">{player.categoryName}</span>
+              {paged.map((player) => {
+                const positivePercentage = calculatePositiveActionsPercentage(player.actionsByCode);
+                return (
+                  <li key={player.playerId} className="ds-stagger-item">
+                    <button
+                      type="button"
+                      onClick={() => openDetail(player.playerId)}
+                      className="ds-card-interactive group relative w-full overflow-hidden rounded-xl border border-border border-l-[3px] border-l-action-primary bg-bg-surface p-4 text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-1"
+                    >
+                      <span className="ds-stat-card__speed-stripe" aria-hidden="true" />
+                      <div className="relative z-[1] flex items-start gap-3">
+                        <PlayerAvatar
+                          player={{
+                            firstName: player.firstName,
+                            lastName: player.lastName,
+                            photoUrl: player.photoUrl ?? null,
+                          }}
+                          size="md"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-display text-lg font-bold text-text-primary">
+                              {player.playerName}
+                            </p>
+                            <span className="rounded bg-bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums">
+                              #{player.dorsal}
+                            </span>
+                            <span className="ds-club-pill text-xs">{player.categoryName}</span>
+                          </div>
+                          <dl className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
+                            <div className="transition-all duration-200">
+                              <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.matches')}</dt>
+                              <dd className="font-display text-base font-bold tabular-nums">
+                                {player.matchesPlayed}
+                              </dd>
+                            </div>
+                            <div className="transition-all duration-200">
+                              <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.minutes')}</dt>
+                              <dd className="font-display text-base font-bold tabular-nums">
+                                {player.minutesPlayed}
+                              </dd>
+                            </div>
+                            <div className="transition-all duration-200">
+                              <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.actions')}</dt>
+                              <dd className="font-display text-base font-bold tabular-nums text-action-primary">
+                                {player.totalActions}
+                              </dd>
+                            </div>
+                            <div className="rounded-lg bg-action-primary/10 p-1.5 transition-all duration-200">
+                              <dt className="text-text-muted">{t('common.positive', { defaultValue: 'Pos.' })}</dt>
+                              <dd className="font-display text-base font-bold tabular-nums text-action-primary">
+                                {positivePercentage.toFixed(0)}%
+                              </dd>
+                            </div>
+                          </dl>
+                          <CoachActionChips actions={player.actionsByCode} className="mt-3" />
                         </div>
-                        <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                          <div>
-                            <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.matches')}</dt>
-                            <dd className="font-display text-base font-bold tabular-nums">
-                              {player.matchesPlayed}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.minutes')}</dt>
-                            <dd className="font-display text-base font-bold tabular-nums">
-                              {player.minutesPlayed}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-text-muted">{t('dashboard.coach.analysis.cols.actions')}</dt>
-                            <dd className="font-display text-base font-bold tabular-nums text-action-primary">
-                              {player.totalActions}
-                            </dd>
-                          </div>
-                        </dl>
-                        <CoachActionChips actions={player.actionsByCode} className="mt-3" />
                       </div>
-                    </div>
-                  </button>
-                </li>
-              ))}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <Table>
@@ -702,53 +721,65 @@ function CoachAnalysisPageInner() {
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted"
                   >
+                    {t('common.positive', { defaultValue: 'Positive %' })}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-text-muted"
+                  >
                     {t('dashboard.coach.analysis.cols.breakdown')}
                   </th>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paged.map((player) => (
-                  <TableRow
-                    key={player.playerId}
-                    className="cursor-pointer hover:bg-action-primary/10"
-                    onClick={() => openDetail(player.playerId)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openDetail(player.playerId);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="link"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <PlayerAvatar
-                          player={{
-                            firstName: player.firstName,
-                            lastName: player.lastName,
-                            photoUrl: player.photoUrl ?? null,
-                          }}
-                          size="sm"
-                        />
-                        <div>
-                          <p className="font-medium text-text-primary">{player.playerName}</p>
-                          <p className="text-xs text-text-muted">#{player.dorsal}</p>
+                {paged.map((player) => {
+                  const positivePercentage = calculatePositiveActionsPercentage(player.actionsByCode);
+                  return (
+                    <TableRow
+                      key={player.playerId}
+                      className="cursor-pointer transition-colors duration-200 hover:bg-action-primary/10"
+                      onClick={() => openDetail(player.playerId)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          openDetail(player.playerId);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="link"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <PlayerAvatar
+                            player={{
+                              firstName: player.firstName,
+                              lastName: player.lastName,
+                              photoUrl: player.photoUrl ?? null,
+                            }}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="font-medium text-text-primary">{player.playerName}</p>
+                            <p className="text-xs text-text-muted">#{player.dorsal}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="ds-club-pill text-xs">{player.categoryName}</span>
-                    </TableCell>
-                    <TableCell className="tabular-nums">{player.matchesPlayed}</TableCell>
-                    <TableCell className="tabular-nums">{player.minutesPlayed}</TableCell>
-                    <TableCell className="font-semibold tabular-nums">{player.totalActions}</TableCell>
-                    <TableCell className="tabular-nums">{player.observationsCount}</TableCell>
-                    <TableCell className="min-w-[14rem]">
-                      <CoachActionChips actions={player.actionsByCode} />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        <span className="ds-club-pill text-xs">{player.categoryName}</span>
+                      </TableCell>
+                      <TableCell className="tabular-nums">{player.matchesPlayed}</TableCell>
+                      <TableCell className="tabular-nums">{player.minutesPlayed}</TableCell>
+                      <TableCell className="font-semibold tabular-nums">{player.totalActions}</TableCell>
+                      <TableCell className="tabular-nums">{player.observationsCount}</TableCell>
+                      <TableCell className="font-semibold tabular-nums text-action-primary">
+                        {positivePercentage.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="min-w-[14rem]">
+                        <CoachActionChips actions={player.actionsByCode} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
