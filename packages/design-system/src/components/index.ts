@@ -53,6 +53,14 @@ export { HeaderQuickSearch, type HeaderQuickSearchProps } from './HeaderQuickSea
 export { ProfileDropdown, type ProfileDropdownProps, type ProfileDropdownItem } from './ProfileDropdown.js';
 export { MobileNavDrawer, type MobileNavDrawerProps } from './MobileNavDrawer.js';
 export { DashboardHeader, type DashboardHeaderProps } from './DashboardHeader.js';
+export { CoachDashboard, type CoachDashboardProps } from './CoachDashboard.js';
+export { ParentDashboard, type ParentDashboardProps } from './ParentDashboard.js';
+export { PlayerDashboard, type PlayerDashboardProps } from './PlayerDashboard.js';
+export { AcademyAdminDashboard, type AcademyAdminDashboardProps } from './AcademyAdminDashboard.js';
+export { SuperAdminDashboard, type SuperAdminDashboardProps, type SystemHealth } from './SuperAdminDashboard.js';
+export { PerformanceChart, type PerformanceChartProps, type PerformanceData } from './PerformanceChart.js';
+export { MatchHighlights, type MatchHighlightsProps, type Highlight, type HighlightType } from './MatchHighlights.js';
+export { SystemStatus, type SystemStatusProps, type SystemComponent, type StatusLevel } from './SystemStatus.js';
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
 export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';
 export { useFetch, useAsync, type UseFetchOptions, type UseFetchState, type UseAsyncOptions, type UseAsyncState } from '../hooks/useFetch.js';
