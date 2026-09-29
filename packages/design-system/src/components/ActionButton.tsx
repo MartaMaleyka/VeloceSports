@@ -29,8 +29,8 @@ export function ActionButton({
   };
 
   const variantClasses = {
-    primary: 'bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600',
-    secondary: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600',
+    primary: 'bg-lime-500 dark:bg-lime-400 text-white hover:bg-lime-600 dark:hover:bg-lime-500',
+    secondary: 'bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300 text-zinc-900 dark:text-white hover:bg-zinc-300 dark:bg-zinc-600 dark:hover:bg-zinc-600 dark:bg-zinc-400',
     destructive: 'bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600',
   };
 

@@ -71,19 +71,19 @@ export function TenantEntityAutocomplete({
 
   return (
     <div ref={containerRef} className={className}>
-      {label && <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{label}</label>}
+      {label && <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">{label}</label>}
 
       <div
         className={cn(
-          'p-2 rounded-lg border border-gray-300 dark:border-gray-600',
-          'bg-white dark:bg-gray-900 flex flex-wrap gap-2 items-center',
-          'focus-within:ring-2 focus-within:ring-blue-500',
+          'p-2 rounded-lg border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
+          'bg-white dark:bg-zinc-900 dark:bg-zinc-100 flex flex-wrap gap-2 items-center',
+          'focus-within:ring-2 focus-within:ring-lime-500',
         )}
       >
         {selectedEntities.map((entity) => (
           <div
             key={entity.id}
-            className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-2 py-1 rounded text-sm"
+            className="flex items-center gap-1 bg-lime-100 dark:bg-lime-900 text-blue-700 dark:text-blue-200 px-2 py-1 rounded text-sm"
           >
             {entity.label}
             <button
@@ -106,11 +106,11 @@ export function TenantEntityAutocomplete({
             onFocus={() => setIsOpen(true)}
             disabled={disabled}
             placeholder={placeholder}
-            className="w-full bg-transparent outline-none text-gray-900 dark:text-white text-sm"
+            className="w-full bg-transparent outline-none text-zinc-900 dark:text-white text-sm"
           />
 
           {isOpen && filteredEntities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
               {filteredEntities.map((entity) => (
                 <button
                   key={entity.id}
@@ -118,12 +118,12 @@ export function TenantEntityAutocomplete({
                   className={cn(
                     'w-full text-left px-3 py-2 text-sm transition-colors',
                     selectedIds.includes(entity.id)
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white',
+                      ? 'bg-lime-50 dark:bg-lime-900/20 text-blue-700 dark:text-blue-300'
+                      : 'hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 text-zinc-900 dark:text-white',
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Search size={14} className="text-gray-400" />
+                    <Search size={14} className="text-zinc-400" />
                     {entity.label}
                   </div>
                 </button>

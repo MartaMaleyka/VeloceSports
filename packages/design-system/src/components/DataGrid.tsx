@@ -30,7 +30,7 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
 
   if (data.length === 0) {
     return (
-      <div className={cn('p-6 text-center text-gray-500 dark:text-gray-400', className)}>
+      <div className={cn('p-6 text-center text-zinc-500 dark:text-zinc-400', className)}>
         No data
       </div>
     );
@@ -40,12 +40,12 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
     <div className={cn('overflow-x-auto', className)}>
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          <tr className="bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-900 dark:bg-zinc-100 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700">
             {columns.map((col) => (
               <th
                 key={col.key}
                 style={{ width: col.width }}
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                className="px-4 py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 uppercase tracking-wider"
               >
                 {col.label}
               </th>
@@ -54,7 +54,7 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
         </thead>
         <tbody>
           {localData.map((row, rowIdx) => (
-            <tr key={rowIdx} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <tr key={rowIdx} className="border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200/50">
               {columns.map((col) => {
                 const isEditing = editingCell?.row === rowIdx && editingCell?.col === col.key;
                 const value = row[col.key];
@@ -63,7 +63,7 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
                   <td
                     key={col.key}
                     style={{ width: col.width }}
-                    className="px-4 py-3 text-sm text-gray-900 dark:text-white"
+                    className="px-4 py-3 text-sm text-zinc-900 dark:text-white"
                     onClick={() => col.editable && setEditingCell({ row: rowIdx, col: col.key })}
                   >
                     {isEditing && col.editable ? (
@@ -73,7 +73,7 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
                           onChange={(e) => handleCellChange(rowIdx, col.key, e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           autoFocus
-                          className="w-full px-2 py-1 border border-blue-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-full px-2 py-1 border border-lime-500 rounded bg-white dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-900 dark:text-white"
                         >
                           {col.options?.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -88,11 +88,11 @@ export function DataGrid({ columns, data, onChange, className }: DataGridProps) 
                           onChange={(e) => handleCellChange(rowIdx, col.key, e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           autoFocus
-                          className="w-full px-2 py-1 border border-blue-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          className="w-full px-2 py-1 border border-lime-500 rounded bg-white dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-900 dark:text-white"
                         />
                       )
                     ) : (
-                      <div className={cn(col.editable && 'cursor-cell hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded')}>
+                      <div className={cn(col.editable && 'cursor-cell hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:bg-zinc-300/50 px-2 py-1 rounded')}>
                         {value}
                       </div>
                     )}

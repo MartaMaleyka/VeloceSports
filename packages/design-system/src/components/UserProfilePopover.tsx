@@ -40,19 +40,19 @@ export function UserProfilePopover({
     <div ref={containerRef} className={cn('relative', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+        className="focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
       >
         <Avatar src={avatar} initials={userName.slice(0, 2).toUpperCase()} size="md" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 rounded-lg shadow-lg z-50">
+          <div className="p-4 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700">
             <div className="flex items-center gap-3">
               <Avatar src={avatar} initials={userName.slice(0, 2).toUpperCase()} size="md" />
               <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">{userName}</p>
-                {userEmail && <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{userEmail}</p>}
+                <p className="font-medium text-zinc-900 dark:text-white">{userName}</p>
+                {userEmail && <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">{userEmail}</p>}
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@ export function UserProfilePopover({
                   onSettings();
                   setIsOpen(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 rounded hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 transition-colors"
               >
                 <Settings size={16} />
                 Settings

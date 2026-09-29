@@ -60,7 +60,7 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
     return (
       <div ref={containerRef} className={cn('relative w-full max-w-sm', className)}>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 pointer-events-none" aria-hidden="true" />
           <input
             ref={ref}
             type="search"
@@ -72,9 +72,9 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
             aria-expanded={isOpen}
             aria-controls="search-results"
             className={cn(
-              'w-full h-9 rounded-md border border-gray-300 bg-white px-3 pl-9 text-sm',
-              'placeholder:text-gray-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white dark:placeholder:text-gray-500',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+              'w-full h-9 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white px-3 pl-9 text-sm',
+              'placeholder:text-zinc-500 dark:bg-zinc-900 dark:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:placeholder:text-zinc-500',
+              'focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent',
               'transition-colors duration-200',
             )}
           />
@@ -82,9 +82,9 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
             <button
               onClick={handleClear}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 rounded transition-colors"
             >
-              <X className="h-4 w-4 text-gray-500" aria-hidden="true" />
+              <X className="h-4 w-4 text-zinc-500" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -92,10 +92,10 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
         {isOpen && (query || results.length > 0) && (
           <div
             id="search-results"
-            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 rounded-md shadow-lg z-50"
           >
             {isLoading ? (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
                 Searching...
               </div>
             ) : results.length > 0 ? (
@@ -105,15 +105,15 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
                     <button
                       onClick={() => handleResultClick(result.id)}
                       className={cn(
-                        'w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
-                        idx < results.length - 1 && 'border-b border-gray-100 dark:border-gray-800',
+                        'w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200 transition-colors',
+                        idx < results.length - 1 && 'border-b border-zinc-100 dark:border-zinc-800',
                       )}
                     >
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-zinc-900 dark:text-white">
                         {result.label}
                       </div>
                       {result.category && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
                           {result.category}
                         </div>
                       )}
@@ -122,7 +122,7 @@ export const HeaderQuickSearch = forwardRef<HTMLInputElement, HeaderQuickSearchP
                 ))}
               </ul>
             ) : (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">
                 No results found
               </div>
             )}

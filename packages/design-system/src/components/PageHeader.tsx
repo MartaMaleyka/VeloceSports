@@ -19,11 +19,11 @@ export function PageHeader({
     <div className={`flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between ${className}`}>
       <div className="flex-1 min-w-0">
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="mb-2 flex gap-1 text-xs text-gray-500">
+          <nav className="mb-2 flex gap-1 text-xs text-zinc-500">
             {breadcrumbs.map((item, idx) => (
               <div key={idx} className="flex items-center gap-1">
                 {item.href ? (
-                  <a href={item.href} className="hover:text-gray-700">
+                  <a href={item.href} className="hover:text-zinc-700 dark:text-zinc-300">
                     {item.label}
                   </a>
                 ) : (
@@ -34,9 +34,9 @@ export function PageHeader({
             ))}
           </nav>
         )}
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">{title}</h1>
         {description && (
-          <div className="mt-2 text-sm text-gray-600 sm:text-base">
+          <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
             {typeof description === 'string' ? <p>{description}</p> : description}
           </div>
         )}

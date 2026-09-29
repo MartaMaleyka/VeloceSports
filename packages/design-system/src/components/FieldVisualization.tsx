@@ -23,7 +23,7 @@ export interface FieldVisualizationProps {
 }
 
 const actionColors: Record<string, string> = {
-  pass: 'bg-blue-500',
+  pass: 'bg-lime-400',
   shot: 'bg-red-500',
   tackle: 'bg-yellow-500',
   dribble: 'bg-green-500',
@@ -68,8 +68,8 @@ export function FieldVisualization({
       <svg
         viewBox={`0 0 ${dims.width} ${dims.height}`}
         className={cn(
-          'w-full border border-gray-300 dark:border-gray-600 rounded-lg',
-          isInteractive && 'cursor-crosshair hover:bg-gray-50 dark:hover:bg-gray-800',
+          'w-full border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 rounded-lg',
+          isInteractive && 'cursor-crosshair hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200',
         )}
         onClick={handleFieldClick}
       >
@@ -89,7 +89,7 @@ export function FieldVisualization({
           y2={dims.height}
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white dark:text-gray-400"
+          className="text-white dark:text-zinc-400"
         />
 
         {/* Center circle */}
@@ -100,7 +100,7 @@ export function FieldVisualization({
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white dark:text-gray-400"
+          className="text-white dark:text-zinc-400"
         />
 
         {/* Center spot */}
@@ -109,7 +109,7 @@ export function FieldVisualization({
           cy={dims.height / 2}
           r="3"
           fill="currentColor"
-          className="text-white dark:text-gray-400"
+          className="text-white dark:text-zinc-400"
         />
 
         {/* Goal areas */}
@@ -121,7 +121,7 @@ export function FieldVisualization({
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white dark:text-gray-400"
+          className="text-white dark:text-zinc-400"
         />
         <rect
           x={dims.width - dims.width / 6}
@@ -131,7 +131,7 @@ export function FieldVisualization({
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white dark:text-gray-400"
+          className="text-white dark:text-zinc-400"
         />
 
         {/* Actions */}
@@ -172,14 +172,14 @@ export function FieldVisualization({
         {Object.entries(actionColors).map(([type, color]) => (
           <div key={type} className="flex items-center gap-2">
             <div className={cn('w-3 h-3 rounded-full', color)} />
-            <span className="text-gray-600 dark:text-gray-400 capitalize">{type}</span>
+            <span className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 capitalize">{type}</span>
           </div>
         ))}
       </div>
 
       {/* Selected action controls */}
       {selectedActionId && (
-        <div className="flex gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+        <div className="flex gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
           {onRemoveAction && (
             <Button
               onClick={() => {

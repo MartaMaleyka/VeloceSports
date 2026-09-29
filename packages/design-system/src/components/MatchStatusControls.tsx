@@ -43,9 +43,9 @@ export function MatchStatusControls({
       case 'paused':
         return 'bg-yellow-50 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-800';
       case 'finished':
-        return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+        return 'bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200 border-zinc-200 dark:border-zinc-700 dark:border-zinc-700';
       default:
-        return 'bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800';
+        return 'bg-lime-50 dark:bg-lime-900 border-blue-200 dark:border-blue-800';
     }
   };
 
@@ -70,10 +70,10 @@ export function MatchStatusControls({
         getStatusColor(),
       )}>
         <div className="flex items-baseline justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
             {getStatusLabel()}
           </h3>
-          <span className="text-3xl font-bold font-mono text-gray-900 dark:text-white">
+          <span className="text-3xl font-bold font-mono text-zinc-900 dark:text-white">
             {formatTime(elapsedTime)}
           </span>
         </div>
@@ -143,7 +143,7 @@ export function MatchStatusControls({
 
       {/* Help text */}
       {status === 'idle' && (
-        <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-center">
           Click Start to begin recording match actions
         </p>
       )}

@@ -22,7 +22,7 @@ export interface CaptureTimelineProps {
 }
 
 const actionColors: Record<TimelineActionType, string> = {
-  pass: 'border-blue-500 bg-blue-50 dark:bg-blue-900',
+  pass: 'border-lime-500 bg-lime-50 dark:bg-lime-900',
   shot: 'border-red-500 bg-red-50 dark:bg-red-900',
   tackle: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900',
   dribble: 'border-green-500 bg-green-50 dark:bg-green-900',
@@ -60,7 +60,7 @@ export function CaptureTimeline({
 
   if (actions.length === 0) {
     return (
-      <div className={cn('text-center py-8 text-gray-500 dark:text-gray-400', className)}>
+      <div className={cn('text-center py-8 text-zinc-500 dark:text-zinc-400', className)}>
         No actions captured yet. Start recording to see actions here.
       </div>
     );
@@ -74,7 +74,7 @@ export function CaptureTimeline({
           <div key={action.id} className="relative">
             {/* Timeline connector */}
             {index < actions.length - 1 && (
-              <div className="absolute left-5 top-12 w-0.5 h-3 bg-gray-200 dark:bg-gray-700" />
+              <div className="absolute left-5 top-12 w-0.5 h-3 bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300" />
             )}
 
             {/* Action card */}
@@ -93,19 +93,19 @@ export function CaptureTimeline({
                       {action.actionType.charAt(0).toUpperCase() + action.actionType.slice(1)}
                     </span>
                     {action.playerNumber && (
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 dark:text-zinc-300">
                         Player #{action.playerNumber}
                       </span>
                     )}
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-gray-700 dark:text-gray-300 break-words">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 break-words">
                     {action.description}
                   </p>
 
                   {/* Timestamp */}
-                  <div className="mt-2 flex gap-4 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="mt-2 flex gap-4 text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     <span>
                       {action.createdAt.toLocaleTimeString()}
                     </span>
@@ -147,8 +147,8 @@ export function CaptureTimeline({
       </div>
 
       {/* Summary */}
-      <div className="mt-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-        <p className="text-sm font-medium text-gray-900 dark:text-white">
+      <div className="mt-6 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
+        <p className="text-sm font-medium text-zinc-900 dark:text-white">
           Total Actions: {actions.length}
         </p>
       </div>

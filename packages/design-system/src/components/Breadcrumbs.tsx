@@ -29,19 +29,19 @@ export function Breadcrumbs({
             {item.href && !item.current ? (
               <a
                 href={item.href}
-                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+                className="inline-flex items-center gap-1 text-lime-600 hover:text-blue-700 hover:underline"
               >
                 {item.icon && <span className="text-lg">{item.icon}</span>}
                 {item.label}
               </a>
             ) : (
-              <span className={`inline-flex items-center gap-1 ${item.current ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+              <span className={`inline-flex items-center gap-1 ${item.current ? 'font-medium text-zinc-900' : 'text-zinc-600 dark:text-zinc-400'}`}>
                 {item.icon && <span className="text-lg">{item.icon}</span>}
                 {item.label}
               </span>
             )}
             {idx < items.length - 1 && (
-              <span className="mx-1 text-gray-400" aria-hidden="true">
+              <span className="mx-1 text-zinc-400" aria-hidden="true">
                 {separator}
               </span>
             )}

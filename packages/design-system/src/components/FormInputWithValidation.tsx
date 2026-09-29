@@ -33,7 +33,7 @@ export const FormInputWithValidation = forwardRef<
     return (
       <div className="flex flex-col gap-2">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={inputId} className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300">
             {label}
           </label>
         )}
@@ -43,10 +43,10 @@ export const FormInputWithValidation = forwardRef<
             ref={ref}
             id={inputId}
             className={cn(
-              'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
-              'placeholder:text-gray-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-              'disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500',
+              'flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-white px-3 py-2 text-sm',
+              'placeholder:text-zinc-500 dark:bg-zinc-900 dark:bg-zinc-100 dark:border-zinc-700 dark:text-white',
+              'focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent',
+              'disabled:cursor-not-allowed disabled:bg-zinc-50 dark:bg-zinc-900 dark:disabled:bg-zinc-800 dark:bg-zinc-200 disabled:text-zinc-500',
               'transition-colors duration-200',
               error && 'border-red-300 focus:ring-red-500 dark:border-red-600',
               isValid && 'border-green-300 focus:ring-green-500 dark:border-green-600',
@@ -73,7 +73,7 @@ export const FormInputWithValidation = forwardRef<
         )}
 
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${inputId}-hint`} className="text-sm text-zinc-500 dark:text-zinc-400">
             {hint}
           </p>
         )}

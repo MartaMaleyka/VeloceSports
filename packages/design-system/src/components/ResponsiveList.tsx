@@ -24,7 +24,7 @@ export function ResponsiveList({
 }: ResponsiveListProps) {
   if (items.length === 0) {
     return (
-      <div className={cn('p-6 text-center text-gray-500 dark:text-gray-400', className)}>
+      <div className={cn('p-6 text-center text-zinc-500 dark:text-zinc-400', className)}>
         {emptyMessage}
       </div>
     );
@@ -34,12 +34,12 @@ export function ResponsiveList({
     <div className={cn('overflow-x-auto', className)}>
       <table className="w-full">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <tr className="border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-900 dark:bg-zinc-100">
             {columns.map((col) => (
               <th
                 key={col.key}
                 style={{ width: col.width }}
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                className="px-4 py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 uppercase tracking-wider"
               >
                 {col.label}
               </th>
@@ -52,12 +52,12 @@ export function ResponsiveList({
               key={idx}
               onClick={() => onRowClick?.(item)}
               className={cn(
-                'border-b border-gray-200 dark:border-gray-700',
-                onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                'border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700',
+                onRowClick && 'cursor-pointer hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200/50',
               )}
             >
               {columns.map((col) => (
-                <td key={col.key} style={{ width: col.width }} className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                <td key={col.key} style={{ width: col.width }} className="px-4 py-3 text-sm text-zinc-900 dark:text-white">
                   {col.render ? col.render(item[col.key], item) : item[col.key]}
                 </td>
               ))}

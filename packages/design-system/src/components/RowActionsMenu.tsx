@@ -43,17 +43,17 @@ export function RowActionsMenu({ actions, className }: RowActionsMenuProps) {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="p-2 rounded hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 transition-colors"
       >
-        <MoreVertical size={18} className="text-gray-600 dark:text-gray-400" />
+        <MoreVertical size={18} className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
       </button>
 
       {isOpen && (
         <div
           ref={menuRef}
           className={cn(
-            'absolute right-0 mt-1 w-48 rounded-lg border border-gray-200 dark:border-gray-700',
-            'bg-white dark:bg-gray-900 shadow-lg z-50 py-1',
+            'absolute right-0 mt-1 w-48 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700',
+            'bg-white dark:bg-zinc-900 dark:bg-zinc-100 shadow-lg z-50 py-1',
           )}
         >
           {actions.map((action, idx) => (
@@ -66,7 +66,7 @@ export function RowActionsMenu({ actions, className }: RowActionsMenuProps) {
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 action.dangerous
                   ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+                  : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200',
               )}
             >
               {action.icon && <span className="flex-shrink-0">{action.icon}</span>}

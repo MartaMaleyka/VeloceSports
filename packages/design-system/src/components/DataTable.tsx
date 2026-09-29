@@ -114,7 +114,7 @@ export function DataTable<T extends Record<string, any>>({
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-8 text-center text-zinc-500">
         Loading...
       </div>
     );
@@ -122,7 +122,7 @@ export function DataTable<T extends Record<string, any>>({
 
   if (sorted.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+      <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">
         {emptyMessage}
       </div>
     );
@@ -132,28 +132,28 @@ export function DataTable<T extends Record<string, any>>({
     <div className={cn('space-y-4', className)}>
       {searchableFields.length > 0 && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
-            className="w-full h-9 rounded-md border border-gray-300 bg-white px-3 pl-9 text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+            className="w-full h-9 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white px-3 pl-9 text-sm dark:bg-zinc-900 dark:bg-zinc-100 dark:border-zinc-700 dark:text-white"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1"
             >
-              <X className="h-4 w-4 text-gray-400" />
+              <X className="h-4 w-4 text-zinc-400" />
             </button>
           )}
         </div>
       )}
 
-      <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 rounded-lg">
         <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <thead className="border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
             <tr>
               {selectable && (
                 <th className="px-4 py-3 text-left w-12">
@@ -169,8 +169,8 @@ export function DataTable<T extends Record<string, any>>({
                 <th
                   key={col.id}
                   className={cn(
-                    'px-4 py-3 text-left font-medium text-gray-900 dark:text-white',
-                    col.sortable && 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'px-4 py-3 text-left font-medium text-zinc-900 dark:text-white',
+                    col.sortable && 'cursor-pointer hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:bg-zinc-300',
                     col.width && `w-${col.width}`,
                   )}
                   onClick={() => col.sortable && handleSort(col.id)}
@@ -181,9 +181,9 @@ export function DataTable<T extends Record<string, any>>({
                       <div className="w-4 h-4">
                         {internalSort.column === col.id ? (
                           internalSort.direction === 'asc' ? (
-                            <ChevronUp className="h-4 w-4 text-blue-600" />
+                            <ChevronUp className="h-4 w-4 text-lime-600" />
                           ) : (
-                            <ChevronDown className="h-4 w-4 text-blue-600" />
+                            <ChevronDown className="h-4 w-4 text-lime-600" />
                           )
                         ) : (
                           <div className="h-4 w-4" />
@@ -203,7 +203,7 @@ export function DataTable<T extends Record<string, any>>({
                   key={key}
                   onClick={() => onRowClick?.(item, idx)}
                   className={cn(
-                    'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800',
+                    'border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200',
                     onRowClick && 'cursor-pointer',
                   )}
                 >
@@ -219,7 +219,7 @@ export function DataTable<T extends Record<string, any>>({
                     </td>
                   )}
                   {columns.map((col) => (
-                    <td key={`${key}-${col.id}`} className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                    <td key={`${key}-${col.id}`} className="px-4 py-3 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300">
                       {col.render ? col.render(item, idx) : String(item[col.id] || '-')}
                     </td>
                   ))}
@@ -231,7 +231,7 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {selectedRows.size > 0 && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
           {selectedRows.size} row{selectedRows.size !== 1 ? 's' : ''} selected
         </div>
       )}

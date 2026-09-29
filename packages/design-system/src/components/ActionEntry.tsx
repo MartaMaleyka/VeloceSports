@@ -97,10 +97,10 @@ export function ActionEntry({
           disabled={isProcessing}
           rows={3}
           className={cn(
-            'flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600',
-            'bg-white dark:bg-gray-900 text-gray-900 dark:text-white',
-            'placeholder-gray-500 dark:placeholder-gray-400',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400',
+            'flex-1 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
+            'bg-white dark:bg-zinc-900 dark:bg-zinc-100 text-zinc-900 dark:text-white',
+            'placeholder-zinc-500 dark:placeholder-zinc-400',
+            'focus:outline-none focus:ring-2 focus:ring-lime-500 dark:focus:ring-blue-400',
             'disabled:opacity-50 disabled:cursor-not-allowed',
           )}
         />
@@ -118,7 +118,7 @@ export function ActionEntry({
       </div>
 
       {/* Info text */}
-      <p className="text-xs text-gray-600 dark:text-gray-400">
+      <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
         {text.length} / 500 characters
       </p>
     </div>

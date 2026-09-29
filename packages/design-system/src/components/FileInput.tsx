@@ -76,7 +76,7 @@ export function FileInput({
 
   return (
     <div className={className}>
-      {label && <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{label}</label>}
+      {label && <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">{label}</label>}
 
       <div
         onDragEnter={handleDrag}
@@ -85,7 +85,7 @@ export function FileInput({
         onDrop={handleDrop}
         className={cn(
           'relative rounded-lg border-2 border-dashed transition-colors',
-          dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600',
+          dragActive ? 'border-lime-500 bg-lime-50 dark:bg-lime-900/10' : 'border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
@@ -106,23 +106,23 @@ export function FileInput({
           className={cn(
             'w-full px-6 py-8 text-center transition-colors',
             'disabled:cursor-not-allowed',
-            !disabled && 'hover:bg-gray-50 dark:hover:bg-gray-900/50',
+            !disabled && 'hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-900 dark:bg-zinc-100/50',
           )}
         >
-          <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-600 mb-2" />
-          <p className="text-sm font-medium text-gray-900 dark:text-white">Click to upload or drag and drop</p>
-          {accept && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Supported: {accept}</p>}
+          <Upload className="mx-auto h-8 w-8 text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 mb-2" />
+          <p className="text-sm font-medium text-zinc-900 dark:text-white">Click to upload or drag and drop</p>
+          {accept && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Supported: {accept}</p>}
         </button>
       </div>
 
       {files.length > 0 && (
         <div className="mt-4 space-y-2">
           {files.map((file, idx) => (
-            <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded">
-              <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{file.name}</span>
+            <div key={idx} className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-900 dark:bg-zinc-100 rounded">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 truncate">{file.name}</span>
               <button
                 onClick={() => removeFile(idx)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition-colors"
               >
                 <X size={18} />
               </button>

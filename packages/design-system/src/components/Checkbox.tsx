@@ -33,19 +33,19 @@ export function Checkbox({
         onChange={handleChange}
         disabled={disabled}
         className={cn(
-          'h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600',
+          'h-4 w-4 rounded border-2 border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
           'transition-colors cursor-pointer',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-          'dark:focus:ring-offset-gray-900',
-          checked && 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500',
+          'focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-1',
+          'dark:focus:ring-offset-zinc-900',
+          checked && 'bg-lime-500 dark:bg-lime-400 border-blue-600 dark:border-lime-500',
         )}
       />
       {label && (
         <label
           htmlFor={id}
           className={cn(
-            'text-sm font-medium text-gray-700 dark:text-gray-300',
+            'text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300',
             'cursor-pointer',
             disabled && 'opacity-50 cursor-not-allowed',
           )}

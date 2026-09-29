@@ -100,30 +100,30 @@ export function VoiceCaptureWidget({
         'flex items-center gap-3 p-4 rounded-lg border-2 transition-all',
         isRecording
           ? 'border-red-500 bg-red-50 dark:bg-red-900'
-          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900',
+          : 'border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 bg-white dark:bg-zinc-900 dark:bg-zinc-100',
       )}>
         {/* Mic icon with pulse animation */}
         <div className={cn(
           'flex-shrink-0 p-3 rounded-lg',
           isRecording
             ? 'bg-red-100 dark:bg-red-800'
-            : 'bg-gray-100 dark:bg-gray-800',
+            : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200',
         )}>
           <Mic className={cn(
             'h-6 w-6',
             isRecording
               ? 'text-red-600 dark:text-red-400 animate-pulse'
-              : 'text-gray-600 dark:text-gray-400',
+              : 'text-zinc-600 dark:text-zinc-400 dark:text-zinc-400',
           )} />
         </div>
 
         {/* Text and timer */}
         <div className="flex-1">
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
+          <div className="text-sm font-medium text-zinc-900 dark:text-white">
             {isRecording ? `Recording... ${formatTime(duration)}` : placeholder}
           </div>
           {isProcessing && (
-            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            <div className="text-xs text-lime-600 dark:text-blue-400 mt-1">
               Processing audio...
             </div>
           )}

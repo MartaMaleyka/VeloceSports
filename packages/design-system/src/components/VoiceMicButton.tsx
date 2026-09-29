@@ -58,10 +58,10 @@ export function VoiceMicButton({
         'inline-flex items-center justify-center rounded-full p-3',
         'transition-all duration-200',
         'disabled:opacity-50 disabled:cursor-not-allowed',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        'focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-1',
         isRecording
           ? 'bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 animate-pulse'
-          : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600',
+          : 'bg-lime-500 dark:bg-lime-400 hover:bg-lime-600 dark:hover:bg-lime-500',
         className,
       )}
       title={isRecording ? 'Stop recording' : 'Start recording'}

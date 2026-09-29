@@ -56,12 +56,12 @@ export function SystemStatus({
           <div className={config.color}>
             {config.icon}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
             All Systems {config.label}
           </h3>
         </div>
         {lastUpdate && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
             Last updated: {lastUpdate}
           </p>
         )}
@@ -70,7 +70,7 @@ export function SystemStatus({
       {/* Components status */}
       {components.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+          <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">
             Components
           </h4>
           <div className="space-y-2">
@@ -80,14 +80,14 @@ export function SystemStatus({
               return (
                 <div
                   key={component.id}
-                  className="p-4 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
+                  className="p-4 rounded-lg bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className={compConfig.color}>
                         {compConfig.icon}
                       </div>
-                      <span className="font-medium text-gray-900 dark:text-white">
+                      <span className="font-medium text-zinc-900 dark:text-white">
                         {component.name}
                       </span>
                     </div>
@@ -97,27 +97,27 @@ export function SystemStatus({
                   </div>
 
                   {/* Component details */}
-                  <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="grid grid-cols-3 gap-4 text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     {component.uptime && (
                       <div>
-                        <div className="text-gray-500 dark:text-gray-500">Uptime</div>
-                        <div className="font-mono text-gray-900 dark:text-white">
+                        <div className="text-zinc-500 dark:text-zinc-500">Uptime</div>
+                        <div className="font-mono text-zinc-900 dark:text-white">
                           {component.uptime}
                         </div>
                       </div>
                     )}
                     {component.responseTime && (
                       <div>
-                        <div className="text-gray-500 dark:text-gray-500">Response Time</div>
-                        <div className="font-mono text-gray-900 dark:text-white">
+                        <div className="text-zinc-500 dark:text-zinc-500">Response Time</div>
+                        <div className="font-mono text-zinc-900 dark:text-white">
                           {component.responseTime}
                         </div>
                       </div>
                     )}
                     {component.lastChecked && (
                       <div>
-                        <div className="text-gray-500 dark:text-gray-500">Last Check</div>
-                        <div className="font-mono text-gray-900 dark:text-white">
+                        <div className="text-zinc-500 dark:text-zinc-500">Last Check</div>
+                        <div className="font-mono text-zinc-900 dark:text-white">
                           {component.lastChecked}
                         </div>
                       </div>

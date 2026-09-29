@@ -93,15 +93,15 @@ export function AttendanceForm({
           return (
             <div
               key={player.id}
-              className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100"
             >
               {/* Player info */}
               <div className="mb-3">
-                <div className="font-semibold text-gray-900 dark:text-white">
+                <div className="font-semibold text-zinc-900 dark:text-white">
                   #{player.number} - {player.name}
                 </div>
                 {player.position && (
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     {player.position}
                   </div>
                 )}
@@ -117,7 +117,7 @@ export function AttendanceForm({
                       'flex-1 px-2 py-2 rounded text-xs font-medium transition-all',
                       currentStatus === status
                         ? statusConfig[status].color
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700',
+                        : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-700 dark:bg-zinc-300',
                     )}
                   >
                     {statusConfig[status].shortcut}

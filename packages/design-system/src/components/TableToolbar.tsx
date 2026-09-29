@@ -27,13 +27,13 @@ export function TableToolbar({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700',
+        'fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border-t border-zinc-200 dark:border-zinc-700 dark:border-zinc-700',
         'shadow-lg z-40',
         className,
       )}
     >
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300">
           {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
         </p>
 
@@ -54,7 +54,7 @@ export function TableToolbar({
 
           <button
             onClick={onClearSelection}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 rounded transition-colors"
           >
             Clear selection
           </button>

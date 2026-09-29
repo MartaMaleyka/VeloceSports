@@ -11,12 +11,12 @@ export function LoadingState({ message = 'Cargando...', showAnimation = true }: 
     <div className="flex flex-col items-center justify-center gap-3 py-12">
       {showAnimation && (
         <div className="flex gap-1">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500" style={{ animationDelay: '0s' }} />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500" style={{ animationDelay: '0.2s' }} />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500" style={{ animationDelay: '0.4s' }} />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-lime-400" style={{ animationDelay: '0s' }} />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-lime-400" style={{ animationDelay: '0.2s' }} />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-lime-400" style={{ animationDelay: '0.4s' }} />
         </div>
       )}
-      <p className="text-sm text-gray-600">{message}</p>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>
     </div>
   );
 }
@@ -60,11 +60,11 @@ export function EmptyStateDisplay({
   icon,
 }: EmptyStateDisplayProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-gray-200 bg-gray-50 py-12 px-4">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 py-12 px-4">
       {icon || <div className="text-4xl">📭</div>}
       <div className="text-center">
-        <h3 className="font-semibold text-gray-900">{title}</h3>
-        {message && <p className="mt-1 text-sm text-gray-600">{message}</p>}
+        <h3 className="font-semibold text-zinc-900">{title}</h3>
+        {message && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
       </div>
       {action && <div className="mt-4">{action}</div>}
     </div>

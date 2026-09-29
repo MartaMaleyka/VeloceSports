@@ -21,11 +21,11 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-gray-700">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
         {label}
         {required && <span className="ml-1 text-red-500">*</span>}
       </label>
-      {description && <p className="text-xs text-gray-500">{description}</p>}
+      {description && <p className="text-xs text-zinc-500">{description}</p>}
       <div className={error ? 'rounded-md border-2 border-red-300' : ''}>
         {children}
       </div>

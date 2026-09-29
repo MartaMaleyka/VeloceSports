@@ -58,10 +58,10 @@ export function Pagination({
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className={cn(
-          'p-2 rounded border border-gray-300 dark:border-gray-600',
+          'p-2 rounded border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
           'transition-colors',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          currentPage !== 1 && 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
+          currentPage !== 1 && 'hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 cursor-pointer',
         )}
         aria-label="Previous page"
       >
@@ -70,7 +70,7 @@ export function Pagination({
 
       {pages.map((page, idx) =>
         page === '...' ? (
-          <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
+          <span key={`ellipsis-${idx}`} className="px-2 text-zinc-500">
             ...
           </span>
         ) : (
@@ -80,8 +80,8 @@ export function Pagination({
             className={cn(
               'min-w-10 h-10 rounded border transition-colors',
               currentPage === page
-                ? 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500 text-white'
-                : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                ? 'bg-lime-500 dark:bg-lime-400 border-blue-600 dark:border-lime-500 text-white'
+                : 'border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200',
             )}
             aria-current={currentPage === page ? 'page' : undefined}
           >
@@ -94,10 +94,10 @@ export function Pagination({
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className={cn(
-          'p-2 rounded border border-gray-300 dark:border-gray-600',
+          'p-2 rounded border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
           'transition-colors',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          currentPage !== totalPages && 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
+          currentPage !== totalPages && 'hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 cursor-pointer',
         )}
         aria-label="Next page"
       >

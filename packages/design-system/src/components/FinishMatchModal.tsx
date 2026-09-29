@@ -56,7 +56,7 @@ export function FinishMatchModal({
               {config.label}
             </span>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
             vs {matchSummary.opponent}
           </p>
         </div>
@@ -64,11 +64,11 @@ export function FinishMatchModal({
         {/* Match details */}
         <div className="grid grid-cols-2 gap-3">
           {matchSummary.duration && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
+              <Clock className="h-5 w-5 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Duration</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Duration</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white">
                   {matchSummary.duration}
                 </p>
               </div>
@@ -76,11 +76,11 @@ export function FinishMatchModal({
           )}
 
           {matchSummary.playerCount && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
+              <Users className="h-5 w-5 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Players</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Players</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white">
                   {matchSummary.playerCount}
                 </p>
               </div>
@@ -88,11 +88,11 @@ export function FinishMatchModal({
           )}
 
           {matchSummary.location && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 col-span-2">
-              <MapPin className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200 col-span-2">
+              <MapPin className="h-5 w-5 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Location</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Location</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white">
                   {matchSummary.location}
                 </p>
               </div>
@@ -103,7 +103,7 @@ export function FinishMatchModal({
         {/* Score input */}
         {matchSummary.result !== 'draw' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 mb-2">
               Final Score (optional)
             </label>
             <Input
@@ -118,7 +118,7 @@ export function FinishMatchModal({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 mb-2">
             Notes (optional)
           </label>
           <textarea
@@ -128,10 +128,10 @@ export function FinishMatchModal({
             disabled={isProcessing}
             rows={3}
             className={cn(
-              'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600',
-              'bg-white dark:bg-gray-900 text-gray-900 dark:text-white',
-              'placeholder-gray-500 dark:placeholder-gray-400',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400',
+              'w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600',
+              'bg-white dark:bg-zinc-900 dark:bg-zinc-100 text-zinc-900 dark:text-white',
+              'placeholder-zinc-500 dark:placeholder-zinc-400',
+              'focus:outline-none focus:ring-2 focus:ring-lime-500 dark:focus:ring-blue-400',
               'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           />

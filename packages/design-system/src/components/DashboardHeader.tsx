@@ -69,7 +69,7 @@ export function DashboardHeader({
       {/* Header */}
       <header
         className={cn(
-          'bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800',
+          'bg-white dark:bg-zinc-900 dark:bg-zinc-100 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-800',
           'sticky top-0 z-40 transition-colors duration-200',
           className,
         )}
@@ -83,9 +83,9 @@ export function DashboardHeader({
                 onClick={handleMobileMenuClick}
                 aria-label="Open navigation menu"
                 aria-expanded={mobileDrawerOpen}
-                className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="md:hidden p-2 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 rounded-lg transition-colors"
               >
-                <Menu className="h-6 w-6 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+                <Menu className="h-6 w-6 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" aria-hidden="true" />
               </button>
             )}
 
@@ -94,8 +94,8 @@ export function DashboardHeader({
               className={cn(
                 'text-2xl font-bold flex-1',
                 accent === 'brand'
-                  ? 'text-blue-600 dark:text-blue-400'
-                  : 'text-gray-900 dark:text-white',
+                  ? 'text-lime-600 dark:text-blue-400'
+                  : 'text-zinc-900 dark:text-white',
               )}
             >
               {title}
@@ -121,7 +121,7 @@ export function DashboardHeader({
           {/* Bottom row: description + mobile search */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                 {description}
               </p>
             )}

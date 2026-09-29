@@ -44,7 +44,7 @@ export function PlayerPhotoModal({
         />
 
         {selectedFile && (
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className="p-3 bg-lime-50 dark:bg-lime-900/20 rounded-lg">
             <p className="text-sm text-blue-700 dark:text-blue-300">
               Selected: <strong>{selectedFile.name}</strong>
             </p>

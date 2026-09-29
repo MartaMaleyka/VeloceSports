@@ -70,7 +70,7 @@ export function Popover({
         <div
           ref={contentRef}
           className={cn(
-            'rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg',
+            'rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 shadow-lg',
             getPositionClasses(),
           )}
         >

@@ -28,7 +28,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
   return (
     <div className={cn('space-y-3', className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300">
           {label}
         </label>
       )}
@@ -48,8 +48,8 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
             className={cn(
               'h-8 w-8 rounded-lg transition-all border-2',
               value === color
-                ? 'border-gray-900 dark:border-white ring-2 ring-offset-2 dark:ring-offset-gray-900'
-                : 'border-transparent hover:border-gray-300 dark:hover:border-gray-700',
+                ? 'border-zinc-900 dark:border-white ring-2 ring-offset-2 dark:ring-offset-zinc-900'
+                : 'border-transparent hover:border-zinc-300 dark:border-zinc-600 dark:hover:border-zinc-700',
             )}
           >
             {value === color && (
@@ -68,8 +68,8 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
           className={cn(
             'px-3 py-2 rounded-lg text-sm transition-colors',
             showCustom
-              ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700',
+              ? 'bg-lime-100 dark:bg-lime-900 text-blue-700 dark:text-blue-300'
+              : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-700 dark:bg-zinc-300',
           )}
         >
           Custom
@@ -94,7 +94,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                 }
               }}
               placeholder="#000000"
-              className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white text-sm font-mono"
+              className="px-2 py-1 rounded border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 dark:bg-zinc-900 dark:bg-zinc-100 dark:text-white text-sm font-mono"
             />
           </div>
         )}

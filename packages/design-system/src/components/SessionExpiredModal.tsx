@@ -56,18 +56,18 @@ export function SessionExpiredModal({
           <AlertCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-300" aria-hidden="true" />
         </div>
 
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
           Your session is about to expire
         </h2>
 
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
           You will be automatically logged out in{' '}
           <span className="font-mono font-semibold text-yellow-600 dark:text-yellow-400">
             {minutes}:{seconds.toString().padStart(2, '0')}
           </span>
         </p>
 
-        <p className="text-xs text-gray-500 dark:text-gray-500">
+        <p className="text-xs text-zinc-500 dark:text-zinc-500">
           For your security, you'll be logged out due to inactivity.
         </p>
 

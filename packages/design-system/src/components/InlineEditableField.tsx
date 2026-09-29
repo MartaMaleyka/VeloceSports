@@ -77,9 +77,9 @@ export function InlineEditableField({
             placeholder={placeholder}
             disabled={isSaving || isLoading}
             className={cn(
-              'flex-1 px-2 py-1 rounded border border-blue-500 dark:border-blue-400',
-              'dark:bg-gray-900 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500',
+              'flex-1 px-2 py-1 rounded border border-lime-500 dark:border-blue-400',
+              'dark:bg-zinc-900 dark:bg-zinc-100 dark:text-white',
+              'focus:outline-none focus:ring-2 focus:ring-lime-500',
               'disabled:opacity-50',
             )}
             rows={3}
@@ -94,9 +94,9 @@ export function InlineEditableField({
             placeholder={placeholder}
             disabled={isSaving || isLoading}
             className={cn(
-              'flex-1 px-2 py-1 rounded border border-blue-500 dark:border-blue-400',
-              'dark:bg-gray-900 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500',
+              'flex-1 px-2 py-1 rounded border border-lime-500 dark:border-blue-400',
+              'dark:bg-zinc-900 dark:bg-zinc-100 dark:text-white',
+              'focus:outline-none focus:ring-2 focus:ring-lime-500',
               'disabled:opacity-50',
             )}
           />
@@ -123,14 +123,14 @@ export function InlineEditableField({
 
   return (
     <div className={cn('flex items-center gap-2 group', className)}>
-      <span className="text-gray-900 dark:text-white">{value || placeholder}</span>
+      <span className="text-zinc-900 dark:text-white">{value || placeholder}</span>
       <button
         onClick={() => setIsEditing(true)}
         disabled={isLoading}
         aria-label="Edit"
-        className="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-all disabled:opacity-50"
+        className="p-1 opacity-0 group-hover:opacity-100 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-700 dark:bg-zinc-300 rounded transition-all disabled:opacity-50"
       >
-        <Edit2 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+        <Edit2 className="h-4 w-4 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
       </button>
     </div>
   );

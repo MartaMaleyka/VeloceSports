@@ -13,7 +13,7 @@ export function ViewModeToggle({ mode, onChange, className }: ViewModeToggleProp
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg',
+        'inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 rounded-lg',
         className,
       )}
     >
@@ -24,8 +24,8 @@ export function ViewModeToggle({ mode, onChange, className }: ViewModeToggleProp
         className={cn(
           'p-2 rounded transition-colors',
           mode === 'list'
-            ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
+            ? 'bg-white dark:bg-zinc-900 dark:bg-zinc-100 text-lime-600 dark:text-blue-400 shadow-sm'
+            : 'text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white',
         )}
       >
         <List className="h-5 w-5" aria-hidden="true" />
@@ -38,8 +38,8 @@ export function ViewModeToggle({ mode, onChange, className }: ViewModeToggleProp
         className={cn(
           'p-2 rounded transition-colors',
           mode === 'grid'
-            ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
+            ? 'bg-white dark:bg-zinc-900 dark:bg-zinc-100 text-lime-600 dark:text-blue-400 shadow-sm'
+            : 'text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white',
         )}
       >
         <Grid3x3 className="h-5 w-5" aria-hidden="true" />

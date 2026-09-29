@@ -39,17 +39,17 @@ export function Accordion({
       {items.map((item) => (
         <div
           key={item.id}
-          className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+          className="border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 rounded-lg overflow-hidden"
         >
           <button
             onClick={() => !item.disabled && toggleItem(item.id)}
             disabled={item.disabled}
             className={cn(
               'w-full px-4 py-3 flex items-center justify-between',
-              'text-left font-medium text-gray-900 dark:text-white',
+              'text-left font-medium text-zinc-900 dark:text-white',
               'transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              !item.disabled && 'hover:bg-gray-50 dark:hover:bg-gray-800',
+              !item.disabled && 'hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200',
             )}
           >
             <span>{item.title}</span>
@@ -63,7 +63,7 @@ export function Accordion({
           </button>
 
           {expandedIds.includes(item.id) && (
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+            <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200/50 border-t border-zinc-200 dark:border-zinc-700 dark:border-zinc-700">
               {item.content}
             </div>
           )}

@@ -36,11 +36,11 @@ export function Switch({
           'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent',
           'transition-colors cursor-pointer',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-          'dark:focus:ring-offset-gray-900',
+          'focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-1',
+          'dark:focus:ring-offset-zinc-900',
           checked
-            ? 'bg-blue-600 dark:bg-blue-500'
-            : 'bg-gray-300 dark:bg-gray-600',
+            ? 'bg-lime-500 dark:bg-lime-400'
+            : 'bg-zinc-300 dark:bg-zinc-600 dark:bg-zinc-600 dark:bg-zinc-400',
         )}
       >
         <span
@@ -55,7 +55,7 @@ export function Switch({
         <label
           htmlFor={id}
           className={cn(
-            'text-sm font-medium text-gray-700 dark:text-gray-300',
+            'text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300',
             'cursor-pointer',
             disabled && 'opacity-50 cursor-not-allowed',
           )}

@@ -67,7 +67,7 @@ export function MobileNavDrawer({
         aria-modal="true"
         aria-label={title || 'Navigation menu'}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-zinc-900 dark:bg-zinc-100 shadow-lg',
           'transform transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           className,
@@ -75,16 +75,16 @@ export function MobileNavDrawer({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-800">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
               {title}
             </h2>
             <button
               onClick={onClose}
               aria-label="Close menu"
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+              className="p-1 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 rounded transition-colors"
             >
-              <X className="h-5 w-5 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+              <X className="h-5 w-5 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" aria-hidden="true" />
             </button>
           </div>
         )}

@@ -68,65 +68,65 @@ export function AcademyAdminDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <button
           onClick={onManagePlayers}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Players</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Manage all players</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Players</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Manage all players</div>
         </button>
         <button
           onClick={onManageTeams}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Teams</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Manage teams</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Teams</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Manage teams</div>
         </button>
         <button
           onClick={onViewReports}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Reports</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Analytics & reports</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Reports</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Analytics & reports</div>
         </button>
         <button
           onClick={onManageCategories}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Categories</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Age/skill groups</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Categories</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Age/skill groups</div>
         </button>
       </div>
 
       {/* Teams overview */}
       {teams.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Teams Overview</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Teams Overview</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {teams.slice(0, 6).map((team) => (
               <div
                 key={team.id}
-                className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200 border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700"
               >
-                <div className="font-semibold text-gray-900 dark:text-white mb-3">
+                <div className="font-semibold text-zinc-900 dark:text-white mb-3">
                   {team.name}
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-lg font-bold text-lime-600 dark:text-blue-400">
                       {team.coachCount}
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">Coaches</div>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Coaches</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-lg font-bold text-lime-600 dark:text-blue-400">
                       {team.playerCount}
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">Players</div>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Players</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-lg font-bold text-lime-600 dark:text-blue-400">
                       {team.matchesThisMonth}
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">Matches</div>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Matches</div>
                   </div>
                 </div>
               </div>
@@ -137,22 +137,22 @@ export function AcademyAdminDashboard({
 
       {/* Recent activity */}
       {recentActivities.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Recent Activity</h3>
           <div className="space-y-3">
             {recentActivities.slice(0, 8).map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+                className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200"
               >
                 <div className="text-xl flex-shrink-0">
                   {activityIcons[activity.type] || '📌'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-gray-900 dark:text-white">
+                  <div className="text-sm text-zinc-900 dark:text-white">
                     {activity.description}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 mt-1">
                     {activity.timestamp}
                   </div>
                 </div>

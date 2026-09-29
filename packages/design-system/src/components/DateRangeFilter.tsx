@@ -42,8 +42,8 @@ export function DateRangeFilter({
         className={cn(
           'inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors',
           hasApplied
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+            ? 'border-lime-500 bg-lime-50 dark:bg-lime-900/20 text-blue-700 dark:text-blue-300'
+            : 'border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200',
         )}
       >
         <Calendar size={18} />
@@ -55,19 +55,19 @@ export function DateRangeFilter({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-50 w-80">
+        <div className="absolute right-0 mt-2 p-4 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-300 dark:border-zinc-600 dark:border-zinc-700 rounded-lg shadow-lg z-50 w-80">
           <DateRangeInput value={range} onChange={setRange} />
 
           <div className="flex gap-2 mt-4">
             <button
               onClick={handleApply}
-              className="flex-1 px-3 py-2 rounded bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+              className="flex-1 px-3 py-2 rounded bg-lime-500 dark:bg-lime-400 text-white text-sm font-medium hover:bg-lime-600 dark:hover:bg-lime-500 transition-colors"
             >
               Apply
             </button>
             <button
               onClick={handleClear}
-              className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="px-3 py-2 rounded border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 text-sm font-medium hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 transition-colors"
             >
               <X size={18} />
             </button>

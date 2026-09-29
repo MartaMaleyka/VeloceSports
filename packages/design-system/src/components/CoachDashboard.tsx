@@ -61,21 +61,21 @@ export function CoachDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           onClick={onViewTeam}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Manage Team</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Players & roles</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Manage Team</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Players & roles</div>
         </button>
         <button
           onClick={onViewMatches}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Schedule</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Matches & calendar</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Schedule</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Matches & calendar</div>
         </button>
         <button
           onClick={onStartCapture}
-          className="p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-blue-200 dark:border-blue-700 bg-lime-50 dark:bg-lime-900 hover:shadow-lg transition-shadow"
         >
           <div className="font-semibold text-blue-900 dark:text-blue-100">Start Capture</div>
           <div className="text-sm text-blue-700 dark:text-blue-300">Record match</div>
@@ -84,17 +84,17 @@ export function CoachDashboard({
 
       {/* Recent matches */}
       {recentMatches.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Matches</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Recent Matches</h3>
           <div className="space-y-2">
             {recentMatches.slice(0, 5).map((match) => (
               <div
                 key={match.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+                className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200"
               >
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">vs {match.opponent}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">{match.date}</div>
+                  <div className="font-medium text-zinc-900 dark:text-white">vs {match.opponent}</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">{match.date}</div>
                 </div>
                 <div className={cn(
                   'px-3 py-1 rounded-full text-sm font-semibold',
@@ -114,16 +114,16 @@ export function CoachDashboard({
 
       {/* Top players */}
       {topPlayers.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Top Players</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Top Players</h3>
           <div className="space-y-2">
             {topPlayers.slice(0, 5).map((player) => (
-              <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">{player.name}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">{player.actionsCount} actions</div>
+                  <div className="font-medium text-zinc-900 dark:text-white">{player.name}</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">{player.actionsCount} actions</div>
                 </div>
-                <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                <div className="text-sm font-semibold text-lime-600 dark:text-blue-400">
                   {player.avgRating.toFixed(1)}★
                 </div>
               </div>

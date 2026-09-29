@@ -59,9 +59,9 @@ export function ParentNotificationBell({
     <div ref={containerRef} className={cn('relative', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative p-2 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 transition-colors focus:outline-none focus:ring-2 focus:ring-lime-500"
       >
-        <Bell size={20} className="text-gray-600 dark:text-gray-400" />
+        <Bell size={20} className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 rounded-full bg-red-600 text-white text-xs font-bold">
             {unreadCount}
@@ -70,23 +70,23 @@ export function ParentNotificationBell({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          <div className="sticky top-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+          <div className="sticky top-0 p-4 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100">
+            <h3 className="font-semibold text-zinc-900 dark:text-white">Notifications</h3>
           </div>
 
           {notifications.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+            <div className="p-6 text-center text-zinc-500 dark:text-zinc-400">
               <p>No notifications yet</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(
-                    'p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer',
-                    !notification.read && 'bg-blue-50 dark:bg-blue-900/20',
+                    'p-4 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200/50 transition-colors cursor-pointer',
+                    !notification.read && 'bg-lime-50 dark:bg-lime-900/20',
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -97,13 +97,13 @@ export function ParentNotificationBell({
                       }}
                       className="flex-1"
                     >
-                      <p className="font-medium text-gray-900 dark:text-white">{notification.title}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{formatTime(notification.timestamp)}</p>
+                      <p className="font-medium text-zinc-900 dark:text-white">{notification.title}</p>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">{notification.message}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">{formatTime(notification.timestamp)}</p>
                     </div>
                     <button
                       onClick={() => onDismiss?.(notification.id)}
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                      className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 flex-shrink-0"
                     >
                       <X size={16} />
                     </button>

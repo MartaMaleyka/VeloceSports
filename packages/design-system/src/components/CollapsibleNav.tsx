@@ -33,12 +33,12 @@ export function CollapsibleNavSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn('border-b border-gray-200 dark:border-gray-700', className)}>
+    <div className={cn('border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'w-full flex items-center justify-between px-3 py-2 text-sm font-medium',
-          'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
+          'text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:bg-zinc-200',
           'transition-colors duration-200',
         )}
       >
@@ -56,7 +56,7 @@ export function CollapsibleNavSection({
       </button>
 
       {isOpen && (
-        <nav className="pl-4 py-1 bg-gray-50 dark:bg-gray-900">
+        <nav className="pl-4 py-1 bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-900 dark:bg-zinc-100">
           {items.map((item) => (
             <a
               key={item.id}
@@ -70,11 +70,11 @@ export function CollapsibleNavSection({
               }}
               className={cn(
                 'flex items-center justify-between px-3 py-2 text-sm rounded',
-                'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
-                'hover:bg-gray-100 dark:hover:bg-gray-800',
+                'text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white',
+                'hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200',
                 'transition-colors duration-200',
                 activeItemId === item.id &&
-                  'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 font-medium',
+                  'text-lime-600 dark:text-blue-400 bg-lime-50 dark:bg-lime-900 font-medium',
               )}
             >
               <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export function CollapsibleNavSection({
                 <span>{item.label}</span>
               </div>
               {item.badge && (
-                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-lime-100 dark:bg-lime-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
                   {item.badge}
                 </span>
               )}

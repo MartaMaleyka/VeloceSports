@@ -20,7 +20,7 @@ export function StatusFilterTabs({
   className,
 }: StatusFilterTabsProps) {
   return (
-    <div className={cn('flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto', className)}>
+    <div className={cn('flex gap-1 border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 overflow-x-auto', className)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -30,8 +30,8 @@ export function StatusFilterTabs({
             'px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap',
             'border-b-2 -mb-0.5',
             activeTabId === tab.id
-              ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
+              ? 'border-blue-600 dark:border-blue-400 text-lime-600 dark:text-blue-400'
+              : 'border-transparent text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white',
           )}
         >
           <span>{tab.label}</span>
@@ -39,8 +39,8 @@ export function StatusFilterTabs({
             <span className={cn(
               'ml-2 px-2 py-0.5 rounded-full text-xs font-semibold',
               activeTabId === tab.id
-                ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+                ? 'bg-lime-100 dark:bg-lime-900 text-blue-700 dark:text-blue-300'
+                : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300',
             )}>
               {tab.count}
             </span>

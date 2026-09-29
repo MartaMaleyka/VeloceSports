@@ -31,8 +31,8 @@ export function FormProgress({ steps, currentStep, className }: FormProgressProp
                     isCompleted
                       ? 'bg-green-600 text-white'
                       : isCurrent
-                        ? 'bg-blue-600 text-white ring-2 ring-blue-300 dark:ring-blue-500'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                        ? 'bg-lime-500 text-white ring-2 ring-blue-300 dark:ring-lime-500'
+                        : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 dark:bg-zinc-700 dark:bg-zinc-300 dark:text-zinc-400',
                   )}
                 >
                   {isCompleted ? (
@@ -42,12 +42,12 @@ export function FormProgress({ steps, currentStep, className }: FormProgressProp
                   )}
                 </div>
 
-                <p className="mt-2 text-sm font-medium text-gray-900 dark:text-white text-center">
+                <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-white text-center">
                   {step.label}
                 </p>
 
                 {step.description && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center max-w-20">
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-center max-w-20">
                     {step.description}
                   </p>
                 )}
@@ -61,7 +61,7 @@ export function FormProgress({ steps, currentStep, className }: FormProgressProp
                       'h-full transition-colors duration-200',
                       isCompleted
                         ? 'bg-green-600'
-                        : 'bg-gray-200 dark:bg-gray-700',
+                        : 'bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300',
                     )}
                   />
                 </div>
@@ -73,7 +73,7 @@ export function FormProgress({ steps, currentStep, className }: FormProgressProp
 
       {/* Mobile indicator */}
       <div className="mt-4 sm:hidden">
-        <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-center text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
           Step {currentStep + 1} of {steps.length}
         </p>
       </div>

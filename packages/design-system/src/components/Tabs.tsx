@@ -59,7 +59,7 @@ export function Tabs({
         <div
           className={cn(
             'flex gap-1 overflow-x-auto',
-            variant === 'underline' && 'border-b border-gray-200 dark:border-gray-700',
+            variant === 'underline' && 'border-b border-zinc-200 dark:border-zinc-700 dark:border-zinc-700',
           )}
         >
           {tabs.map((tab) => (
@@ -75,15 +75,15 @@ export function Tabs({
                   cn(
                     'border-b-2 -mb-px',
                     activeTabId === tab.id
-                      ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
+                      ? 'border-blue-600 dark:border-blue-400 text-lime-600 dark:text-blue-400'
+                      : 'border-transparent text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white',
                   ),
                 variant === 'pills' &&
                   cn(
                     'rounded-lg',
                     activeTabId === tab.id
-                      ? 'bg-blue-600 dark:bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700',
+                      ? 'bg-lime-500 dark:bg-lime-400 text-white'
+                      : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-700 dark:bg-zinc-300',
                   ),
               )}
             >
@@ -94,8 +94,8 @@ export function Tabs({
                     className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-semibold',
                       activeTabId === tab.id
-                        ? 'bg-blue-700 dark:bg-blue-600 text-blue-100'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+                        ? 'bg-lime-600 dark:bg-lime-500 text-blue-100'
+                        : 'bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300',
                     )}
                   >
                     {tab.badge}

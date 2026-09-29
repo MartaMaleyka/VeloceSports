@@ -52,18 +52,18 @@ export function MatchPhaseSelector({
     <div className={cn('space-y-4', className)}>
       {/* Current phase card */}
       {currentPhaseIndex >= 0 && (
-        <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800">
+        <div className="p-4 rounded-lg bg-lime-50 dark:bg-lime-900 border border-blue-200 dark:border-blue-800">
           <div className="flex items-baseline gap-3 mb-2">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">
               {phases[currentPhaseIndex].label}
             </h3>
-            <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+            <span className="text-lg font-semibold text-lime-600 dark:text-blue-400">
               Phase {phases[currentPhaseIndex].number}
             </span>
           </div>
 
           {phases[currentPhaseIndex].duration && (
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-300 mb-3">
               Duration: {formatDuration(phases[currentPhaseIndex].duration)}
             </p>
           )}
@@ -112,7 +112,7 @@ export function MatchPhaseSelector({
 
       {/* Phase timeline */}
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">All Phases</h4>
+        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">All Phases</h4>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {phases.map((phase) => {
             const isActive = phase.id === currentPhaseId;
@@ -125,10 +125,10 @@ export function MatchPhaseSelector({
                 className={cn(
                   'relative flex-shrink-0 px-3 py-2 rounded-lg transition-all font-medium text-sm whitespace-nowrap',
                   isActive
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-lg'
+                    ? 'bg-lime-500 dark:bg-lime-400 text-white shadow-lg'
                     : isCompleted
                       ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700',
+                      : 'bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-700 dark:bg-zinc-300',
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -143,9 +143,9 @@ export function MatchPhaseSelector({
       </div>
 
       {/* Progress indicator */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div className="w-full bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300 rounded-full h-2">
         <div
-          className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all"
+          className="bg-lime-500 dark:bg-lime-400 h-2 rounded-full transition-all"
           style={{
             width: `${completedPhaseIds.length > 0
               ? (completedPhaseIds.length / phases.length) * 100
@@ -155,7 +155,7 @@ export function MatchPhaseSelector({
         />
       </div>
 
-      <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+      <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 text-center">
         {completedPhaseIds.length} of {phases.length} phases completed
       </p>
     </div>

@@ -76,14 +76,14 @@ export function FileUpload({
   return (
     <div className={cn('space-y-3', className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-300">
           {label}
         </label>
       )}
 
       {/* Preview */}
       {preview && !uploadedFile && (
-        <div className="relative h-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+        <div className="relative h-32 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200">
           <img
             src={preview}
             alt="Preview"
@@ -101,8 +101,8 @@ export function FileUpload({
         className={cn(
           'relative rounded-lg border-2 border-dashed px-6 py-8 text-center cursor-pointer transition-colors',
           isDragActive
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500',
+            ? 'border-lime-500 bg-lime-50 dark:bg-lime-900/20'
+            : 'border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500',
         )}
       >
         <input
@@ -115,12 +115,12 @@ export function FileUpload({
         />
 
         <div className="space-y-2">
-          <Upload className="h-8 w-8 mx-auto text-gray-400" aria-hidden="true" />
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <Upload className="h-8 w-8 mx-auto text-zinc-400" aria-hidden="true" />
+          <p className="text-sm font-medium text-zinc-900 dark:text-white">
             {uploadedFile ? `Uploading: ${uploadedFile.name}` : 'Click or drag files here'}
           </p>
           {hint && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {hint}
             </p>
           )}
@@ -128,9 +128,9 @@ export function FileUpload({
 
         {/* Upload progress */}
         {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+          <div className="mt-4 w-full bg-zinc-200 dark:bg-zinc-700 dark:bg-zinc-700 dark:bg-zinc-300 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-full transition-all duration-300"
+              className="bg-lime-500 h-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>

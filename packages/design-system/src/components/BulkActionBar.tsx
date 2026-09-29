@@ -35,7 +35,7 @@ export function BulkActionBar({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700',
+        'fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 dark:bg-zinc-100 border-t border-zinc-200 dark:border-zinc-700 dark:border-zinc-700',
         'shadow-lg z-40 animate-in slide-in-from-bottom',
         className,
       )}
@@ -44,12 +44,12 @@ export function BulkActionBar({
         <div className="flex items-center justify-between gap-4">
           {/* Left: Selected count */}
           <div className="flex items-center gap-4">
-            <div className="text-sm font-medium text-gray-900 dark:text-white">
+            <div className="text-sm font-medium text-zinc-900 dark:text-white">
               {selectedCount} of {totalCount} selected
             </div>
             <button
               onClick={onClear}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             >
               Clear selection
             </button>
@@ -72,9 +72,9 @@ export function BulkActionBar({
             <button
               onClick={onClear}
               aria-label="Close bulk actions"
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors ml-2"
+              className="p-1 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-800 dark:bg-zinc-200 rounded transition-colors ml-2"
             >
-              <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <X className="h-5 w-5 text-zinc-600 dark:text-zinc-400 dark:text-zinc-400" />
             </button>
           </div>
         </div>

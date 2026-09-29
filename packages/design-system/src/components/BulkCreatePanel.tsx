@@ -58,17 +58,17 @@ export function BulkCreatePanel({
   ];
 
   return (
-    <div className={cn('rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6', className)}>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{title}</h3>
+    <div className={cn('rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 p-6', className)}>
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">{title}</h3>
 
       <Tabs tabs={tabs} defaultTabId="csv">
         <TabContent tabId="csv" className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
               Upload CSV File
             </label>
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
-              <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-600 mb-2" />
+            <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 dark:border-zinc-700 rounded-lg p-8 text-center">
+              <Upload className="mx-auto h-8 w-8 text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 mb-2" />
               <input
                 type="file"
                 accept=".csv"
@@ -78,21 +78,21 @@ export function BulkCreatePanel({
               />
               <label
                 htmlFor="csv-input"
-                className="text-sm text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
+                className="text-sm text-lime-600 dark:text-blue-400 cursor-pointer hover:underline"
               >
                 Click to upload CSV
               </label>
             </div>
 
             {csvContent && (
-              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-700 dark:text-blue-300">
+              <div className="mt-4 p-3 bg-lime-50 dark:bg-lime-900/20 rounded text-sm text-blue-700 dark:text-blue-300">
                 ✓ CSV file loaded ({csvContent.split('\n').length} lines)
               </div>
             )}
 
             <div className="mt-4">
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Expected format:</p>
-              <code className="block p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-700 dark:text-gray-300 overflow-x-auto">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 mb-2">Expected format:</p>
+              <code className="block p-2 bg-zinc-100 dark:bg-zinc-800 dark:bg-zinc-800 dark:bg-zinc-200 rounded text-xs text-zinc-700 dark:text-zinc-300 dark:text-zinc-300 overflow-x-auto">
                 {csvTemplate}
               </code>
             </div>
@@ -107,14 +107,14 @@ export function BulkCreatePanel({
 
         <TabContent tabId="paste" className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
               Paste CSV Data
             </label>
             <textarea
               value={pasteContent}
               onChange={(e) => setPasteContent(e.target.value)}
               placeholder={`${csvTemplate}\nvalue1,value2,value3`}
-              className="w-full h-40 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-mono"
+              className="w-full h-40 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 dark:border-zinc-600 bg-white dark:bg-zinc-800 dark:bg-zinc-200 text-zinc-900 dark:text-white text-sm font-mono"
             />
 
             {pasteContent && (

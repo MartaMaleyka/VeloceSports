@@ -51,11 +51,11 @@ export function ParentDashboard({
   return (
     <PageContainer className={cn('space-y-6', className)} {...props}>
       {/* Welcome section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-lime-900 dark:to-indigo-900 rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">
           Welcome, {playerName}!
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
           Here's an overview of {playerName}'s performance and upcoming matches
         </p>
       </div>
@@ -72,54 +72,54 @@ export function ParentDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           onClick={onViewSchedule}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Schedule</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">View matches</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Schedule</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">View matches</div>
         </button>
         <button
           onClick={onViewStats}
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Statistics</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Detailed stats</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Statistics</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Detailed stats</div>
         </button>
         <button
-          className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition-shadow"
+          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:bg-zinc-100 hover:shadow-lg transition-shadow"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">Progress</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Improvement trends</div>
+          <div className="font-semibold text-zinc-900 dark:text-white">Progress</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">Improvement trends</div>
         </button>
       </div>
 
       {/* Upcoming matches */}
       {upcomingMatches.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Upcoming Matches</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Upcoming Matches</h3>
           <div className="space-y-3">
             {upcomingMatches.slice(0, 5).map((match) => (
               <div
                 key={match.id}
                 onClick={() => onViewMatch?.(match.id)}
-                className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:shadow-md transition-shadow cursor-pointer border border-gray-200 dark:border-gray-700"
+                className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200 hover:shadow-md transition-shadow cursor-pointer border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-900 dark:text-white">
+                    <div className="font-semibold text-zinc-900 dark:text-white">
                       vs {match.opponent}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-400 mt-1">
                       {match.date}
                       {match.time && ` • ${match.time}`}
                     </div>
                     {match.location && (
-                      <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
                         📍 {match.location}
                       </div>
                     )}
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                    <div className="text-xs font-semibold text-lime-600 dark:text-blue-400">
                       View →
                     </div>
                   </div>
@@ -132,23 +132,23 @@ export function ParentDashboard({
 
       {/* Recent performance */}
       {recentPerformance.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Performance</h3>
+        <div className="bg-white dark:bg-zinc-900 dark:bg-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:border-zinc-700 p-4">
+          <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">Recent Performance</h3>
           <div className="space-y-2">
             {recentPerformance.slice(0, 5).map((perf) => (
               <div
                 key={perf.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+                className="flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 dark:bg-zinc-800 dark:bg-zinc-200"
               >
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="font-medium text-zinc-900 dark:text-white">
                     vs {perf.opponent}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     {perf.matchDate} • {perf.actionsCount} actions
                   </div>
                 </div>
-                <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                <div className="text-sm font-semibold text-lime-600 dark:text-blue-400">
                   {perf.rating.toFixed(1)}★
                 </div>
               </div>
