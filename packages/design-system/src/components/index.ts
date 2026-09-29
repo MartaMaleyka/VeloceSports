@@ -44,6 +44,15 @@ export {
 } from './StateDisplay.js';
 export { ErrorBoundary, type ErrorBoundaryProps } from './ErrorBoundary.js';
 export { FormField, FormError, FormGroup, FormActions, type FormFieldProps, type FormErrorProps, type FormGroupProps, type FormActionsProps } from './FormField.js';
+export { FormInputWithValidation, type FormInputWithValidationProps } from './FormInputWithValidation.js';
+export { PasswordToggle, type PasswordToggleProps } from './PasswordToggle.js';
+export { SessionExpiredModal, type SessionExpiredModalProps } from './SessionExpiredModal.js';
+export { FormProgress, type FormProgressProps, type FormStep } from './FormProgress.js';
+export { CollapsibleNavSection, type CollapsibleNavSectionProps, type NavItem } from './CollapsibleNav.js';
+export { HeaderQuickSearch, type HeaderQuickSearchProps } from './HeaderQuickSearch.js';
+export { ProfileDropdown, type ProfileDropdownProps, type ProfileDropdownItem } from './ProfileDropdown.js';
+export { MobileNavDrawer, type MobileNavDrawerProps } from './MobileNavDrawer.js';
+export { DashboardHeader, type DashboardHeaderProps } from './DashboardHeader.js';
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
 export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';
 export { useFetch, useAsync, type UseFetchOptions, type UseFetchState, type UseAsyncOptions, type UseAsyncState } from '../hooks/useFetch.js';
