@@ -53,6 +53,12 @@ export { HeaderQuickSearch, type HeaderQuickSearchProps } from './HeaderQuickSea
 export { ProfileDropdown, type ProfileDropdownProps, type ProfileDropdownItem } from './ProfileDropdown.js';
 export { MobileNavDrawer, type MobileNavDrawerProps } from './MobileNavDrawer.js';
 export { DashboardHeader, type DashboardHeaderProps } from './DashboardHeader.js';
+export { DataTable, type DataTableProps, type Column, type SortDirection } from './DataTable.js';
+export { InlineEditableField, type InlineEditableFieldProps } from './InlineEditableField.js';
+export { BulkActionBar, type BulkActionBarProps, type BulkAction } from './BulkActionBar.js';
+export { ViewModeToggle, type ViewModeToggleProps } from './ViewModeToggle.js';
+export { ColorPicker, type ColorPickerProps } from './ColorPicker.js';
+export { FileUpload, type FileUploadProps } from './FileUpload.js';
 export { MatchCard, type MatchCardProps, type MatchStatus } from './MatchCard.js';
 export { StatusFilterTabs, type StatusFilterTabsProps, type StatusTab } from './StatusFilterTabs.js';
 export { DateRangePicker, type DateRangePickerProps, type DateRange } from './DateRangePicker.js';
