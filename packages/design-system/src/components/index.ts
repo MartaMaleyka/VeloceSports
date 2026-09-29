@@ -53,6 +53,18 @@ export { HeaderQuickSearch, type HeaderQuickSearchProps } from './HeaderQuickSea
 export { ProfileDropdown, type ProfileDropdownProps, type ProfileDropdownItem } from './ProfileDropdown.js';
 export { MobileNavDrawer, type MobileNavDrawerProps } from './MobileNavDrawer.js';
 export { DashboardHeader, type DashboardHeaderProps } from './DashboardHeader.js';
+export { MatchCard, type MatchCardProps, type MatchStatus } from './MatchCard.js';
+export { StatusFilterTabs, type StatusFilterTabsProps, type StatusTab } from './StatusFilterTabs.js';
+export { DateRangePicker, type DateRangePickerProps, type DateRange } from './DateRangePicker.js';
+export { FieldVisualization, type FieldVisualizationProps, type FieldAction } from './FieldVisualization.js';
+export { PlayerRoster, type PlayerRosterProps, type Player, type PlayerPresence } from './PlayerRoster.js';
+export { VoiceCaptureWidget, type VoiceCaptureWidgetProps } from './VoiceCaptureWidget.js';
+export { ActionEntry, type ActionEntryProps, type ActionType } from './ActionEntry.js';
+export { CaptureTimeline, type CaptureTimelineProps, type TimelineAction, type TimelineActionType } from './CaptureTimeline.js';
+export { AttendanceForm, type AttendanceFormProps, type AttendancePlayer, type AttendanceStatus } from './AttendanceForm.js';
+export { MatchPhaseSelector, type MatchPhaseSelectorProps, type Phase } from './MatchPhaseSelector.js';
+export { MatchStatusControls, type MatchStatusControlsProps, type MatchControlStatus } from './MatchStatusControls.js';
+export { FinishMatchModal, type FinishMatchModalProps, type MatchSummary } from './FinishMatchModal.js';
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
 export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';
 export { useFetch, useAsync, type UseFetchOptions, type UseFetchState, type UseAsyncOptions, type UseAsyncState } from '../hooks/useFetch.js';
