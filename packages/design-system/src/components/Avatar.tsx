@@ -42,7 +42,7 @@ export function Avatar({
         src={src}
         alt={alt}
         className={cn(
-          'rounded-full bg-gradient-to-br from-lime-300 to-lime-600 dark:from-lime-500 dark:to-lime-700',
+          'rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-600 dark:to-blue-800',
           'object-cover font-semibold text-white',
           sizeClass,
           !src && 'flex items-center justify-center',
@@ -58,7 +58,7 @@ export function Avatar({
       {/* Fallback initials element */}
       <div
         className={cn(
-          'hidden rounded-full bg-gradient-to-br from-lime-300 to-lime-600 dark:from-lime-500 dark:to-lime-700',
+          'hidden rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-600 dark:to-blue-800',
           'items-center justify-center font-semibold text-white absolute inset-0',
           sizeClass,
         )}
