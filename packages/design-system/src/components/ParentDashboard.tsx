@@ -51,7 +51,7 @@ export function ParentDashboard({
   return (
     <PageContainer className={cn('space-y-6', className)} {...props}>
       {/* Welcome section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-lime-50 to-lime-100 dark:from-lime-900 dark:to-lime-800 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
           Welcome, {playerName}!
         </h2>
