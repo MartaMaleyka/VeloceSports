@@ -25,6 +25,7 @@ export const es = {
     suspended: 'Suspendido',
     confirm: 'Confirmar',
     back: 'Volver',
+    positive: 'Positivo',
   },
   players: {
     photo: {

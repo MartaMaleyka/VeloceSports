@@ -23,3 +23,7 @@ tmp-export-test/
 
 # Backups locales (docker-compose.prod.yml)
 backups/
+
+# Build and compilation caches
+node-compile-cache/
+tsx-*/
