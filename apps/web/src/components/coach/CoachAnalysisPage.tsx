@@ -13,6 +13,39 @@ function calculatePositiveActionsPercentage(actions: Array<{ impact: ActionImpac
   const positive = actions.filter((a) => a.impact === ActionImpact.POSITIVE).length;
   return (positive / actions.length) * 100;
 }
+
+interface ActionStats {
+  code: number;
+  name: string;
+  count: number;
+  percentage: number;
+  impact: ActionImpact;
+}
+
+function calculateActionPercentages(
+  players: CoachPlayerAnalysisRowDto[],
+  playerActions: CoachAnalysisActionByCodeDto[],
+  playerCategoryId: number,
+): ActionStats[] {
+  const categoryTotals = new Map<number, number>();
+
+  // Only sum actions from players in the same category
+  for (const player of players) {
+    if (player.categoryId === playerCategoryId) {
+      for (const action of player.actionsByCode) {
+        categoryTotals.set(action.code, (categoryTotals.get(action.code) ?? 0) + action.count);
+      }
+    }
+  }
+
+  return playerActions.map((action) => ({
+    code: action.code,
+    name: action.name,
+    count: action.count,
+    percentage: categoryTotals.get(action.code) ? (action.count / categoryTotals.get(action.code)!) * 100 : 0,
+    impact: action.impact,
+  }));
+}
 import {
   Button,
   EmptyState,
@@ -53,7 +86,7 @@ import {
 } from '../../lib/coach-analysis-api';
 import { appPath } from '../../lib/app-path';
 import { CoachAnalysisTopChart } from './CoachAnalysisTopChart';
-import { CoachActionChips } from './CoachActionChips';
+import { CoachActionChips, CoachActionChipsWithPercentage } from './CoachActionChips';
 import { PlayerAvatar } from '../players/PlayerAvatar';
 
 const ANALYSIS_BASE = appPath('/dashboard/coach/analysis');
@@ -598,6 +631,11 @@ function CoachAnalysisPageInner() {
             >
               {paged.map((player) => {
                 const positivePercentage = calculatePositiveActionsPercentage(player.actionsByCode);
+                const actionStats = calculateActionPercentages(sorted, player.actionsByCode, player.categoryId);
+                const actionsWithPercentage = player.actionsByCode.map((action) => {
+                  const stat = actionStats.find((s) => s.code === action.code);
+                  return { ...action, percentage: stat?.percentage };
+                });
                 return (
                   <li key={player.playerId} className="ds-stagger-item">
                     <button
@@ -651,7 +689,7 @@ function CoachAnalysisPageInner() {
                               </dd>
                             </div>
                           </dl>
-                          <CoachActionChips actions={player.actionsByCode} className="mt-3" />
+                          <CoachActionChipsWithPercentage actions={actionsWithPercentage} className="mt-3" showPercentage={true} />
                         </div>
                       </div>
                     </button>
@@ -734,6 +772,11 @@ function CoachAnalysisPageInner() {
               <TableBody>
                 {paged.map((player) => {
                   const positivePercentage = calculatePositiveActionsPercentage(player.actionsByCode);
+                  const actionStats = calculateActionPercentages(sorted, player.actionsByCode, player.categoryId);
+                  const actionsWithPercentage = player.actionsByCode.map((action) => {
+                    const stat = actionStats.find((s) => s.code === action.code);
+                    return { ...action, percentage: stat?.percentage };
+                  });
                   return (
                     <TableRow
                       key={player.playerId}
@@ -775,7 +818,7 @@ function CoachAnalysisPageInner() {
                         {positivePercentage.toFixed(1)}%
                       </TableCell>
                       <TableCell className="min-w-[14rem]">
-                        <CoachActionChips actions={player.actionsByCode} />
+                        <CoachActionChipsWithPercentage actions={actionsWithPercentage} showPercentage={true} />
                       </TableCell>
                     </TableRow>
                   );
