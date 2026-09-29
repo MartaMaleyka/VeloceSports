@@ -18,7 +18,8 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
-    "@velocesport/i18n": "workspace:*"
+    "@velocesport/i18n": "workspace:*",
+    "lucide-react": "^1.21.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",
