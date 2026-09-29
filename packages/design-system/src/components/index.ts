@@ -47,5 +47,5 @@ export { FormField, FormError, FormGroup, FormActions, type FormFieldProps, type
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
 export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';
 export { useFetch, useAsync, type UseFetchOptions, type UseFetchState, type UseAsyncOptions, type UseAsyncState } from '../hooks/useFetch.js';
-export { useForm, createFieldProps, type ValidationRule, type FormField, type FormState, type UseFormOptions, type UseFormReturn } from '../hooks/useForm.js';
+export { useForm, createFieldProps, type ValidationRule, type FormFieldState, type FormState, type UseFormOptions, type UseFormReturn } from '../hooks/useForm.js';
 export { useKeyDown, useFocusTrap, useAriaLiveRegion, useDialog, type UseDialogOptions } from '../hooks/useAccessibility.js';

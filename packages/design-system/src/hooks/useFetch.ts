@@ -29,7 +29,7 @@ export function useFetch<T = unknown>(
     refetch: () => {},
   });
 
-  const fetch = async () => {
+  const performFetch = async () => {
     if (!url || options.skip) {
       setState((prev) => ({ ...prev, isLoading: false }));
       return;
@@ -38,14 +38,19 @@ export function useFetch<T = unknown>(
     setState((prev) => ({ ...prev, isLoading: true, isError: false }));
 
     try {
-      const response = await global.fetch(url, {
+      const fetchOptions: RequestInit = {
         method: options.method || 'GET',
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
         },
-        ...(options.body && { body: JSON.stringify(options.body) }),
-      });
+      };
+
+      if (options.body) {
+        fetchOptions.body = JSON.stringify(options.body);
+      }
+
+      const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -73,12 +78,12 @@ export function useFetch<T = unknown>(
   };
 
   useEffect(() => {
-    fetch();
+    performFetch();
   }, [url, options.skip]);
 
   return {
     ...state,
-    refetch: fetch,
+    refetch: performFetch,
   };
 }
 

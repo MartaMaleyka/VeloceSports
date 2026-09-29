@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Skeleton } from './Skeleton';
+import { Skeleton } from './Skeleton.js';
 
 export interface LoadingStateProps {
   message?: string;

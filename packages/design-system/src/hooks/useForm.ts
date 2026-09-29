@@ -2,14 +2,14 @@ import { useState, useCallback } from 'react';
 
 export type ValidationRule = (value: unknown) => string | undefined;
 
-export interface FormField {
+export interface FormFieldState {
   value: unknown;
   error?: string;
   touched?: boolean;
 }
 
 export interface FormState {
-  [key: string]: FormField;
+  [key: string]: FormFieldState;
 }
 
 export interface UseFormOptions<T> {
