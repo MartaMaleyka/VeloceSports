@@ -79,6 +79,16 @@ export { SuperAdminDashboard, type SuperAdminDashboardProps, type SystemHealth }
 export { PerformanceChart, type PerformanceChartProps, type PerformanceData } from './PerformanceChart.js';
 export { MatchHighlights, type MatchHighlightsProps, type Highlight, type HighlightType } from './MatchHighlights.js';
 export { SystemStatus, type SystemStatusProps, type SystemComponent, type StatusLevel } from './SystemStatus.js';
+export { Avatar, type AvatarProps, type AvatarSize } from './Avatar.js';
+export { Tabs, TabContent, type TabsProps, type TabsContextType, type TabItem } from './Tabs.js';
+export { Popover, type PopoverProps } from './Popover.js';
+export { Checkbox, type CheckboxProps } from './Checkbox.js';
+export { Radio, type RadioProps, type RadioOption } from './Radio.js';
+export { Switch, type SwitchProps } from './Switch.js';
+export { Accordion, type AccordionProps, type AccordionItem } from './Accordion.js';
+export { Tooltip, type TooltipProps } from './Tooltip.js';
+export { Spinner, FullPageSpinner, type SpinnerProps, type FullPageSpinnerProps, type SpinnerSize } from './Spinner.js';
+export { Pagination, type PaginationProps } from './Pagination.js';
 export { useMediaQuery, useIsMobileLayout } from '../hooks/useMediaQuery.js';
 export { useCountUp, usePrefersReducedMotion } from '../hooks/useCountUp.js';
 export { useFetch, useAsync, type UseFetchOptions, type UseFetchState, type UseAsyncOptions, type UseAsyncState } from '../hooks/useFetch.js';
