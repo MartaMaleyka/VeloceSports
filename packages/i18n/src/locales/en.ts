@@ -95,8 +95,11 @@ export const en = {
         alerts: 'Alerts when your child shines in a match',
       },
       emailLabel: 'Email address',
+      emailPlaceholder: 'you@email.com',
       passwordLabel: 'Password',
+      rememberMe: 'Remember me',
       submit: 'Sign in',
+      submitting: 'Signing in…',
       errorTitle: 'Sign-in error',
       successToast: 'You signed in successfully',
       sessionEndedInactivity:
@@ -1972,6 +1975,143 @@ export const en = {
     closeNav: 'Close menu',
     collapseSidebar: 'Collapse sidebar',
     expandSidebar: 'Expand sidebar',
+  },
+  landing: {
+    metaTitle: 'SquadVeloce — The app for your academy',
+    metaDescription:
+      'Parents see how their child plays. You stop running the academy on WhatsApp and spreadsheets.',
+    skipToContent: 'Skip to content',
+    navLabel: 'Main',
+    nav: {
+      login: 'Sign in',
+      signup: 'Sign up',
+    },
+    hero: {
+      headline: 'The app for your academy',
+      lead: 'Parents see how their child plays, and you stop running things on WhatsApp and spreadsheets.',
+    },
+    audiences: {
+      title: 'Built for academies in Panama',
+      school: {
+        title: 'Neighborhood programs',
+        body: '30 to 80 children. The owner coaches and runs the place: players, parents, and matches live in one spot.',
+      },
+      mid: {
+        title: 'Mid-size academies',
+        body: '100 to 300 children, with several age groups and coaches. The day-to-day no longer lives in chats and spreadsheets.',
+      },
+      club: {
+        title: 'Clubs and schools',
+        body: '300 or more children. Reports, order, and a professional image for parents.',
+      },
+      parents: {
+        title: 'Parents',
+        body: 'They pay the academy’s monthly fee and want to know what their child does on the field.',
+      },
+    },
+    roles: {
+      title: 'What each person uses',
+      owner: {
+        title: 'Owner or administrator',
+        roster: 'Players, age groups, coaches, and parents in one place, with bulk import from Excel.',
+        enrollment: 'Parents submit a registration. You approve or reject it, and an email goes out.',
+        calendar: 'Load the match calendar in one pass and follow the academy from a dashboard.',
+        reports: 'PDF and CSV reports, and billing per active player. Players who leave are not charged.',
+        pitch: 'Parents see the value and renew: each match card and the alerts justify the fee they pay.',
+      },
+      coach: {
+        title: 'Coach',
+        live: 'Live capture from your phone: attendance, shirt numbers, the match clock, and actions per player.',
+        offline: 'It works offline, and you can capture by voice.',
+        analysis: 'Analysis by player and period, with automatic summaries and private notes.',
+      },
+      parent: {
+        title: 'Parent',
+        alerts: 'An in-app alert, or email if you turn it on, when your child scores, assists, or makes a save.',
+        live: 'Live match: the minute and your child’s plays while the game is on.',
+        report:
+          'A match card with a performance chart and a written summary, plus month-by-month progress and the calendar.',
+        enroll: 'Register your children from the app.',
+      },
+      player: {
+        title: 'Adult player',
+        portal: 'Their own portal with stats, match cards, and the calendar.',
+      },
+    },
+    pricing: {
+      title: 'You pay in proportion to your academy',
+      lead: 'A fixed annual fee plus a monthly price per active player, in US dollars. Players who leave are not charged. The cost per child stays between 1 and 2 USD, against the 30 to 80 the academy charges.',
+      annual: 'Annual fee',
+      perPlayer: 'Per active player each month',
+      players: 'Active players',
+      categories: 'Age groups',
+      users: 'Users (admins, coaches, and parents)',
+      example: 'Monthly example',
+      support: 'Support',
+    },
+    plans: {
+      school: {
+        name: 'Escuelita',
+        for: 'Neighborhood programs and new projects',
+        annual: '$0 the first year, then $99',
+        perPlayer: '$1.50',
+        players: 'Up to 60',
+        categories: '4',
+        users: '80',
+        example: '50 children → $75 per month',
+        support: 'By email',
+      },
+      academy: {
+        name: 'Academia',
+        for: 'Academies with several age groups',
+        annual: '$199',
+        perPlayer: '$1.25',
+        players: 'Up to 200',
+        categories: '10',
+        users: '300',
+        example: '150 children → $187.50 per month',
+        support: 'Priority support and initial data load',
+      },
+      club: {
+        name: 'Club',
+        for: 'Youth clubs, schools, and large academies',
+        annual: '$399',
+        perPlayer: '$1.00',
+        players: 'Up to 600',
+        categories: '25',
+        users: '900',
+        example: '400 children → $400 per month',
+        support: 'Dedicated support and in-person coach training',
+      },
+    },
+    family: {
+      title: 'Family',
+      price: 'Free',
+      body: 'For a parent without an academy, with a single child. You use it, you recommend it, and the academy subscribes.',
+      cta: 'Create a Family account',
+    },
+    start: {
+      title: 'How to get started',
+      pilot: {
+        title: '60-day pilot',
+        body: 'Free during a season or a tournament, with the initial data load done by us.',
+      },
+      annual: {
+        title: 'Pay up front',
+        body: 'Two months free when the academy pays for the full year.',
+      },
+      referral: {
+        title: 'Referrals',
+        body: 'One free month for each academy you bring in.',
+      },
+      leagues: {
+        title: 'Leagues and tournaments',
+        body: 'A special price for a bundle of academies, where the volume is.',
+      },
+    },
+    footer: {
+      note: 'One login for administrators, coaches, parents, and players.',
+    },
   },
   meta: {
     appDescription: 'Platform for youth football academies',
