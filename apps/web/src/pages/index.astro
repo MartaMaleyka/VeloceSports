@@ -10,7 +10,6 @@ const homeHref = base;
 const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
 const logoSrc = `${base}brand/logo-dark-180.webp`;
-const heroLogoSrc = `${base}brand/logo-dark-640.webp`;
 
 interface PlanRow {
   label: string;
@@ -186,7 +185,6 @@ const startPanels = [
     <main id="contenido">
       <section class="ds-landing__hero" aria-labelledby="landing-hero-title">
         <div class="ds-landing__wrap ds-landing__hero-inner">
-          <img class="ds-landing__hero-logo" src={heroLogoSrc} alt="" width="640" height="640" />
           <p class="ds-landing__kicker">{t('common.brandSlogan', locale)}</p>
           <h1 id="landing-hero-title">{t('landing.hero.headline', locale)}</h1>
           <p class="ds-landing__lead">{t('landing.hero.lead', locale)}</p>
