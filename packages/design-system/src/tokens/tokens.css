@@ -2204,13 +2204,6 @@ h3,
   width: auto;
 }
 
-.ds-landing__hero-logo {
-  display: block;
-  width: auto;
-  height: calc(var(--space-16) * 3);
-  max-width: 100%;
-}
-
 .ds-landing__nav,
 .ds-landing__actions {
   display: flex;
