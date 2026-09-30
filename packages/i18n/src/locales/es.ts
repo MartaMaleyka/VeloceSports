@@ -1983,16 +1983,68 @@ export const es = {
   landing: {
     metaTitle: 'SquadVeloce — La app de tu academia',
     metaDescription:
-      'Los padres ven cómo juega su hijo. Tú dejas de administrar la academia con WhatsApp y Excel.',
+      'La academia ofrece SquadVeloce a los padres: ven el partido de su hijo, y la escuela se distingue.',
     skipToContent: 'Saltar al contenido',
     navLabel: 'Principal',
     nav: {
+      benefit: 'Beneficio',
+      match: 'Partido',
+      pricing: 'Precios',
+      start: 'Empezar',
       login: 'Iniciar sesión',
       signup: 'Regístrate',
     },
     hero: {
-      headline: 'La app de tu academia',
-      lead: 'Los padres ven cómo juega su hijo, y tú dejas de administrar con WhatsApp y Excel.',
+      headline: 'Un beneficio más de tu academia',
+      lead: 'Lo ofreces a los padres dentro de la escuela: ven el partido de su hijo, y tu academia se distingue.',
+    },
+    pitch: {
+      title: 'La academia lo ofrece. El padre lo recibe.',
+      lead: 'SquadVeloce no se vende aparte. Entra en lo que ya incluye tu academia o tu escuela.',
+      next: 'Siguiente',
+      academy: {
+        label: 'Tu academia',
+        title: 'Lo incluyes tú',
+        body: 'Entrenamiento, categorías y el partido de su hijo. El padre lo tiene porque está en tu academia.',
+        school: 'Escuelita de barrio: el dueño entrena y ahora también muestra el partido.',
+        mid: 'Academia con varias categorías: cada entrenador captura y los padres ven la suya.',
+        club: 'Colegio o club: una imagen ordenada ante muchas familias.',
+      },
+      parent: {
+        label: 'El padre',
+        title: 'Ve qué hace su hijo',
+        body: 'El beneficio llega con la academia. El padre no compra otra app: la escuela se la da.',
+        alerts: 'Aviso en la app, o por email, cuando su hijo marca, asiste o ataja.',
+        live: 'El minuto y las jugadas mientras se juega.',
+        report: 'Ficha con gráfico y resumen, calendario y evolución del mes.',
+      },
+      margin: {
+        label: 'Tu margen',
+        title: 'Te sale rentable ofrecerlo',
+        body: 'El beneficio cuesta entre 1 y 2 USD por niño activo. La mensualidad de la academia sigue siendo tuya.',
+        included: 'No es un cobro nuevo al padre. Es parte de estar en la academia.',
+        inactive: 'Quienes se dan de baja no se cobran.',
+        example: 'Con 50 niños, ofrecer el beneficio en Escuelita son $75 al mes.',
+      },
+    },
+    match: {
+      title: 'Así se ve un partido',
+      lead: 'El entrenador lo captura desde el móvil. El padre lo ve como beneficio de la academia.',
+      attendance: {
+        label: 'Asistencia',
+        title: 'Quién juega',
+        body: 'Marcas la asistencia y el dorsal antes de empezar.',
+      },
+      action: {
+        label: 'La jugada',
+        title: 'La acción, en el minuto',
+        body: 'Registras la jugada por toque o por voz. También funciona sin conexión.',
+      },
+      parent: {
+        label: 'El padre',
+        title: 'Lo recibe al momento',
+        body: 'Le llega el aviso, sigue el minuto y después abre la ficha del partido.',
+      },
     },
     audiences: {
       title: 'Hecha para academias de Panamá',
@@ -2048,8 +2100,8 @@ export const es = {
       },
     },
     pricing: {
-      title: 'Pagas en proporción a tu academia',
-      lead: 'Anualidad fija más un precio por jugador activo al mes, en dólares. Quienes se dan de baja no se cobran. El costo por niño queda entre 1 y 2 USD, frente a los 30 a 80 que cobra la academia.',
+      title: 'Lo que cuesta ofrecerlo',
+      lead: 'La academia paga SquadVeloce para incluirlo como beneficio. Anualidad fija más un precio por jugador activo. Quienes se dan de baja no se cobran.',
       boundary:
         'La comparación incluye la anualidad prorrateada a doce meses. Academia se factura como mínimo por 70 jugadores activos; Club, por 240. Así el plan de arriba no sale más barato que el de abajo.',
       annual: 'Anualidad',
@@ -2109,48 +2161,38 @@ export const es = {
       limit: 'Un solo hijo. No incluye varios entrenadores, carga desde Excel ni el panel de una academia.',
       cta: 'Crear cuenta',
     },
-    money: {
-      title: 'El dinero ya lo cobra la academia',
-      lead: 'El padre ya paga entre 30 y 80 USD al mes. SquadVeloce cuesta entre 1 y 2 USD por niño activo.',
-      keepTitle: 'Se queda la mensualidad',
-      keepBody:
-        'Lo que conservas es la mensualidad que el padre renueva porque vio el partido, no un pago nuestro.',
-      renewTitle: 'La app se paga sola',
-      renewBody:
-        'Con 50 niños en Escuelita el software son $75 al mes. Un padre que paga $80 cubre ese mes.',
-    },
     quote: {
       players: 'Jugadores activos',
       fee: 'Mensualidad que cobras por niño',
       feeHint: 'En Panamá suele estar entre 30 y 80 USD.',
       plan: 'Plan que conviene',
-      collected: 'Lo que cobran los padres',
-      software: 'SquadVeloce al mes',
-      kept: 'Le queda a la academia',
-      summary: 'Con {players} niños a {fee} son {collected} cobrados y {software} de software.',
-      oneParent: 'Un padre que paga {fee} cubre el mes de la app.',
-      renewals: 'Hacen falta {count} padres que renueven a {fee} para cubrir el mes de la app.',
-      eighty: 'Un padre que paga $80 cubre el mes de la app.',
+      collected: 'Mensualidad de la academia',
+      software: 'Costo del beneficio',
+      kept: 'Se queda en la academia',
+      summary:
+        'Ofrecer el beneficio a {players} padres te cuesta {software} al mes. La mensualidad de {collected} sigue en la academia.',
       familyNote: 'Con un solo hijo, la tarifa especial es gratis.',
     },
     start: {
-      title: 'Cómo empezar',
+      title: 'Cómo lo llevas a tu academia',
+      lead: 'Tres pasos para que la escuela lo ofrezca como beneficio.',
       pilot: {
-        title: 'Piloto de 60 días',
-        body: 'Gratis durante una temporada o un torneo, con la carga inicial de datos hecha por nosotros.',
+        label: 'Piloto',
+        title: 'Empiezas por una categoría',
+        body: '60 días en una categoría o un torneo, con la carga inicial de datos hecha por nosotros.',
       },
-      annual: {
-        title: 'Pago por adelantado',
-        body: 'Dos meses gratis si la academia paga el año completo.',
+      tell: {
+        label: 'Padres',
+        title: 'Se lo cuentas como beneficio',
+        body: '«A partir de este torneo, la academia incluye el partido de tu hijo en la app.»',
       },
-      referral: {
-        title: 'Referidos',
-        body: 'Un mes gratis por cada academia que traigas.',
+      choose: {
+        label: 'Plan',
+        title: 'Eliges el tamaño',
+        body: 'Escuelita, Academia o Club, según los niños activos.',
       },
-      leagues: {
-        title: 'Ligas y torneos',
-        body: 'Precio especial por un paquete de academias, donde se concentra el volumen.',
-      },
+      extras:
+        'Si pagas el año, son dos meses gratis. Un mes más por cada academia que traigas. Las ligas pueden entrar con un paquete.',
     },
     footer: {
       note: 'Un solo acceso para administradores, entrenadores, padres y jugadores.',
