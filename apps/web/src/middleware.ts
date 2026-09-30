@@ -52,7 +52,13 @@ const authMiddleware = defineMiddleware(async (context, next) => {
   context.locals.session = session;
 
   if (pathname === '/') {
-    return context.redirect(session ? getDashboardPathForSession(session) : '/login');
+    if (session) {
+      if (session.mustChangePassword) {
+        return context.redirect('/dashboard/change-password-required');
+      }
+      return context.redirect(getDashboardPathForSession(session));
+    }
+    return next();
   }
 
   if (PUBLIC_PATHS.has(pathname)) {

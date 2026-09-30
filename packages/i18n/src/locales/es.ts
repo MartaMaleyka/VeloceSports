@@ -96,8 +96,11 @@ export const es = {
         alerts: 'Alertas cuando tu hijo brilla en partido',
       },
       emailLabel: 'Correo electrónico',
+      emailPlaceholder: 'tu@correo.com',
       passwordLabel: 'Contraseña',
+      rememberMe: 'Recordarme',
       submit: 'Iniciar sesión',
+      submitting: 'Iniciando sesión…',
       errorTitle: 'Error al iniciar sesión',
       successToast: 'Iniciaste sesión correctamente',
       sessionEndedInactivity:
@@ -1976,6 +1979,148 @@ export const es = {
     closeNav: 'Cerrar menú',
     collapseSidebar: 'Ocultar barra lateral',
     expandSidebar: 'Mostrar barra lateral',
+  },
+  landing: {
+    metaTitle: 'SquadVeloce — La app de tu academia',
+    metaDescription:
+      'Los padres ven cómo juega su hijo. Tú dejas de administrar la academia con WhatsApp y Excel.',
+    skipToContent: 'Saltar al contenido',
+    navLabel: 'Principal',
+    nav: {
+      login: 'Iniciar sesión',
+      signup: 'Regístrate',
+    },
+    hero: {
+      headline: 'La app de tu academia',
+      lead: 'Los padres ven cómo juega su hijo, y tú dejas de administrar con WhatsApp y Excel.',
+    },
+    audiences: {
+      title: 'Hecha para academias de Panamá',
+      school: {
+        title: 'Escuelitas de barrio',
+        body: 'De 30 a 80 niños. El dueño entrena y administra: jugadores, padres y partidos quedan en un solo lugar.',
+      },
+      mid: {
+        title: 'Academias medianas',
+        body: 'De 100 a 300 niños, con varias categorías y entrenadores. El día a día deja de vivir en chats y hojas de cálculo.',
+      },
+      club: {
+        title: 'Clubes y colegios',
+        body: 'Más de 300 niños. Informes, orden y una imagen profesional ante los padres.',
+      },
+      parents: {
+        title: 'Padres',
+        body: 'Pagan la mensualidad de la academia y quieren saber qué hace su hijo en el campo.',
+      },
+    },
+    roles: {
+      title: 'Lo que cada quien usa',
+      owner: {
+        title: 'Dueño o administrador',
+        roster:
+          'Jugadores, categorías, entrenadores y padres en un solo lugar, con alta masiva desde Excel.',
+        enrollment:
+          'Los padres envían la inscripción. Tú la apruebas o la rechazas, y llega un aviso por email.',
+        calendar: 'Cargas el calendario de partidos de una vez y sigues la academia desde un panel.',
+        reports:
+          'Reportes en PDF y CSV, y facturación por jugador activo. Quienes se dan de baja no se cobran.',
+        pitch:
+          'Los padres ven valor y renuevan: la ficha de cada partido y los avisos justifican la mensualidad.',
+      },
+      coach: {
+        title: 'Entrenador',
+        live: 'Captura en vivo desde el móvil: asistencia, dorsales, reloj del partido y acciones por jugador.',
+        offline: 'Funciona sin conexión y también por voz.',
+        analysis: 'Análisis por jugador y periodo, con resúmenes automáticos y observaciones privadas.',
+      },
+      parent: {
+        title: 'Padre o madre',
+        alerts:
+          'Aviso en la app, o por email si lo activas, cuando su hijo marca, asiste o ataja.',
+        live: 'Partido en vivo: el minuto y las jugadas de su hijo mientras se juega.',
+        report:
+          'Ficha de cada partido con gráfico de rendimiento y un resumen escrito, más la evolución mes a mes y el calendario.',
+        enroll: 'Inscribe a sus hijos desde la app.',
+      },
+      player: {
+        title: 'Jugador adulto',
+        portal: 'Portal propio con sus estadísticas, fichas de partido y calendario.',
+      },
+    },
+    pricing: {
+      title: 'Pagas en proporción a tu academia',
+      lead: 'Anualidad fija más un precio por jugador activo al mes, en dólares. Quienes se dan de baja no se cobran. El costo por niño queda entre 1 y 2 USD, frente a los 30 a 80 que cobra la academia.',
+      annual: 'Anualidad',
+      perPlayer: 'Por jugador activo al mes',
+      players: 'Jugadores activos',
+      categories: 'Categorías',
+      users: 'Usuarios (admins, entrenadores y padres)',
+      example: 'Ejemplo mensual',
+      support: 'Soporte',
+    },
+    plans: {
+      school: {
+        name: 'Escuelita',
+        for: 'Escuelitas y proyectos que empiezan',
+        annual: '$0 el primer año, luego $99',
+        perPlayer: '$1.50',
+        players: 'Hasta 60',
+        categories: '4',
+        users: '80',
+        example: '50 niños → $75 al mes',
+        support: 'Por email',
+      },
+      academy: {
+        name: 'Academia',
+        for: 'Academias con varias categorías',
+        annual: '$199',
+        perPlayer: '$1.25',
+        players: 'Hasta 200',
+        categories: '10',
+        users: '300',
+        example: '150 niños → $187.50 al mes',
+        support: 'Prioritario y carga inicial de datos',
+      },
+      club: {
+        name: 'Club',
+        for: 'Clubes con cantera, colegios y academias grandes',
+        annual: '$399',
+        perPlayer: '$1.00',
+        players: 'Hasta 600',
+        categories: '25',
+        users: '900',
+        example: '400 niños → $400 al mes',
+        support: 'Dedicado y capacitación presencial a entrenadores',
+      },
+    },
+    family: {
+      title: 'Familia',
+      price: 'Gratis',
+      body: 'Para un padre sin academia, con un solo hijo. La usas, la recomiendas y la academia contrata.',
+      cta: 'Crear cuenta Familia',
+    },
+    start: {
+      title: 'Cómo empezar',
+      pilot: {
+        title: 'Piloto de 60 días',
+        body: 'Gratis durante una temporada o un torneo, con la carga inicial de datos hecha por nosotros.',
+      },
+      annual: {
+        title: 'Pago por adelantado',
+        body: 'Dos meses gratis si la academia paga el año completo.',
+      },
+      referral: {
+        title: 'Referidos',
+        body: 'Un mes gratis por cada academia que traigas.',
+      },
+      leagues: {
+        title: 'Ligas y torneos',
+        body: 'Precio especial por un paquete de academias, donde se concentra el volumen.',
+      },
+    },
+    footer: {
+      note: 'Un solo acceso para administradores, entrenadores, padres y jugadores.',
+    },
   },
   meta: {
     appDescription: 'Plataforma para academias de fútbol formativo',
