@@ -2139,7 +2139,7 @@ h3,
 .ds-landing {
   --landing-on-dark: var(--primitive-neutral-0);
   --landing-on-dark-muted: color-mix(in srgb, var(--primitive-neutral-0) 88%, transparent);
-  --landing-header-offset: calc(var(--space-16) + var(--space-8) + env(safe-area-inset-top, 0px));
+  --landing-header-offset: calc(var(--space-16) + var(--space-8) + var(--space-4) + env(safe-area-inset-top, 0px));
   min-height: 100vh;
   background-color: var(--color-bg-app);
   color: var(--color-text-primary);
@@ -2200,8 +2200,15 @@ h3,
 
 .ds-landing__logo {
   display: block;
-  height: var(--space-16);
+  height: calc(var(--space-16) + var(--space-8));
   width: auto;
+}
+
+.ds-landing__hero-logo {
+  display: block;
+  width: auto;
+  height: calc(var(--space-16) * 3);
+  max-width: 100%;
 }
 
 .ds-landing__nav,
@@ -2442,12 +2449,134 @@ h3,
   line-height: var(--line-height-normal);
 }
 
+.ds-landing__plan.is-recommended,
+.ds-landing__family.is-recommended {
+  border-color: var(--color-section-brand-border);
+  box-shadow: 0 0 0 2px var(--color-section-brand-muted);
+}
+
 .ds-landing__family {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
   margin-top: var(--space-4);
+}
+
+.ds-landing__family .ds-landing__checks {
+  margin-top: var(--space-4);
+}
+
+.ds-landing__quote {
+  display: grid;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-surface);
+}
+
+.ds-landing__quote-fields {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.ds-landing__quote-field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.ds-landing__quote-field label {
+  font-weight: var(--font-weight-medium);
+}
+
+.ds-landing__quote-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ds-landing__quote-controls input[type='range'] {
+  flex: 1 1 12rem;
+  min-height: var(--button-primary-min-height);
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.ds-landing__quote-controls input[type='number'] {
+  width: 5.5rem;
+  min-height: var(--button-primary-min-height);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.ds-landing__quote-hint,
+.ds-landing__quote-result p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.ds-landing__quote-plan {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-4);
+  color: var(--color-section-brand-fg);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.ds-landing__quote-plan span {
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ds-landing__quote-result dl {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+
+.ds-landing__quote-result dl > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.ds-landing__quote-result dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.ds-landing__quote-result dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+@media (min-width: 768px) {
+  .ds-landing__quote-fields,
+  .ds-landing__quote-result dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ds-landing__quote-result dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .ds-landing__footer {
@@ -2479,8 +2608,13 @@ h3,
 
   .ds-landing__family {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+  }
+
+  .ds-landing__family > div {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 }
 
