@@ -54,21 +54,11 @@ function LandingQuoteForm() {
 
   let detail = t('landing.quote.summary', {
     players: quote.players,
-    fee: money(quote.parentFee),
     collected: money(quote.collected),
     software: money(quote.software),
   });
   if (quote.offersFamily) {
     detail = `${detail} ${t('landing.quote.familyNote')}`;
-  } else if (quote.renewalsToCover <= 1) {
-    detail = `${detail} ${t('landing.quote.oneParent', { fee: money(quote.parentFee) })}`;
-  } else if (quote.oneParentAtEightyCovers) {
-    detail = `${detail} ${t('landing.quote.eighty')}`;
-  } else {
-    detail = `${detail} ${t('landing.quote.renewals', {
-      count: quote.renewalsToCover,
-      fee: money(quote.parentFee),
-    })}`;
   }
 
   return (

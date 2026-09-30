@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingQuoteIsland from '../components/landing/LandingQuoteIsland';
+import LandingSwitchIsland from '../components/landing/LandingSwitchIsland';
 import { resolveLocale, t } from '@velocesport/i18n';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
@@ -10,65 +11,6 @@ const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
 const logoSrc = `${base}brand/logo-dark-180.webp`;
 const heroLogoSrc = `${base}brand/logo-dark-640.webp`;
-
-const audiences = [
-  {
-    title: t('landing.audiences.school.title', locale),
-    body: t('landing.audiences.school.body', locale),
-  },
-  {
-    title: t('landing.audiences.mid.title', locale),
-    body: t('landing.audiences.mid.body', locale),
-  },
-  {
-    title: t('landing.audiences.club.title', locale),
-    body: t('landing.audiences.club.body', locale),
-  },
-  {
-    title: t('landing.audiences.parents.title', locale),
-    body: t('landing.audiences.parents.body', locale),
-  },
-];
-
-interface LandingCard {
-  title: string;
-  items: string[];
-  note?: string;
-}
-
-const roles: LandingCard[] = [
-  {
-    title: t('landing.roles.owner.title', locale),
-    items: [
-      t('landing.roles.owner.roster', locale),
-      t('landing.roles.owner.enrollment', locale),
-      t('landing.roles.owner.calendar', locale),
-      t('landing.roles.owner.reports', locale),
-    ],
-    note: t('landing.roles.owner.pitch', locale),
-  },
-  {
-    title: t('landing.roles.coach.title', locale),
-    items: [
-      t('landing.roles.coach.live', locale),
-      t('landing.roles.coach.offline', locale),
-      t('landing.roles.coach.analysis', locale),
-    ],
-  },
-  {
-    title: t('landing.roles.parent.title', locale),
-    items: [
-      t('landing.roles.parent.alerts', locale),
-      t('landing.roles.parent.live', locale),
-      t('landing.roles.parent.report', locale),
-      t('landing.roles.parent.enroll', locale),
-    ],
-  },
-  {
-    title: t('landing.roles.player.title', locale),
-    items: [t('landing.roles.player.portal', locale)],
-  },
-];
 
 interface PlanRow {
   label: string;
@@ -137,33 +79,72 @@ const familyItems = [
   t('landing.family.limit', locale),
 ];
 
-const moneyItems = [
+const pitchPanels = [
   {
-    title: t('landing.money.keepTitle', locale),
-    body: t('landing.money.keepBody', locale),
+    id: 'academy',
+    title: t('landing.pitch.academy.title', locale),
+    body: t('landing.pitch.academy.body', locale),
+    items: [
+      t('landing.pitch.academy.school', locale),
+      t('landing.pitch.academy.mid', locale),
+      t('landing.pitch.academy.club', locale),
+    ],
   },
   {
-    title: t('landing.money.renewTitle', locale),
-    body: t('landing.money.renewBody', locale),
+    id: 'parent',
+    title: t('landing.pitch.parent.title', locale),
+    body: t('landing.pitch.parent.body', locale),
+    items: [
+      t('landing.pitch.parent.alerts', locale),
+      t('landing.pitch.parent.live', locale),
+      t('landing.pitch.parent.report', locale),
+    ],
+  },
+  {
+    id: 'margin',
+    title: t('landing.pitch.margin.title', locale),
+    body: t('landing.pitch.margin.body', locale),
+    items: [
+      t('landing.pitch.margin.included', locale),
+      t('landing.pitch.margin.inactive', locale),
+      t('landing.pitch.margin.example', locale),
+    ],
   },
 ];
 
-const startItems = [
+const matchPanels = [
   {
+    id: 'attendance',
+    title: t('landing.match.attendance.title', locale),
+    body: t('landing.match.attendance.body', locale),
+  },
+  {
+    id: 'action',
+    title: t('landing.match.action.title', locale),
+    body: t('landing.match.action.body', locale),
+  },
+  {
+    id: 'parent',
+    title: t('landing.match.parent.title', locale),
+    body: t('landing.match.parent.body', locale),
+  },
+];
+
+const startPanels = [
+  {
+    id: 'pilot',
     title: t('landing.start.pilot.title', locale),
     body: t('landing.start.pilot.body', locale),
   },
   {
-    title: t('landing.start.annual.title', locale),
-    body: t('landing.start.annual.body', locale),
+    id: 'tell',
+    title: t('landing.start.tell.title', locale),
+    body: t('landing.start.tell.body', locale),
   },
   {
-    title: t('landing.start.referral.title', locale),
-    body: t('landing.start.referral.body', locale),
-  },
-  {
-    title: t('landing.start.leagues.title', locale),
-    body: t('landing.start.leagues.body', locale),
+    id: 'choose',
+    title: t('landing.start.choose.title', locale),
+    body: t('landing.start.choose.body', locale),
   },
 ];
 ---
@@ -190,6 +171,10 @@ const startItems = [
           />
         </a>
         <nav class="ds-landing__nav" aria-label={t('landing.navLabel', locale)}>
+          <a class="ds-landing__jump" href="#beneficio">{t('landing.nav.benefit', locale)}</a>
+          <a class="ds-landing__jump" href="#partido">{t('landing.nav.match', locale)}</a>
+          <a class="ds-landing__jump" href="#precios">{t('landing.nav.pricing', locale)}</a>
+          <a class="ds-landing__jump" href="#empezar">{t('landing.nav.start', locale)}</a>
           <a class="ds-landing__ghost" href={signupHref}>{t('landing.nav.signup', locale)}</a>
           <a class="ds-landing__cta ds-btn-sport ds-btn-sport--primary" href={loginHref}>
             {t('landing.nav.login', locale)}
@@ -214,32 +199,19 @@ const startItems = [
         </div>
       </section>
 
-      <section class="ds-landing__section" aria-labelledby="landing-audiences-title">
+      <section class="ds-landing__section" id="beneficio" aria-labelledby="landing-pitch-title">
         <div class="ds-landing__wrap">
-          <h2 id="landing-audiences-title">{t('landing.audiences.title', locale)}</h2>
-          <ul class="ds-landing__grid ds-landing__grid--audiences">
+          <h2 id="landing-pitch-title">{t('landing.pitch.title', locale)}</h2>
+          <p class="ds-landing__section-lead">{t('landing.pitch.lead', locale)}</p>
+          <div id="landing-pitch" class="ds-landing__switch">
+            <LandingSwitchIsland client:load group="pitch" initialLocale={locale} />
             {
-              audiences.map((item) => (
-                <li class="ds-landing__card">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </section>
-
-      <section class="ds-landing__section ds-landing__section--muted" aria-labelledby="landing-roles-title">
-        <div class="ds-landing__wrap">
-          <h2 id="landing-roles-title">{t('landing.roles.title', locale)}</h2>
-          <ul class="ds-landing__grid ds-landing__grid--roles">
-            {
-              roles.map((role) => (
-                <li class="ds-landing__card">
-                  <h3>{role.title}</h3>
+              pitchPanels.map((panel) => (
+                <article class="ds-landing__switch-panel" id={`pitch-${panel.id}`} data-switch-panel={panel.id}>
+                  <h3>{panel.title}</h3>
+                  <p>{panel.body}</p>
                   <ul class="ds-landing__checks">
-                    {role.items.map((item) => (
+                    {panel.items.map((item) => (
                       <li>
                         <svg class="ds-landing__mark" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
                           <path
@@ -255,15 +227,35 @@ const startItems = [
                       </li>
                     ))}
                   </ul>
-                  {role.note && <p class="ds-landing__note">{role.note}</p>}
-                </li>
+                </article>
               ))
             }
-          </ul>
+          </div>
         </div>
       </section>
 
-      <section class="ds-landing__section" aria-labelledby="landing-pricing-title">
+      <section class="ds-landing__section ds-landing__section--muted" id="partido" aria-labelledby="landing-match-title">
+        <div class="ds-landing__wrap">
+          <h2 id="landing-match-title">{t('landing.match.title', locale)}</h2>
+          <p class="ds-landing__section-lead">{t('landing.match.lead', locale)}</p>
+          <div id="landing-match" class="ds-landing__switch">
+            <LandingSwitchIsland client:load group="match" initialLocale={locale} />
+            <ol class="ds-landing__switch-steps">
+              {
+                matchPanels.map((panel, index) => (
+                  <li class="ds-landing__switch-panel" id={`match-${panel.id}`} data-switch-panel={panel.id}>
+                    <p class="ds-landing__step-index">{index + 1}</p>
+                    <h3>{panel.title}</h3>
+                    <p>{panel.body}</p>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-landing__section" id="precios" aria-labelledby="landing-pricing-title">
         <div class="ds-landing__wrap">
           <h2 id="landing-pricing-title">{t('landing.pricing.title', locale)}</h2>
           <p class="ds-landing__section-lead">{t('landing.pricing.lead', locale)}</p>
@@ -322,36 +314,25 @@ const startItems = [
         </div>
       </section>
 
-      <section class="ds-landing__section ds-landing__section--muted" aria-labelledby="landing-money-title">
-        <div class="ds-landing__wrap">
-          <h2 id="landing-money-title">{t('landing.money.title', locale)}</h2>
-          <p class="ds-landing__section-lead">{t('landing.money.lead', locale)}</p>
-          <ul class="ds-landing__grid ds-landing__grid--start">
-            {
-              moneyItems.map((item) => (
-                <li class="ds-landing__card">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </section>
-
-      <section class="ds-landing__section" aria-labelledby="landing-start-title">
+      <section class="ds-landing__section ds-landing__section--muted" id="empezar" aria-labelledby="landing-start-title">
         <div class="ds-landing__wrap">
           <h2 id="landing-start-title">{t('landing.start.title', locale)}</h2>
-          <ul class="ds-landing__grid ds-landing__grid--start">
-            {
-              startItems.map((item) => (
-                <li class="ds-landing__card">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </li>
-              ))
-            }
-          </ul>
+          <p class="ds-landing__section-lead">{t('landing.start.lead', locale)}</p>
+          <div id="landing-start" class="ds-landing__switch">
+            <LandingSwitchIsland client:load group="start" initialLocale={locale} />
+            <ol class="ds-landing__switch-steps">
+              {
+                startPanels.map((panel, index) => (
+                  <li class="ds-landing__switch-panel" id={`start-${panel.id}`} data-switch-panel={panel.id}>
+                    <p class="ds-landing__step-index">{index + 1}</p>
+                    <h3>{panel.title}</h3>
+                    <p>{panel.body}</p>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+          <p class="ds-landing__note">{t('landing.start.extras', locale)}</p>
         </div>
       </section>
     </main>
