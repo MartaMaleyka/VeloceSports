@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LandingQuoteIsland from '../components/landing/LandingQuoteIsland';
 import { resolveLocale, t } from '@velocesport/i18n';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
@@ -8,6 +9,7 @@ const homeHref = base;
 const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
 const logoSrc = `${base}brand/logo-dark-180.webp`;
+const heroLogoSrc = `${base}brand/logo-dark-640.webp`;
 
 const audiences = [
   {
@@ -74,6 +76,7 @@ interface PlanRow {
 }
 
 interface LandingPlan {
+  id: 'school' | 'academy' | 'club';
   name: string;
   audience: string;
   example: string;
@@ -82,6 +85,7 @@ interface LandingPlan {
 
 const plans: LandingPlan[] = [
   {
+    id: 'school',
     name: t('landing.plans.school.name', locale),
     audience: t('landing.plans.school.for', locale),
     example: t('landing.plans.school.example', locale),
@@ -89,12 +93,14 @@ const plans: LandingPlan[] = [
       { label: t('landing.pricing.annual', locale), value: t('landing.plans.school.annual', locale) },
       { label: t('landing.pricing.perPlayer', locale), value: t('landing.plans.school.perPlayer', locale) },
       { label: t('landing.pricing.players', locale), value: t('landing.plans.school.players', locale) },
+      { label: t('landing.pricing.minBillable', locale), value: t('landing.plans.school.min', locale) },
       { label: t('landing.pricing.categories', locale), value: t('landing.plans.school.categories', locale) },
       { label: t('landing.pricing.users', locale), value: t('landing.plans.school.users', locale) },
       { label: t('landing.pricing.support', locale), value: t('landing.plans.school.support', locale) },
     ],
   },
   {
+    id: 'academy',
     name: t('landing.plans.academy.name', locale),
     audience: t('landing.plans.academy.for', locale),
     example: t('landing.plans.academy.example', locale),
@@ -102,12 +108,14 @@ const plans: LandingPlan[] = [
       { label: t('landing.pricing.annual', locale), value: t('landing.plans.academy.annual', locale) },
       { label: t('landing.pricing.perPlayer', locale), value: t('landing.plans.academy.perPlayer', locale) },
       { label: t('landing.pricing.players', locale), value: t('landing.plans.academy.players', locale) },
+      { label: t('landing.pricing.minBillable', locale), value: t('landing.plans.academy.min', locale) },
       { label: t('landing.pricing.categories', locale), value: t('landing.plans.academy.categories', locale) },
       { label: t('landing.pricing.users', locale), value: t('landing.plans.academy.users', locale) },
       { label: t('landing.pricing.support', locale), value: t('landing.plans.academy.support', locale) },
     ],
   },
   {
+    id: 'club',
     name: t('landing.plans.club.name', locale),
     audience: t('landing.plans.club.for', locale),
     example: t('landing.plans.club.example', locale),
@@ -115,10 +123,28 @@ const plans: LandingPlan[] = [
       { label: t('landing.pricing.annual', locale), value: t('landing.plans.club.annual', locale) },
       { label: t('landing.pricing.perPlayer', locale), value: t('landing.plans.club.perPlayer', locale) },
       { label: t('landing.pricing.players', locale), value: t('landing.plans.club.players', locale) },
+      { label: t('landing.pricing.minBillable', locale), value: t('landing.plans.club.min', locale) },
       { label: t('landing.pricing.categories', locale), value: t('landing.plans.club.categories', locale) },
       { label: t('landing.pricing.users', locale), value: t('landing.plans.club.users', locale) },
       { label: t('landing.pricing.support', locale), value: t('landing.plans.club.support', locale) },
     ],
+  },
+];
+
+const familyItems = [
+  t('landing.family.capture', locale),
+  t('landing.family.report', locale),
+  t('landing.family.limit', locale),
+];
+
+const moneyItems = [
+  {
+    title: t('landing.money.keepTitle', locale),
+    body: t('landing.money.keepBody', locale),
+  },
+  {
+    title: t('landing.money.renewTitle', locale),
+    body: t('landing.money.renewBody', locale),
   },
 ];
 
@@ -175,6 +201,7 @@ const startItems = [
     <main id="contenido">
       <section class="ds-landing__hero" aria-labelledby="landing-hero-title">
         <div class="ds-landing__wrap ds-landing__hero-inner">
+          <img class="ds-landing__hero-logo" src={heroLogoSrc} alt="" width="640" height="640" />
           <p class="ds-landing__kicker">{t('common.brandSlogan', locale)}</p>
           <h1 id="landing-hero-title">{t('landing.hero.headline', locale)}</h1>
           <p class="ds-landing__lead">{t('landing.hero.lead', locale)}</p>
@@ -240,10 +267,12 @@ const startItems = [
         <div class="ds-landing__wrap">
           <h2 id="landing-pricing-title">{t('landing.pricing.title', locale)}</h2>
           <p class="ds-landing__section-lead">{t('landing.pricing.lead', locale)}</p>
+          <p class="ds-landing__section-lead">{t('landing.pricing.boundary', locale)}</p>
+          <LandingQuoteIsland client:visible initialLocale={locale} />
           <ul class="ds-landing__plans">
             {
               plans.map((plan) => (
-                <li class="ds-landing__plan">
+                <li class="ds-landing__plan" data-plan={plan.id}>
                   <h3>{plan.name}</h3>
                   <p class="ds-landing__plan-for">{plan.audience}</p>
                   <p class="ds-landing__plan-example">
@@ -263,11 +292,28 @@ const startItems = [
             }
           </ul>
 
-          <aside class="ds-landing__family">
+          <aside class="ds-landing__family" data-plan="family">
             <div>
               <h3>{t('landing.family.title', locale)}</h3>
               <p class="ds-landing__plan-example">{t('landing.family.price', locale)}</p>
-              <p>{t('landing.family.body', locale)}</p>
+              <p>{t('landing.family.lead', locale)}</p>
+              <ul class="ds-landing__checks">
+                {familyItems.map((item) => (
+                  <li>
+                    <svg class="ds-landing__mark" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                      <path
+                        d="M4 10.5 8 14.5 16 6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <a class="ds-landing__cta ds-btn-sport ds-btn-sport--primary" href={signupHref}>
               {t('landing.family.cta', locale)}
@@ -276,7 +322,24 @@ const startItems = [
         </div>
       </section>
 
-      <section class="ds-landing__section ds-landing__section--muted" aria-labelledby="landing-start-title">
+      <section class="ds-landing__section ds-landing__section--muted" aria-labelledby="landing-money-title">
+        <div class="ds-landing__wrap">
+          <h2 id="landing-money-title">{t('landing.money.title', locale)}</h2>
+          <p class="ds-landing__section-lead">{t('landing.money.lead', locale)}</p>
+          <ul class="ds-landing__grid ds-landing__grid--start">
+            {
+              moneyItems.map((item) => (
+                <li class="ds-landing__card">
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="ds-landing__section" aria-labelledby="landing-start-title">
         <div class="ds-landing__wrap">
           <h2 id="landing-start-title">{t('landing.start.title', locale)}</h2>
           <ul class="ds-landing__grid ds-landing__grid--start">
