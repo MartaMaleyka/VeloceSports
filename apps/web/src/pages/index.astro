@@ -6,6 +6,7 @@ const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-la
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
+const logoSrc = `${base}brand/logo-dark-180.webp`;
 ---
 
 <BaseLayout
@@ -62,10 +63,14 @@ const signupHref = `${base}signup`;
     }
 
     .logo {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--brand-primary);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 50px;
+      width: auto;
     }
 
     nav a {
@@ -660,7 +665,9 @@ const signupHref = `${base}signup`;
   <!-- Header -->
   <header>
     <div class="container">
-      <a href="#" class="logo">⚽ SquadVeloce</a>
+      <a href="#" class="logo">
+        <img src={logoSrc} alt="SquadVeloce" />
+      </a>
       <nav>
         <a href="#features">Características</a>
         <a href="#pricing">Precios</a>
