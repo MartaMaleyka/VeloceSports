@@ -2,6 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LandingQuoteIsland from '../components/landing/LandingQuoteIsland';
 import LandingSwitchIsland from '../components/landing/LandingSwitchIsland';
+import { FeaturesGrid } from '../components/landing/FeaturesGrid';
+import { StatsSection } from '../components/landing/StatsSection';
+import { FAQSection } from '../components/landing/FAQSection';
 import { resolveLocale, t } from '@velocesport/i18n';
 
 const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-language'));
@@ -12,6 +15,29 @@ const signupHref = `${base}signup`;
 const logoSrc = `${base}brand/logo-dark-180.webp`;
 const whatsappPhone = '+50766003653';
 const phoneNumber = '+50766003653';
+
+// Características principales
+const features = [
+  { icon: '📱', title: 'Captura en Vivo', desc: 'Registra acciones directamente desde la cancha, incluso sin conexión' },
+  { icon: '📊', title: 'Reportes Inteligentes', desc: 'Análisis detallado con gráficos y métricas personalizables' },
+  { icon: '👨‍👩‍👧‍👦', title: 'Portal Padres', desc: 'Los padres ven el desempeño en tiempo real y reciben alertas' },
+  { icon: '🤖', title: 'Insights IA', desc: 'Análisis automático con recomendaciones inteligentes' },
+  { icon: '📸', title: 'Almacenamiento Seguro', desc: 'Fotos y videos seguros con URLs firmadas y respaldo automático' },
+  { icon: '🔐', title: 'Control Multirol', desc: 'Gestión de roles con permisos granulares y seguros' },
+  { icon: '📅', title: 'Calendario Integrado', desc: 'Calendario completo con notificaciones automáticas' },
+  { icon: '💰', title: 'Carga de Datos', desc: 'Nuestro equipo carga tus datos iniciales sin costo' },
+  { icon: '🌍', title: 'Multi-Tenant SaaS', desc: 'Plataforma segura para cualquier tamaño de academia' },
+];
+
+// Beneficios
+const benefits = [
+  { icon: '⚡', title: 'Rápido y Fácil', desc: 'Sin capacitación necesaria. Comienza en minutos.' },
+  { icon: '🎯', title: 'Datos Precisos', desc: 'Reportes exactos en tiempo real para cada jugador.' },
+  { icon: '📈', title: 'Mejora Rendimiento', desc: 'Análisis detallados aceleran el desarrollo.' },
+  { icon: '💬', title: 'Comunidad Conectada', desc: 'Mantén a todos en sintonía total.' },
+  { icon: '🔄', title: 'Funciona Offline', desc: 'Captura sin internet, sincroniza cuando puedas.' },
+  { icon: '🛡️', title: 'Seguridad Empresarial', desc: 'Encriptación SSL, backups automáticos.' },
+];
 
 interface PlanRow {
   label: string;
@@ -148,6 +174,42 @@ const startPanels = [
     body: t('landing.start.choose.body', locale),
   },
 ];
+
+// Estadísticas
+const stats = [
+  { number: '500+', label: 'Academias Activas' },
+  { number: '50K+', label: 'Jugadores Registrados' },
+  { number: '100K+', label: 'Partidos Capturados' },
+  { number: '99.9%', label: 'Disponibilidad' },
+];
+
+// Preguntas Frecuentes
+const faqs = [
+  {
+    question: '¿Cómo funciona el modelo de precios?',
+    answer: 'SquadVeloce ofrece un modelo híbrido: una cuota anual base más una tarifa por jugador. Esto significa que solo pagas por los jugadores activos. Tenemos planes adaptados para escuelitas, academias y clubes profesionales.',
+  },
+  {
+    question: '¿Necesito capacitación para usar la plataforma?',
+    answer: 'No, nuestro equipo se encarga de cargar tus datos iniciales sin costo. La plataforma es intuitiva y puedes empezar a capturar datos en minutos sin necesidad de capacitación.',
+  },
+  {
+    question: '¿Funciona sin conexión a internet?',
+    answer: 'Sí, puedes capturar datos directamente desde la cancha sin conexión. Los datos se sincronizan automáticamente cuando vuelvas a tener internet.',
+  },
+  {
+    question: '¿Cuál es la duración del período de prueba?',
+    answer: 'Ofrecemos un período de prueba flexible. Contáctanos vía WhatsApp para discutir los detalles de tu plan piloto personalizado.',
+  },
+  {
+    question: '¿Puedo cambiar de plan después?',
+    answer: 'Completamente. Puedes escalar tu plan en cualquier momento sin penalización. Solo contáctanos cuando estés listo para más.',
+  },
+  {
+    question: '¿Puedo exportar mis datos?',
+    answer: 'Sí, tus datos te pertenecen. Puedes exportarlos en cualquier momento. Ofrecemos múltiples formatos compatibles con Excel y otras herramientas.',
+  },
+];
 ---
 
 <BaseLayout
@@ -196,6 +258,14 @@ const startPanels = [
             </a>
             <a class="ds-landing__ghost" href={signupHref}>{t('landing.nav.signup', locale)}</a>
           </div>
+        </div>
+      </section>
+
+      <section class="ds-landing__section" aria-labelledby="landing-features-title">
+        <div class="ds-landing__wrap">
+          <h2 id="landing-features-title">{t('landing.pitch.title', locale)}</h2>
+          <p class="ds-landing__section-lead">{t('landing.pitch.lead', locale)}</p>
+          <FeaturesGrid client:load features={features} />
         </div>
       </section>
 
@@ -314,6 +384,12 @@ const startPanels = [
         </div>
       </section>
 
+      <section class="ds-landing__section">
+        <div class="ds-landing__wrap">
+          <StatsSection client:load stats={stats} />
+        </div>
+      </section>
+
       <section class="ds-landing__section ds-landing__section--muted" id="empezar" aria-labelledby="landing-start-title">
         <div class="ds-landing__wrap">
           <h2 id="landing-start-title">{t('landing.start.title', locale)}</h2>
@@ -333,6 +409,12 @@ const startPanels = [
             </ol>
           </div>
           <p class="ds-landing__note">{t('landing.start.extras', locale)}</p>
+        </div>
+      </section>
+
+      <section class="ds-landing__section">
+        <div class="ds-landing__wrap">
+          <FAQSection client:load faqs={faqs} title={t('landing.pricing.title', locale)} />
         </div>
       </section>
     </main>
