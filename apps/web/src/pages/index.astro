@@ -6,6 +6,7 @@ const locale = resolveLocale(Astro.cookies, Astro.request.headers.get('accept-la
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
+const logoSrc = `${base}brand/logo-dark-180.webp`;
 ---
 
 <BaseLayout
@@ -62,10 +63,14 @@ const signupHref = `${base}signup`;
     }
 
     .logo {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--brand-primary);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 50px;
+      width: auto;
     }
 
     nav a {
@@ -596,6 +601,256 @@ const signupHref = `${base}signup`;
       border: 1px solid rgba(163, 230, 53, 0.2);
     }
 
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(163, 230, 53, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(163, 230, 53, 0.6);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+
+    @keyframes rotate-icon {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Animate on scroll */
+    .animate-on-scroll {
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .feature-card {
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+    .feature-card:nth-child(4) { animation-delay: 0.4s; }
+    .feature-card:nth-child(5) { animation-delay: 0.5s; }
+    .feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+    .benefit-item {
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .benefit-item:nth-child(1) { animation-delay: 0.1s; }
+    .benefit-item:nth-child(2) { animation-delay: 0.2s; }
+    .benefit-item:nth-child(3) { animation-delay: 0.3s; }
+    .benefit-item:nth-child(4) { animation-delay: 0.4s; }
+    .benefit-item:nth-child(5) { animation-delay: 0.5s; }
+    .benefit-item:nth-child(6) { animation-delay: 0.6s; }
+
+    .price-card {
+      animation: fadeInUp 0.6s ease-out backwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .price-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .price-card:hover::after {
+      left: 100%;
+    }
+
+    .price-card:nth-child(1) { animation-delay: 0.1s; }
+    .price-card:nth-child(2) { animation-delay: 0.2s; }
+    .price-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .faq-item {
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .faq-item:nth-child(1) { animation-delay: 0.1s; }
+    .faq-item:nth-child(2) { animation-delay: 0.2s; }
+    .faq-item:nth-child(3) { animation-delay: 0.3s; }
+    .faq-item:nth-child(4) { animation-delay: 0.4s; }
+    .faq-item:nth-child(5) { animation-delay: 0.5s; }
+    .faq-item:nth-child(6) { animation-delay: 0.6s; }
+
+    .hero-content {
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero-actions .btn {
+      animation: fadeInUp 0.8s ease-out backwards;
+    }
+
+    .hero-actions .btn:nth-child(1) { animation-delay: 0.4s; }
+    .hero-actions .btn:nth-child(2) { animation-delay: 0.6s; }
+
+    .section h2 {
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    /* Enhanced hover effects */
+    .feature-card:hover {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .benefit-item {
+      transition: all 0.3s ease;
+    }
+
+    .benefit-item:hover {
+      transform: translateY(-10px) scale(1.02);
+      background: rgba(163, 230, 53, 0.05);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .benefit-icon {
+      animation: float 3s ease-in-out infinite;
+      transition: all 0.3s ease;
+    }
+
+    .benefit-item:hover .benefit-icon {
+      animation: rotate-icon 0.6s ease-in-out;
+      font-size: 4rem;
+    }
+
+    /* Button animations */
+    .btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-primary:hover {
+      animation: none;
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(163, 230, 53, 0.3);
+    }
+
+    /* Calculator animations */
+    .calculator-input input:focus {
+      animation: pulse-glow 1s ease-in-out infinite;
+    }
+
+    .result-item h4 {
+      animation: fadeInUp 0.6s ease-out backwards;
+      transition: all 0.3s ease;
+    }
+
+    .result-item:hover h4 {
+      color: white;
+      transform: scale(1.1);
+      text-shadow: 0 0 20px rgba(163, 230, 53, 0.5);
+    }
+
+    /* Smooth scroll behavior */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Header animation */
+    header {
+      animation: slideInDown 0.6s ease-out;
+    }
+
+    .logo img {
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover img {
+      transform: scale(1.1) rotate(5deg);
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 0 1rem;
@@ -654,13 +909,19 @@ const signupHref = `${base}signup`;
       .pricing-grid {
         grid-template-columns: 1fr;
       }
+
+      .benefit-item:hover {
+        transform: translateY(-5px);
+      }
     }
   </style>
 
   <!-- Header -->
   <header>
     <div class="container">
-      <a href="#" class="logo">⚽ SquadVeloce</a>
+      <a href="#" class="logo">
+        <img src={logoSrc} alt="SquadVeloce" />
+      </a>
       <nav>
         <a href="#features">Características</a>
         <a href="#pricing">Precios</a>
@@ -1113,5 +1374,139 @@ const signupHref = `${base}signup`;
         }
       });
     });
+
+    // Intersection Observer para animaciones al scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animation = getComputedStyle(entry.target).animation;
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observar elementos animables
+    document.querySelectorAll('.feature-card, .benefit-item, .price-card, .faq-item, .section h2').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Animación de números en la calculadora
+    function animateValue(element, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        element.textContent = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // Parallax effect en hero
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const hero = document.querySelector('.hero');
+      if (hero) {
+        hero.style.backgroundPosition = `center ${scrollY * 0.5}px`;
+      }
+    });
+
+    // Ripple effect en botones
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+
+        ripple.style.position = 'absolute';
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.background = 'rgba(255,255,255,0.5)';
+        ripple.style.borderRadius = '50%';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.animation = 'ripple 0.6s ease-out';
+
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+    // Agregar animación ripple al CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        from {
+          transform: scale(1);
+          opacity: 1;
+        }
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Hover effect en feature cards
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px) rotateX(5deg)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) rotateX(0)';
+      });
+    });
+
+    // Animar números en calculadora
+    document.getElementById('players-count').addEventListener('change', function() {
+      setTimeout(calculatePrice, 100);
+    });
+
+    document.getElementById('plan-select').addEventListener('change', function() {
+      setTimeout(calculatePrice, 100);
+    });
+
+    document.getElementById('years-count').addEventListener('change', function() {
+      setTimeout(calculatePrice, 100);
+    });
+
+    // Efecto de enfoque en inputs
+    document.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('focus', function() {
+        this.style.boxShadow = '0 0 15px rgba(163, 230, 53, 0.5)';
+      });
+      input.addEventListener('blur', function() {
+        this.style.boxShadow = 'none';
+      });
+    });
+
+    // Lazy load images
+    if ('IntersectionObserver' in window) {
+      const images = document.querySelectorAll('img[data-src]');
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.add('loaded');
+            observer.unobserve(img);
+          }
+        });
+      });
+      images.forEach(img => imageObserver.observe(img));
+    }
   </script>
 </BaseLayout>
