@@ -10,6 +10,8 @@ const homeHref = base;
 const loginHref = `${base}login`;
 const signupHref = `${base}signup`;
 const logoSrc = `${base}brand/logo-dark-180.webp`;
+const whatsappPhone = '+50766003653';
+const phoneNumber = '+50766003653';
 
 interface PlanRow {
   label: string;
@@ -339,6 +341,14 @@ const startPanels = [
       <div class="ds-landing__wrap ds-landing__footer-inner">
         <p class="ds-landing__kicker">{t('common.brandSlogan', locale)}</p>
         <p>{t('landing.footer.note', locale)}</p>
+        <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); margin-top: 1.5rem;">
+          📱 WhatsApp: <a href={`https://wa.me/${whatsappPhone.replace(/[^0-9]/g, '')}`} style="color: #a3e635; text-decoration: none;">{phoneNumber}</a>
+          {' '}|{' '}
+          📞 Teléfono: {phoneNumber}
+        </p>
+        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); margin-top: 1rem;">
+          🌍 Disponible en: Panamá 🇵🇦 | Colombia 🇨🇴 | México 🇲🇽 | Estados Unidos 🇺🇸
+        </p>
         <div class="ds-landing__actions">
           <a class="ds-landing__cta ds-btn-sport ds-btn-sport--primary" href={loginHref}>
             {t('landing.nav.login', locale)}
