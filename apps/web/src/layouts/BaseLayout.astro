@@ -29,9 +29,14 @@ const origin = Astro.url.origin;
     <meta name="description" content={pageDescription} />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#A3E635" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="VeloceSports" />
     <link rel="icon" href="/brand/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/brand/favicon.png" />
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={`${pageDescription} — ${brandSlogan}`} />
     <meta property="og:image" content={`${origin}/brand/og-image.png`} />
@@ -47,5 +52,13 @@ const origin = Astro.url.origin;
   </head>
   <body class="min-h-full font-body">
     <slot />
+    <script is:inline>
+      // Registrar Service Worker para soporte offline
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch((error) => {
+          console.log('[SW] Registration failed:', error);
+        });
+      }
+    </script>
   </body>
 </html>
