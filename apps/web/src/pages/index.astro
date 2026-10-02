@@ -1250,15 +1250,15 @@ const logoSrc = `${base}brand/logo-dark-180.webp`;
 
       // Update school
       document.getElementById('price-school-first').textContent = `Primer año GRATIS`;
-      document.getElementById('price-school-player').textContent = (prices.school.player * rate).toFixed(2);
+      document.getElementById('price-school-player').textContent = `${symbol}${(prices.school.player * rate).toFixed(2)}`;
 
       // Update academy
       document.getElementById('price-academy-annual').textContent = `${symbol}${(prices.academy.annual * rate).toFixed(0)}/año`;
-      document.getElementById('price-academy-player').textContent = (prices.academy.player * rate).toFixed(2);
+      document.getElementById('price-academy-player').textContent = `${symbol}${(prices.academy.player * rate).toFixed(2)}`;
 
       // Update club
       document.getElementById('price-club-annual').textContent = `${symbol}${(prices.club.annual * rate).toFixed(0)}/año`;
-      document.getElementById('price-club-player').textContent = (prices.club.player * rate).toFixed(2);
+      document.getElementById('price-club-player').textContent = `${symbol}${(prices.club.player * rate).toFixed(2)}`;
     }
 
     // FAQ Toggle
