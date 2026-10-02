@@ -1067,7 +1067,7 @@ const logoSrc = `${base}brand/logo-dark-180.webp`;
 
       <div class="currency-selector">
         <label for="currency-select">Selecciona tu moneda:</label>
-        <select id="currency-select" onchange="updatePrices()">
+        <select id="currency-select">
           <option value="USD">USD - Dólar Estadounidense</option>
           <option value="EUR">EUR - Euro</option>
           <option value="COP">COP - Peso Colombiano</option>
@@ -1259,6 +1259,12 @@ const logoSrc = `${base}brand/logo-dark-180.webp`;
       // Update club
       document.getElementById('price-club-annual').textContent = `${symbol}${(prices.club.annual * rate).toFixed(0)}/año`;
       document.getElementById('price-club-player').textContent = `${symbol}${(prices.club.player * rate).toFixed(2)}`;
+    }
+
+    // Currency selector change event
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) {
+      currencySelect.addEventListener('change', updatePrices);
     }
 
     // FAQ Toggle
