@@ -26,6 +26,7 @@ import {
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
+import { useOfflineStore } from '../../hooks/useOfflineStore';
 import {
   canImmediateUndo,
   clampCaptureMinute,
@@ -130,6 +131,7 @@ export default function MatchCapturePanel({
   const [error, setError] = useState<string | null>(null);
   const [attendance, setAttendance] = useState<MatchAttendanceDto | null>(null);
   const [catalog, setCatalog] = useState<ActionCatalogDto[]>([]);
+  const [usingOfflineData, setUsingOfflineData] = useState(false);
 
   const [period, setPeriod] = useState(1);
   const [minute, setMinute] = useState(0);
@@ -226,6 +228,14 @@ export default function MatchCapturePanel({
   } = useCaptureQueue(matchId);
 
   const online = useOnlineStatus();
+  const offlineStore = useOfflineStore(matchId, {
+    onSyncSuccess: (count) => {
+      showToast({
+        variant: 'success',
+        message: t('matches.capture.syncedActions', { count }),
+      });
+    },
+  });
   const pendingCount = history.filter(
     (entry: CaptureHistoryEntry) => entry.sendStatus !== 'confirmed',
   ).length;
@@ -257,14 +267,24 @@ export default function MatchCapturePanel({
     setLoading(true);
     setError(null);
     setForbidden(false);
+    setUsingOfflineData(false);
+
     try {
       const [attendanceData, catalogData, actionsData] = await Promise.all([
         matchesFetch<MatchAttendanceDto>(`${matchId}/attendance`),
         matchesFetch<ActionCatalogDto[]>('action-catalog/active'),
         matchesFetch<GameActionListDto>(`${matchId}/actions`),
       ]);
+
       setAttendance(attendanceData);
       setCatalog(catalogData);
+
+      // Cachear datos para offline
+      await Promise.all([
+        offlineStore.cacheAttendance(attendanceData),
+        offlineStore.cacheActionCatalog(catalogData),
+      ]);
+
       const playerNames = new Map(
         attendanceData.entries.map((e) => [
           e.playerId,
@@ -280,12 +300,42 @@ export default function MatchCapturePanel({
       if (e instanceof MatchesApiError && e.status === 403) {
         setForbidden(true);
       } else {
-        setError(e instanceof MatchesApiError ? e.message : t('matches.errors.generic'));
+        // Intenta fallback a datos en cache offline
+        console.log('[MatchCapturePanel] Loading from offline store:', e);
+        const [cachedAttendance, cachedCatalog] = await Promise.all([
+          offlineStore.restoreAttendance(),
+          offlineStore.restoreActionCatalog(),
+        ]);
+
+        if (cachedAttendance && cachedCatalog.length > 0) {
+          setAttendance(cachedAttendance);
+          setCatalog(cachedCatalog);
+          setUsingOfflineData(true);
+
+          const playerNames = new Map(
+            cachedAttendance.entries.map((e) => [
+              e.playerId,
+              {
+                firstName: e.playerFirstName,
+                lastName: e.playerLastName,
+                lineup: e.lineup,
+              },
+            ]),
+          );
+          upsertFromServer(mergeServerActions([], [], playerNames));
+
+          showToast({
+            variant: 'warning',
+            message: t('matches.capture.offlineMode'),
+          });
+        } else {
+          setError(e instanceof MatchesApiError ? e.message : t('matches.errors.generic'));
+        }
       }
     } finally {
       setLoading(false);
     }
-  }, [matchId, t, upsertFromServer]);
+  }, [matchId, t, upsertFromServer, offlineStore, showToast]);
 
   useEffect(() => {
     void load();
@@ -930,6 +980,13 @@ export default function MatchCapturePanel({
           <div role="status" aria-live="polite" className="mb-2">
             <Alert variant="warning">
               {t('matches.capture.offlineBanner', { count: pendingCount })}
+            </Alert>
+          </div>
+        )}
+        {usingOfflineData && (
+          <div role="status" aria-live="polite" className="mb-2">
+            <Alert variant="info">
+              {t('matches.capture.offlineDataBanner')}
             </Alert>
           </div>
         )}
