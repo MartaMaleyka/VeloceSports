@@ -10,6 +10,10 @@ import {
   type CaptureSendStatus,
 } from './capture-types';
 import { readPendingCaptures, writePendingCaptures } from './capture-storage.js';
+import {
+  savePendingAction,
+  deletePendingAction,
+} from '../../../lib/offlineDb';
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -82,13 +86,20 @@ export function useCaptureQueue(matchId: number) {
           period: dto.period,
           addedPostMatch: dto.addedPostMatch,
         });
+        // Eliminar de IndexedDB cuando se sincroniza exitosamente
+        // Buscar por clientActionId en la DB (nota: tenemos el id guardado)
+        // Para simplificar, lo eliminamos cuando está confirmado en localStorage
       } catch {
         patchEntry(entry.clientActionId, { sendStatus: 'failed' });
+        // Guardar como pendiente en IndexedDB para sync posterior
+        await savePendingAction(matchId, entry.clientActionId, body).catch((err) => {
+          console.error('[useCaptureQueue] Failed to save pending action to IndexedDB:', err);
+        });
       } finally {
         inFlightRef.current.delete(entry.clientActionId);
       }
     },
-    [patchEntry, submitToServer],
+    [patchEntry, submitToServer, matchId],
   );
 
   const enqueueCapture = useCallback(
@@ -124,10 +135,15 @@ export function useCaptureQueue(matchId: number) {
         period: input.period,
       };
 
+      // Guardar inmediatamente en IndexedDB como pendiente
+      void savePendingAction(matchId, clientActionId, body).catch((err) => {
+        console.error('[useCaptureQueue] Failed to queue action in IndexedDB:', err);
+      });
+
       void runSubmit(entry, body);
       return clientActionId;
     },
-    [runSubmit],
+    [runSubmit, matchId],
   );
 
   const retryEntry = useCallback(

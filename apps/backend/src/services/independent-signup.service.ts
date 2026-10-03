@@ -11,6 +11,7 @@ import {
   type SignupIndependentResponseDto,
 } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
+import { env } from '../config/env.js';
 import { academyRepository } from '../repositories/academy.repository.js';
 import { categoryRepository } from '../repositories/category.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
@@ -20,6 +21,7 @@ import { userRoleRepository } from '../repositories/user-role.repository.js';
 import { parentLinkRepository } from '../repositories/parent-link.repository.js';
 import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
 import { auditService } from './audit.service.js';
+import { emailNotificationService } from './email-notification.service.js';
 import { slugify } from '../utils/strings.js';
 import { ConflictError, NotFoundError } from '../types/index.js';
 
@@ -114,6 +116,21 @@ export class IndependentSignupService {
         null,
         { accountType: AcademyAccountType.PERSONAL, approvalStatus: AcademyApprovalStatus.PENDING, email },
       );
+
+      // Notificar al admin sobre el nuevo registro
+      if (env.ADMIN_NOTIFICATION_EMAIL) {
+        void emailNotificationService
+          .sendNewSignupNotification({
+            adminEmail: env.ADMIN_NOTIFICATION_EMAIL,
+            userEmail: email,
+            accountName: `Familia ${input.parentLastName.trim()}`,
+            accountType: 'independent',
+            userName: `${input.parentFirstName.trim()} ${input.parentLastName.trim()}`,
+          })
+          .catch((err) =>
+            console.error('[independent-signup] Error enviando notificación al admin:', err),
+          );
+      }
 
       return { pendingApproval: true, email };
     } catch (error) {

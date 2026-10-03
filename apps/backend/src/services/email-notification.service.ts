@@ -143,6 +143,42 @@ export class EmailNotificationService {
     );
     return this.deliverAll(mails, input.approved ? 'enrollment_approved' : 'enrollment_rejected');
   }
+
+  /** Notificación al admin cuando se registra una nueva academia o cuenta personal. */
+  async sendNewSignupNotification(input: {
+    adminEmail: string;
+    userEmail: string;
+    accountName: string;
+    accountType: 'academy' | 'independent';
+    userName: string;
+  }): Promise<boolean> {
+    const isAcademy = input.accountType === 'academy';
+    const subject = isAcademy
+      ? `Nueva academia registrada: ${input.accountName}`
+      : `Nueva cuenta personal registrada: ${input.accountName}`;
+    const paragraphs = [
+      isAcademy
+        ? `Se registró una nueva academia: "${input.accountName}".`
+        : `Se registró una nueva cuenta personal: "${input.accountName}".`,
+      `Email del usuario: ${input.userEmail}`,
+      `Nombre del administrador: ${input.userName}`,
+      isAcademy
+        ? 'Esta cuenta está pendiente de aprobación. Revísala en el dashboard de administración.'
+        : 'Esta cuenta está pendiente de aprobación. Revísala en el dashboard de administración.',
+    ];
+    return this.deliver(
+      renderEmail({
+        to: input.adminEmail,
+        subject,
+        paragraphs,
+        action: {
+          label: 'Ir al dashboard',
+          url: `${publicBaseUrl()}/admin/accounts`,
+        },
+      }),
+      `new_signup_${input.accountType}`,
+    );
+  }
 }
 
 export const emailNotificationService = new EmailNotificationService();
