@@ -93,6 +93,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASSWORD: z.string().min(1).optional(),
   MAIL_FROM: z.string().min(3).default('SquadVeloce <no-reply@localhost>'),
+  ADMIN_NOTIFICATION_EMAIL: z.string().email().optional(),
   /** URL pública de la web (incluida la base, p. ej. https://app.example.com/profe) para los enlaces del email. */
   APP_PUBLIC_URL: z.string().url().optional(),
   PASSWORD_RECOVERY_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),

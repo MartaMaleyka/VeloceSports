@@ -9,11 +9,13 @@ import {
   type SignupIndependentResponseDto,
 } from '@velocesport/shared';
 import { getPool } from '../config/db.js';
+import { env } from '../config/env.js';
 import { academyRepository } from '../repositories/academy.repository.js';
 import { planRepository } from '../repositories/plan.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { seedBaseActionCatalogForTenant } from './action-catalog-seed.service.js';
 import { auditService } from './audit.service.js';
+import { emailNotificationService } from './email-notification.service.js';
 import { slugify } from '../utils/strings.js';
 import { ConflictError, NotFoundError } from '../types/index.js';
 
@@ -88,6 +90,21 @@ export class AcademySignupService {
         null,
         { approvalStatus: AcademyApprovalStatus.PENDING, email, selfSignup: true },
       );
+
+      // Notificar al admin sobre el nuevo registro
+      if (env.ADMIN_NOTIFICATION_EMAIL) {
+        void emailNotificationService
+          .sendNewSignupNotification({
+            adminEmail: env.ADMIN_NOTIFICATION_EMAIL,
+            userEmail: email,
+            accountName: input.academyName.trim(),
+            accountType: 'academy',
+            userName: `${input.adminFirstName.trim()} ${input.adminLastName.trim()}`,
+          })
+          .catch((err) =>
+            console.error('[academy-signup] Error enviando notificación al admin:', err),
+          );
+      }
 
       return { pendingApproval: true, email };
     } catch (error) {
