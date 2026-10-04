@@ -6,6 +6,7 @@ import { env } from './config/env.js';
 import { closePool, getPool } from './config/db.js';
 import { userSessionService } from './services/user-session.service.js';
 import { passwordRecoveryService } from './services/password-recovery.service.js';
+import { logger } from './services/logger.service.js';
 
 const app = createApp();
 
@@ -20,14 +21,14 @@ async function purgeStaleSessions(): Promise<void> {
   try {
     const deleted = await userSessionService.purgeStaleSessions(env.SESSION_RETENTION_DAYS);
     if (deleted > 0) {
-      console.log(`Sesiones antiguas eliminadas: ${deleted}`);
+      logger.info(`Sesiones antiguas eliminadas: ${deleted}`);
     }
     const tokens = await passwordRecoveryService.purgeStaleTokens(env.SESSION_RETENTION_DAYS);
     if (tokens > 0) {
-      console.log(`Tokens de recuperación antiguos eliminados: ${tokens}`);
+      logger.info(`Tokens de recuperación antiguos eliminados: ${tokens}`);
     }
   } catch (error) {
-    console.error('No se pudieron limpiar las sesiones antiguas:', error);
+    logger.error('No se pudieron limpiar las sesiones antiguas:', error instanceof Error ? error : new Error(String(error)));
   }
 }
 
@@ -35,12 +36,12 @@ async function start(): Promise<void> {
   try {
     const pool = getPool();
     await pool.query('SELECT 1');
-    console.log('Conexión a MySQL establecida');
+    logger.info('Conexión a MySQL establecida');
 
     server = app.listen(env.PORT, () => {
-      console.log(`Servidor escuchando en http://localhost:${env.PORT}`);
+      logger.info(`Servidor escuchando en http://localhost:${env.PORT}`);
       if (env.NODE_ENV !== 'production') {
-        console.log(`Swagger UI: http://localhost:${env.PORT}/api/docs`);
+        logger.info(`Swagger UI: http://localhost:${env.PORT}/api/docs`);
       }
     });
 
@@ -50,26 +51,26 @@ async function start(): Promise<void> {
 
     stopOverdueJob = startOverdueInvoicesJob();
   } catch (error) {
-    console.error('Error al iniciar el servidor:', error);
+    logger.error('Error al iniciar el servidor:', error instanceof Error ? error : new Error(String(error)));
     process.exit(1);
   }
 }
 
 /** Deja de aceptar conexiones, termina las peticiones en curso y cierra el pool. */
 function shutdown(signal: NodeJS.Signals): void {
-  console.log(`${signal} recibido: cerrando servidor...`);
+  logger.info(`${signal} recibido: cerrando servidor...`);
   if (purgeTimer) clearInterval(purgeTimer);
   stopOverdueJob?.();
 
   const forceExit = setTimeout(() => {
-    console.error('Cierre forzado tras timeout');
+    logger.error('Cierre forzado tras timeout');
     process.exit(1);
   }, SHUTDOWN_TIMEOUT_MS);
   forceExit.unref();
 
   const finish = () => {
     closePool()
-      .catch((error) => console.error('Error al cerrar el pool de MySQL:', error))
+      .catch((error) => logger.error('Error al cerrar el pool de MySQL:', error instanceof Error ? error : new Error(String(error))))
       .finally(() => process.exit(0));
   };
 

@@ -6,13 +6,14 @@ import { env, getCorsOrigins, isProduction, parseTrustProxy } from './config/env
 import { swaggerSpec } from './config/swagger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { globalRateLimiter } from './middlewares/rateLimit.js';
+import { correlationIdMiddleware } from './middleware/correlation-id.middleware.js';
+import { requestLoggingMiddleware } from './middleware/request-logging.middleware.js';
 import routes from './routes/index.js';
 
 export function createApp(): express.Application {
   const app = express();
 
   app.disable('x-powered-by');
-  // req.ip = IP real del navegador reenviada por el BFF (no la del contenedor web).
   app.set('trust proxy', parseTrustProxy(env.TRUST_PROXY));
 
   app.use(helmet());
@@ -22,6 +23,8 @@ export function createApp(): express.Application {
       credentials: true,
     }),
   );
+  app.use(correlationIdMiddleware);
+  app.use(requestLoggingMiddleware);
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
 
