@@ -1,0 +1,84 @@
+{
+  "validation": {
+    "email.required": "El correo electrónico es requerido",
+    "email.invalid": "El correo electrónico no es válido",
+    "email.unique": "Este correo electrónico ya está registrado",
+    "password.required": "La contraseña es requerida",
+    "password.minLength": "La contraseña debe tener al menos 8 caracteres",
+    "password.weak": "La contraseña debe contener mayúsculas, minúsculas y números",
+    "name.required": "El nombre es requerido",
+    "name.minLength": "El nombre debe tener al menos 2 caracteres",
+    "name.maxLength": "El nombre no debe exceder 255 caracteres",
+    "phone.invalid": "El teléfono no es válido",
+    "birthDate.invalid": "La fecha de nacimiento no es válida",
+    "birthDate.tooYoung": "El usuario debe ser mayor de edad",
+    "position.required": "La posición es requerida",
+    "jerseyNumber.invalid": "El número de camiseta debe estar entre 1 y 99",
+    "pageSize.invalid": "El tamaño de página debe estar entre 1 y 100",
+    "page.invalid": "El número de página debe ser mayor a 0",
+    "date.invalid": "La fecha no es válida",
+    "dateRange.invalid": "La fecha de inicio debe ser menor que la fecha final",
+    "score.invalid": "El resultado debe estar entre 0 y 999",
+    "jerseyNumber.required": "El número de camiseta es requerido",
+    "opponent.required": "El nombre del oponente es requerido",
+    "location.required": "La ubicación es requerida",
+    "file.required": "El archivo es requerido",
+    "file.tooLarge": "El archivo no puede superar 5 MB",
+    "file.invalidType": "El tipo de archivo no es válido",
+    "notFound": "El recurso no fue encontrado",
+    "unauthorized": "No está autorizado para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "conflict": "Solicitud duplicada detectada",
+    "serverError": "Error interno del servidor"
+  },
+  "auth": {
+    "loginSuccess": "Sesión iniciada correctamente",
+    "logoutSuccess": "Sesión cerrada correctamente",
+    "invalidCredentials": "Correo electrónico o contraseña incorrectos",
+    "accountLocked": "La cuenta está bloqueada. Intente más tarde",
+    "sessionExpired": "Su sesión ha expirado. Por favor, inicie sesión nuevamente",
+    "mustChangePassword": "Debe cambiar su contraseña para continuar",
+    "passwordChanged": "Contraseña cambiadacorrectamente"
+  },
+  "crud": {
+    "created": "Creado correctamente",
+    "updated": "Actualizado correctamente",
+    "deleted": "Eliminado correctamente",
+    "fetched": "Obtenido correctamente",
+    "createError": "Error al crear",
+    "updateError": "Error al actualizar",
+    "deleteError": "Error al eliminar",
+    "fetchError": "Error al obtener datos"
+  },
+  "player": {
+    "created": "Jugador creado correctamente",
+    "updated": "Jugador actualizado correctamente",
+    "deleted": "Jugador eliminado correctamente",
+    "photoUploaded": "Foto de jugador subida correctamente",
+    "photoDeleted": "Foto de jugador eliminada correctamente",
+    "notFound": "Jugador no encontrado",
+    "already_exists": "El jugador ya existe"
+  },
+  "match": {
+    "created": "Partido creado correctamente",
+    "updated": "Partido actualizado correctamente",
+    "deleted": "Partido eliminado correctamente",
+    "notFound": "Partido no encontrado",
+    "actionRecorded": "Acción registrada correctamente",
+    "actionDeleted": "Acción eliminada correctamente"
+  },
+  "team": {
+    "created": "Equipo creado correctamente",
+    "updated": "Equipo actualizado correctamente",
+    "deleted": "Equipo eliminado correctamente",
+    "notFound": "Equipo no encontrado"
+  },
+  "errors": {
+    "networkError": "Error de conexión. Por favor, intente de nuevo",
+    "timeout": "La solicitud tardó demasiado tiempo",
+    "rateLimited": "Demasiadas solicitudes. Intente más tarde",
+    "invalidRequest": "Solicitud inválida",
+    "missingFields": "Faltan campos requeridos",
+    "duplicateRequest": "Solicitud duplicada. Esperando respuesta..."
+  }
+}
