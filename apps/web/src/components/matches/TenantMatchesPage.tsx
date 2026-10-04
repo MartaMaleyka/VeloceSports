@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useMemo, type FormEvent } from 'react';
 import type {
   MatchCategoryOptionDto,
   MatchDto,
-  MatchesKpisDto,
 } from '@velocesport/shared';
 import { MATCH_TYPES, MatchStatus, MatchType } from '@velocesport/shared';
 import {
@@ -31,11 +30,14 @@ import {
 import { Calendar, CheckCircle2, CircleDot, Plus } from 'lucide-react';
 import { useTranslation, matchStatusKey, matchTypeKey } from '@velocesport/i18n';
 import { useDataViewPreference } from '../../hooks/useDataViewPreference';
-import { MatchesApiError, matchesFetch, matchesFetchList } from '../../lib/matches-api';
+import { MatchesApiError, matchesFetch } from '../../lib/matches-api';
 import { appPath } from '../../lib/app-path';
 import { BulkAddLink } from '../data-grid/BulkAddLink';
-import { readUrlSearchParam } from '../../hooks/useUrlSearchParam';
 import { RowActionsMenu } from '../platform/RowActionsMenu';
+import { useMatchForm } from '../../hooks/useMatchForm';
+import { useMatchFilters } from '../../hooks/useMatchFilters';
+import { useMatchData } from '../../hooks/useMatchData';
+import { useMatchModal } from '../../hooks/useMatchModal';
 
 const PAGE_SIZE = 12;
 
@@ -136,49 +138,10 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   const { showToast } = useToast();
   const { viewMode, setViewMode } = useDataViewPreference();
 
-  const [matches, setMatches] = useState<MatchDto[]>([]);
-  const [categories, setCategories] = useState<MatchCategoryOptionDto[]>([]);
-  const [kpis, setKpis] = useState<MatchesKpisDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState(() => readUrlSearchParam('status'));
-  const [categoryFilter, setCategoryFilter] = useState(() => readUrlSearchParam('categoryId'));
-  const [typeFilter, setTypeFilter] = useState('');
-  const [page, setPage] = useState(1);
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<MatchDto | null>(null);
-  const [form, setForm] = useState<MatchFormState>(emptyForm);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof MatchFormState, string>>>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [cancelTarget, setCancelTarget] = useState<MatchDto | null>(null);
-  const [finishTarget, setFinishTarget] = useState<MatchDto | null>(null);
-  const [statusActionLoading, setStatusActionLoading] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [matchData, kpiData, categoryData] = await Promise.all([
-        matchesFetchList<MatchDto>(''),
-        matchesFetch<MatchesKpisDto>('kpis'),
-        matchesFetchList<MatchCategoryOptionDto>('categories'),
-      ]);
-      setMatches(matchData);
-      setKpis(kpiData);
-      setCategories(categoryData);
-    } catch (e) {
-      setError(e instanceof MatchesApiError ? e.message : t('matches.errors.generic'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { matches, categories, kpis, loading, error, reload } = useMatchData();
+  const { search, applySearch, statusFilter, applyStatusFilter, categoryFilter, applyCategoryFilter, typeFilter, applyTypeFilter, page, setPage } = useMatchFilters();
+  const { form, setForm, setFormField, fieldErrors, setErrors, formError, setError, submitting, setSubmitting, resetForm } = useMatchForm();
+  const { modalOpen, editing, cancelTarget, finishTarget, statusActionLoading, setStatusActionLoading, openCreateModal, openEditModal, closeModal, showCancelConfirm, showFinishConfirm, closeCancelConfirm, closeFinishConfirm } = useMatchModal();
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -207,16 +170,12 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
   // El backend solo permite mover de categoría un partido programado (sin asistencia).
   const categoryLocked = editing !== null && editing.status !== 'scheduled';
 
-  const openCreate = () => {
-    setEditing(null);
-    setForm(emptyForm);
-    setFieldErrors({});
-    setFormError(null);
-    setModalOpen(true);
-  };
+  const handleOpenCreate = useCallback(() => {
+    resetForm();
+    openCreateModal();
+  }, [resetForm, openCreateModal]);
 
-  const openEdit = (match: MatchDto) => {
-    setEditing(match);
+  const handleOpenEdit = useCallback((match: MatchDto) => {
     setForm({
       categoryId: String(match.categoryId),
       opponent: match.opponent,
@@ -225,10 +184,10 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
       matchType: match.matchType,
       notes: match.notes ?? '',
     });
-    setFieldErrors({});
-    setFormError(null);
-    setModalOpen(true);
-  };
+    setErrors({});
+    setError(null);
+    openEditModal(match);
+  }, [setForm, setErrors, setError, openEditModal]);
 
   const buildPayload = () => ({
     categoryId: Number(form.categoryId),
@@ -239,19 +198,19 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
     notes: form.notes.trim() || null,
   });
 
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const errors: Partial<Record<keyof MatchFormState, string>> = {};
     if (!form.categoryId) errors.categoryId = t('matches.validation.categoryRequired');
     if (!form.opponent.trim()) errors.opponent = t('matches.validation.opponentRequired');
     if (!form.matchDatetime) errors.matchDatetime = t('matches.validation.datetimeRequired');
-    setFieldErrors(errors);
+    setErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [form, t, setErrors]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setFormError(null);
+    setError(null);
     setSubmitting(true);
     try {
       const payload = buildPayload();
@@ -262,65 +221,65 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         await matchesFetch('', { method: 'POST', body: JSON.stringify(payload) });
         showToast({ variant: 'success', message: t('matches.successCreate') });
       }
-      setModalOpen(false);
-      await load();
+      closeModal();
+      await reload();
     } catch (err) {
-      setFormError(err instanceof MatchesApiError ? err.message : t('matches.errors.generic'));
+      setError(err instanceof MatchesApiError ? err.message : t('matches.errors.generic'));
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [validateForm, setError, setSubmitting, editing, buildPayload, showToast, t, closeModal, reload]);
 
-  const changeStatus = async (match: MatchDto, status: MatchDto['status']) => {
+  const changeStatus = useCallback(async (match: MatchDto, status: MatchDto['status']) => {
     try {
       await matchesFetch(`${match.id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       });
       showToast({ variant: 'success', message: t('matches.successStatus') });
-      await load();
+      await reload();
     } catch (e) {
       showToast({
         variant: 'error',
         message: e instanceof MatchesApiError ? e.message : t('matches.errors.generic'),
       });
     }
-  };
+  }, [showToast, t, reload]);
 
-  const cancelMatch = async (match: MatchDto) => {
+  const cancelMatch = useCallback(async (match: MatchDto) => {
     try {
       await matchesFetch(`${match.id}/cancel`, { method: 'POST' });
       showToast({ variant: 'success', message: t('matches.successCancel') });
-      await load();
+      await reload();
     } catch (e) {
       showToast({
         variant: 'error',
         message: e instanceof MatchesApiError ? e.message : t('matches.errors.generic'),
       });
     }
-  };
+  }, [showToast, t, reload]);
 
-  const confirmFinish = async () => {
+  const confirmFinish = useCallback(async () => {
     if (!finishTarget) return;
     setStatusActionLoading(true);
     try {
       await changeStatus(finishTarget, MatchStatus.FINISHED);
-      setFinishTarget(null);
+      closeFinishConfirm();
     } finally {
       setStatusActionLoading(false);
     }
-  };
+  }, [finishTarget, changeStatus, setStatusActionLoading, closeFinishConfirm]);
 
-  const confirmCancel = async () => {
+  const confirmCancel = useCallback(async () => {
     if (!cancelTarget) return;
     setStatusActionLoading(true);
     try {
       await cancelMatch(cancelTarget);
-      setCancelTarget(null);
+      closeCancelConfirm();
     } finally {
       setStatusActionLoading(false);
     }
-  };
+  }, [cancelTarget, cancelMatch, setStatusActionLoading, closeCancelConfirm]);
 
   const matchActions = (match: MatchDto) => {
     const actions: Array<{ id: string; label: string; onClick: () => void; destructive?: boolean }> = [
@@ -334,7 +293,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
     ];
 
     if (match.status === MatchStatus.SCHEDULED || match.status === MatchStatus.IN_PROGRESS) {
-      actions.push({ id: 'edit', label: t('common.edit'), onClick: () => openEdit(match) });
+      actions.push({ id: 'edit', label: t('common.edit'), onClick: () => handleOpenEdit(match) });
     }
 
     if (match.status === MatchStatus.SCHEDULED) {
@@ -346,7 +305,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
       actions.push({
         id: 'cancel',
         label: t('matches.actions.cancel'),
-        onClick: () => setCancelTarget(match),
+        onClick: () => showCancelConfirm(match),
         destructive: true,
       });
     }
@@ -355,12 +314,12 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
       actions.push({
         id: 'finish',
         label: t('matches.actions.finish'),
-        onClick: () => setFinishTarget(match),
+        onClick: () => showFinishConfirm(match),
       });
       actions.push({
         id: 'cancel',
         label: t('matches.actions.cancel'),
-        onClick: () => setCancelTarget(match),
+        onClick: () => showCancelConfirm(match),
         destructive: true,
       });
     }
@@ -418,15 +377,15 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         getItemKey={(m) => m.id}
         loading={loading}
         error={error}
-        onRetry={() => void load()}
+        onRetry={() => void reload()}
         retryLabel={t('common.retry')}
         header={!loading && !error ? kpiHeader : undefined}
         searchValue={search}
-        onSearchChange={setSearch}
+        onSearchChange={applySearch}
         searchPlaceholder={t('matches.searchPlaceholder')}
         searchTourId="matches-list-search"
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={applyStatusFilter}
         statusFilterLabel={t('matches.filterStatus')}
         statusFilterOptions={[
           { value: '', label: t('tenant.filters.all') },
@@ -434,7 +393,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
         ]}
         statusFilterTourId="matches-list-status-filter"
         secondaryFilter={categoryFilter}
-        onSecondaryFilterChange={setCategoryFilter}
+        onSecondaryFilterChange={applyCategoryFilter}
         secondaryFilterLabel={t('matches.filterCategory')}
         secondaryFilterOptions={[
           { value: '', label: t('tenant.filters.all') },
@@ -447,7 +406,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
             <Button
               type="button"
               data-tour="matches-list-create-button"
-              onClick={openCreate}
+              onClick={handleOpenCreate}
               disabled={categories.length === 0}
               className="gap-1.5"
             >
@@ -575,7 +534,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={closeModal}
         title={editing ? t('matches.editTitle') : t('matches.createTitle')}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -652,7 +611,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
+            <Button type="button" variant="secondary" onClick={closeModal}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting}>
@@ -664,7 +623,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
 
       <ConfirmModal
         open={!!finishTarget}
-        onClose={() => setFinishTarget(null)}
+        onClose={closeFinishConfirm}
         onConfirm={() => void confirmFinish()}
         title={t('matches.capture.finishConfirmTitle')}
         description={t('matches.capture.finishConfirmBody')}
@@ -675,7 +634,7 @@ function TenantMatchesContent({ basePath }: TenantMatchesPageProps) {
 
       <ConfirmModal
         open={!!cancelTarget}
-        onClose={() => setCancelTarget(null)}
+        onClose={closeCancelConfirm}
         onConfirm={() => void confirmCancel()}
         title={t('matches.cancelConfirmTitle')}
         description={t('matches.cancelConfirmBody')}
