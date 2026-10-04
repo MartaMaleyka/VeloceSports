@@ -1606,6 +1606,10 @@ export const en = {
     capture: {
       offlineBanner:
         'Offline. Actions are saved on this device and will be sent when the connection returns ({count} pending).',
+      offlineDataBanner:
+        'Showing data saved on this device. It will refresh from the server when you are back online.',
+      offlineMode: 'You are offline. Loaded the last capture saved on this device.',
+      syncedActions: '{count} pending actions were sent to the server.',
       coachOnly: 'coach only',
       forbiddenTitle: 'No capture access',
       forbiddenBody: 'Only the coach assigned to this match category can capture actions.',

@@ -5,8 +5,7 @@ import {
   type CoachPlayerAnalysisDetailDto,
   type PlayerPeriodInsightDto,
 } from '@velocesport/shared';
-import { env } from '../config/env.js';
-import { generatePlayerPeriodInsight } from '../lib/ollama-client.js';
+import { generatePlayerPeriodInsight } from '../lib/insight-generator.js';
 import {
   playerPeriodInsightRepository,
   type PlayerPeriodInsightRow,
@@ -145,7 +144,7 @@ export class PlayerPeriodInsightService {
         filtersHash,
         factsJson,
         insightText: text,
-        modelName: source === 'ollama' ? env.OLLAMA_MODEL : 'fallback',
+        modelName: 'fallback',
         generationSource: source,
         requestedByUserId,
       });

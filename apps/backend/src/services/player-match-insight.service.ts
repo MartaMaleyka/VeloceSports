@@ -4,8 +4,7 @@ import {
   type PlayerMatchInsightDto,
   type PlayerMatchReportCardDto,
 } from '@velocesport/shared';
-import { env } from '../config/env.js';
-import { generatePlayerMatchInsight } from '../lib/ollama-client.js';
+import { generatePlayerMatchInsight } from '../lib/insight-generator.js';
 import {
   playerMatchInsightRepository,
   type PlayerMatchInsightRow,
@@ -195,7 +194,7 @@ export class PlayerMatchInsightService {
         playerText: result.player,
         parentText: result.parent,
         coachText: result.coach,
-        modelName: source === 'ollama' ? env.OLLAMA_MODEL : 'fallback',
+        modelName: 'fallback',
         generationSource: source,
         requestedByUserId,
       });

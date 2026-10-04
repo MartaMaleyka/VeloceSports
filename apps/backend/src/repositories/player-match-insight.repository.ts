@@ -73,7 +73,7 @@ export class PlayerMatchInsightRepository extends TenantScopedRepository {
          (tenant_id, player_id, match_id, facts_json, facts_hash,
           player_text, parent_text, coach_text, model_name,
           generation_source, status, requested_by_user_id)
-       VALUES (?, ?, ?, JSON_OBJECT(), '', '', '', '', '', 'ollama', 'generating', ?)
+       VALUES (?, ?, ?, JSON_OBJECT(), '', '', '', '', '', 'fallback', 'generating', ?)
        ON DUPLICATE KEY UPDATE
          status = IF(${GENERATING_LOCK_WINDOW_SQL}, 'generating', status),
          requested_by_user_id = IF(${GENERATING_LOCK_WINDOW_SQL}, VALUES(requested_by_user_id), requested_by_user_id)`,

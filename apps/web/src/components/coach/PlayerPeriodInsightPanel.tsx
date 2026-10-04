@@ -13,7 +13,7 @@ export interface PlayerPeriodInsightPanelProps {
 type PanelState = 'idle' | 'loading' | 'ready' | 'error';
 
 const POLL_INTERVAL_MS = 3000;
-const MAX_POLL_ATTEMPTS = 45; // ~135s, por encima del timeout del servidor a Ollama
+const MAX_POLL_ATTEMPTS = 45;
 
 function formatGeneratedAt(iso: string, locale: string): string {
   return new Date(iso).toLocaleString(locale === 'es' ? 'es-PA' : 'en-US', {
