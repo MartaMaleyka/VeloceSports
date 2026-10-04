@@ -11,6 +11,7 @@ import matchRoutes from './match.routes.js';
 import actionCatalogRoutes from './action-catalog.routes.js';
 import coachAnalysisRoutes from './coach-analysis.routes.js';
 import playerPhotoRoutes from './player-photo.routes.js';
+import dashboardRoutes from './dashboard.routes.js';
 import { authenticate } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/rbac.js';
 import { tenant } from '../middlewares/tenant.js';
@@ -52,6 +53,7 @@ router.post(
 
 router.use('/api/tenant/matches', matchRoutes);
 router.use('/api/tenant/action-catalog', actionCatalogRoutes);
+router.use('/api/tenant/dashboard', dashboardRoutes);
 router.use('/api/tenant', tenantRoutes);
 router.use('/api/parent', parentRoutes);
 router.use('/api/player', playerPortalRoutes);
