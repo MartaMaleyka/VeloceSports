@@ -1,0 +1,84 @@
+{
+  "validation": {
+    "email.required": "Email is required",
+    "email.invalid": "Email is not valid",
+    "email.unique": "This email is already registered",
+    "password.required": "Password is required",
+    "password.minLength": "Password must be at least 8 characters",
+    "password.weak": "Password must contain uppercase, lowercase and numbers",
+    "name.required": "Name is required",
+    "name.minLength": "Name must be at least 2 characters",
+    "name.maxLength": "Name must not exceed 255 characters",
+    "phone.invalid": "Phone is not valid",
+    "birthDate.invalid": "Birth date is not valid",
+    "birthDate.tooYoung": "User must be of legal age",
+    "position.required": "Position is required",
+    "jerseyNumber.invalid": "Jersey number must be between 1 and 99",
+    "pageSize.invalid": "Page size must be between 1 and 100",
+    "page.invalid": "Page number must be greater than 0",
+    "date.invalid": "Date is not valid",
+    "dateRange.invalid": "Start date must be less than end date",
+    "score.invalid": "Score must be between 0 and 999",
+    "jerseyNumber.required": "Jersey number is required",
+    "opponent.required": "Opponent name is required",
+    "location.required": "Location is required",
+    "file.required": "File is required",
+    "file.tooLarge": "File cannot exceed 5 MB",
+    "file.invalidType": "File type is not valid",
+    "notFound": "Resource not found",
+    "unauthorized": "You are not authorized to perform this action",
+    "forbidden": "Access denied",
+    "conflict": "Duplicate request detected",
+    "serverError": "Internal server error"
+  },
+  "auth": {
+    "loginSuccess": "Successfully logged in",
+    "logoutSuccess": "Successfully logged out",
+    "invalidCredentials": "Invalid email or password",
+    "accountLocked": "Account is locked. Try again later",
+    "sessionExpired": "Your session has expired. Please log in again",
+    "mustChangePassword": "You must change your password to continue",
+    "passwordChanged": "Password changed successfully"
+  },
+  "crud": {
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "fetched": "Fetched successfully",
+    "createError": "Error creating",
+    "updateError": "Error updating",
+    "deleteError": "Error deleting",
+    "fetchError": "Error fetching data"
+  },
+  "player": {
+    "created": "Player created successfully",
+    "updated": "Player updated successfully",
+    "deleted": "Player deleted successfully",
+    "photoUploaded": "Player photo uploaded successfully",
+    "photoDeleted": "Player photo deleted successfully",
+    "notFound": "Player not found",
+    "already_exists": "Player already exists"
+  },
+  "match": {
+    "created": "Match created successfully",
+    "updated": "Match updated successfully",
+    "deleted": "Match deleted successfully",
+    "notFound": "Match not found",
+    "actionRecorded": "Action recorded successfully",
+    "actionDeleted": "Action deleted successfully"
+  },
+  "team": {
+    "created": "Team created successfully",
+    "updated": "Team updated successfully",
+    "deleted": "Team deleted successfully",
+    "notFound": "Team not found"
+  },
+  "errors": {
+    "networkError": "Connection error. Please try again",
+    "timeout": "Request took too long",
+    "rateLimited": "Too many requests. Try again later",
+    "invalidRequest": "Invalid request",
+    "missingFields": "Required fields missing",
+    "duplicateRequest": "Duplicate request. Waiting for response..."
+  }
+}
