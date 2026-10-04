@@ -1,9 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-  categoryService,
-  playerService,
-  tenantUserService,
-} from '../services/tenant.service.js';
+import { tenantUserService } from '../services/tenant-user.service.js';
+import { categoryService } from '../services/category.service.js';
+import { playerService } from '../services/player.service.js';
 import { parentPlayerAdminService } from '../services/parent.service.js';
 import type { AuthUser } from '../types/index.js';
 
