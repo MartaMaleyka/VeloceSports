@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '@velocesport/shared';
 import { getPool } from '../src/config/db.js';
@@ -11,7 +12,7 @@ import {
 } from '../src/services/user-roles.service.js';
 import { getTestSeed } from './helpers.js';
 
-describe('user_roles — capa de datos multi-rol', () => {
+describeIfDatabaseAvailable('user_roles — capa de datos multi-rol', () => {
   let seed: ReturnType<typeof getTestSeed>;
 
   beforeAll(() => {

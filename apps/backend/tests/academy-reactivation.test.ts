@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 import { createApp } from '../src/app.js';
@@ -13,7 +14,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Academy reactivation', () => {
+describeIfDatabaseAvailable('Academy reactivation', () => {
   let superToken: string;
   let adminAToken: string;
   let seed: ReturnType<typeof getTestSeed>;

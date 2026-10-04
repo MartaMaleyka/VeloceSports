@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { AcademyStatus, BillingCycle, InvoiceStatus } from '@velocesport/shared';
@@ -12,7 +13,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Platform dashboard metrics', () => {
+describeIfDatabaseAvailable('Platform dashboard metrics', () => {
   let superToken: string;
   let adminToken: string;
   let seed: ReturnType<typeof getTestSeed>;

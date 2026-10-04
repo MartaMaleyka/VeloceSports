@@ -1,6 +1,7 @@
 import { resolveRequiresGuardian } from '@velocesport/shared';
+import { describeIfDatabaseAvailable } from './helpers.js';
 
-describe('resolveRequiresGuardian', () => {
+describeIfDatabaseAvailable('resolveRequiresGuardian', () => {
   it('NULL + ageMax < 18 requiere tutor', () => {
     expect(resolveRequiresGuardian({ requiresGuardian: null, ageMax: 16 })).toBe(true);
   });

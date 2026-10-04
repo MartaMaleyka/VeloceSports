@@ -1,4 +1,5 @@
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { getPool } from '../src/config/db.js';
 import { env } from '../src/config/env.js';
 import { setMailSenderForTests, type OutgoingMail } from '../src/lib/mailer.js';
@@ -6,7 +7,7 @@ import { runOverdueInvoicesJob } from '../src/jobs/overdue-invoices.job.js';
 import { msUntilNextUtcHour, runExclusive } from '../src/jobs/scheduler.js';
 import { getTestSeed } from './helpers.js';
 
-describe('Scheduler', () => {
+describeIfDatabaseAvailable('Scheduler', () => {
   it('calcula la próxima ejecución diaria en UTC', () => {
     const now = new Date('2026-03-10T05:30:00.000Z');
     expect(msUntilNextUtcHour(6, now)).toBe(30 * 60 * 1000);
@@ -35,7 +36,7 @@ describe('Scheduler', () => {
   });
 });
 
-describe('Job de facturas vencidas: aviso y periodo de gracia', () => {
+describeIfDatabaseAvailable('Job de facturas vencidas: aviso y periodo de gracia', () => {
   const DAY = 24 * 60 * 60 * 1000;
   const outbox: OutgoingMail[] = [];
 

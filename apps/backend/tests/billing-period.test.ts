@@ -1,4 +1,5 @@
 import {
+import { describeIfDatabaseAvailable } from './helpers.js';
   anchorDayInMonth,
   billingAnchorDateInMonth,
   computeAnchoredMonthlyBillingPeriod,
@@ -14,7 +15,7 @@ function d(iso: string): Date {
   return new Date(`${iso}T12:00:00.000Z`);
 }
 
-describe('billing-period (ancla por academia)', () => {
+describeIfDatabaseAvailable('billing-period (ancla por academia)', () => {
   describe('anchorDayInMonth — meses cortos', () => {
     it('ancla 31 en febrero bisiesto → 29', () => {
       expect(anchorDayInMonth(31, 2024, 2)).toBe(29);

@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { AuditEntity } from '@velocesport/shared';
@@ -91,7 +92,7 @@ async function seedAuditRows(academyId: number, userId: number, planId: number):
   return ids;
 }
 
-describe('Audit log API', () => {
+describeIfDatabaseAvailable('Audit log API', () => {
   let superToken: string;
   let adminToken: string;
   let seed: ReturnType<typeof getTestSeed>;

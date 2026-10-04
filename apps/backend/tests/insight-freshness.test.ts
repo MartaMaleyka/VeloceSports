@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -15,7 +16,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Resúmenes de IA al día (RN-17)', () => {
+describeIfDatabaseAvailable('Resúmenes de IA al día (RN-17)', () => {
   let coachToken: string;
   let matchId: number;
   let playerId: number;

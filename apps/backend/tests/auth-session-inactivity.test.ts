@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { createApp } from '../src/app.js';
@@ -39,7 +40,7 @@ function toMs(value: Date | string): number {
   return value instanceof Date ? value.getTime() : new Date(value).getTime();
 }
 
-describe('Auth session inactivity — Fase 4', () => {
+describeIfDatabaseAvailable('Auth session inactivity — Fase 4', () => {
   it('refresh revoca sesión inactiva (>1h) y devuelve 401 con código SESSION_INACTIVITY_EXPIRED', async () => {
     const { refreshToken } = await loginAdminA();
     const sessionId = await getSessionId(refreshToken);

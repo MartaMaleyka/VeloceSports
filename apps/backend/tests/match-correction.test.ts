@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -88,7 +89,7 @@ async function setupFinishedMatchWithAction(
   return { matchId, actionId: actionRes.body.data.id as number };
 }
 
-describe('Post-match correction window', () => {
+describeIfDatabaseAvailable('Post-match correction window', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;
