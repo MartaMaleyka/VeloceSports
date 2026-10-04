@@ -7,6 +7,7 @@ import {
 import { MulterError } from 'multer';
 import type { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../types/index.js';
+import { photoUploadLimiter } from '../middlewares/rate-limit.js';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ function handleMulterError(err: unknown, _req: Request, _res: Response, next: Ne
 router.post(
   '/:playerId/photo',
   authenticate,
+  photoUploadLimiter,
   (req, res, next) => {
     playerPhotoUploadMiddleware(req, res, (err) => {
       if (err) {

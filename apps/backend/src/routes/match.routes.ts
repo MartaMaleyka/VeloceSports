@@ -39,6 +39,7 @@ import {
   updatePlayerObservationBodySchema,
 } from '../validators/player-observation.validator.js';
 import { requireDevelopment } from '../middlewares/require-development.js';
+import { matchActionLimiter, observationLimiter } from '../middlewares/rate-limit.js';
 
 const router = Router();
 
@@ -57,6 +58,7 @@ router.get(
 
 router.post(
   '/players/:playerId/observations',
+  observationLimiter,
   validate(playerObservationPlayerParamSchema, 'params'),
   validate(createPlayerObservationBodySchema),
   (req, res, next) => playerObservationController.create(req, res, next),
@@ -93,6 +95,7 @@ router.get(
 
 router.put(
   '/:matchId/attendance',
+  matchActionLimiter,
   validate(matchIdParamSchema, 'params'),
   validate(saveMatchAttendanceBodySchema),
   (req, res, next) => matchAttendanceController.saveAttendance(req, res, next),
@@ -120,6 +123,7 @@ router.post(
 
 router.post(
   '/:matchId/actions',
+  matchActionLimiter,
   validate(matchIdParamSchema, 'params'),
   validate(createGameActionBodySchema),
   (req, res, next) => gameActionController.registerAction(req, res, next),
@@ -127,12 +131,14 @@ router.post(
 
 router.delete(
   '/:matchId/actions/:actionId/immediate',
+  matchActionLimiter,
   validate(matchGameActionParamsSchema, 'params'),
   (req, res, next) => gameActionController.immediateUndo(req, res, next),
 );
 
 router.post(
   '/:matchId/actions/:actionId/void',
+  matchActionLimiter,
   validate(matchGameActionParamsSchema, 'params'),
   validate(voidGameActionBodySchema),
   (req, res, next) => gameActionController.voidAction(req, res, next),

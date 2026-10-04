@@ -22,6 +22,10 @@ import {
   inviteAdultPlayerParamsSchema,
 } from '../validators/adult-player.validator.js';
 import { getPool } from '../config/db.js';
+import {
+  globalRateLimiter,
+  authLimiter,
+} from '../middlewares/rate-limit.js';
 
 const router = Router();
 
@@ -35,7 +39,10 @@ router.get('/health', async (_req, res) => {
   }
 });
 
-router.use('/auth', authRoutes);
+// Apply global rate limiter to all routes
+router.use(globalRateLimiter);
+
+router.use('/auth', authLimiter, authRoutes);
 router.use('/api/academies', academyRoutes);
 router.use('/api/platform', platformRoutes);
 router.use('/api/billing', billingRoutes);
