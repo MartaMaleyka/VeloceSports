@@ -11,6 +11,9 @@ const CoachHomePage = lazy(() => import('../components/coach/CoachHomePage'));
 const CoachCategoriesPage = lazy(() => import('../components/coach/CoachCategoriesPage'));
 const CoachPlayersPage = lazy(() => import('../components/coach/CoachPlayersPage'));
 const CoachAnalysisPage = lazy(() => import('../components/coach/CoachAnalysisPage'));
+const CoachPlayerPerformancePage = lazy(
+  () => import('../components/coach/CoachPlayerPerformancePage'),
+);
 const BulkMatchesPage = lazy(() => import('../components/academy/bulk/BulkMatchesPage'));
 
 const PlayerMatchReportPage = lazy(
@@ -24,6 +27,7 @@ export const coachPages = {
   home: CoachHomePage,
   categories: CoachCategoriesPage,
   players: CoachPlayersPage,
+  playerPerformance: CoachPlayerPerformancePage,
   matches: TenantMatchesPage,
   matchDetail: MatchDetailPage,
   matchesBulk: BulkMatchesPage as ComponentType<Record<string, unknown>>,

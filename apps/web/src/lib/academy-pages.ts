@@ -7,6 +7,7 @@ import { lazy, type ComponentType } from 'react';
  */
 const AcademyBillingPage = lazy(() => import('../components/academy/AcademyBillingPage'));
 const AcademyAdminHomePage = lazy(() => import('../components/academy/AcademyAdminHomePage'));
+const AcademyAnalyticsPage = lazy(() => import('../components/academy/AcademyAnalyticsPage'));
 const AcademySettingsPage = lazy(() => import('../components/academy/AcademySettingsPage'));
 const AcademyReportsPage = lazy(() => import('../components/academy/AcademyReportsPage'));
 const TenantUsersPage = lazy(() => import('../components/academy/TenantUsersPage'));
@@ -26,6 +27,7 @@ const PlayerMatchReportPage = lazy(
 
 export const academyPages = {
   home: AcademyAdminHomePage,
+  analytics: AcademyAnalyticsPage,
   billing: AcademyBillingPage,
   users: TenantUsersPage,
   categories: TenantCategoriesPage,
