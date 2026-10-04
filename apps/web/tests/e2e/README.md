@@ -1,209 +1,255 @@
 # E2E Tests with Playwright
 
-This directory contains end-to-end tests for critical user paths in the VeloceSports web application.
+End-to-end tests for VeloceSports web application using Playwright Test Framework.
 
-## Test Coverage
+## Setup
 
-### Authentication (`auth.spec.ts`)
-- Login with valid credentials
+Playwright is already installed in `package.json`. No additional setup required.
+
+## Test Files
+
+### auth.e2e.test.ts
+Tests authentication flows and UI interactions on login page.
+
+**Coverage:**
+- Login form rendering and visibility
 - Error handling with invalid credentials
-- Email format validation
+- Form validation (empty fields, invalid email)
+- Accessibility attributes
 - Password visibility toggle
+- Form submission state
+- Logout flow
 
-### Signup (`signup.spec.ts`)
-- Academy signup flow
-- Independent signup flow
+**Run:**
+```bash
+npm run test:e2e -- auth.e2e.test.ts
+```
+
+### match-capture.e2e.test.ts
+Tests match capture interface and live action recording.
+
+**Coverage:**
+- Match list display and pagination
+- Match filtering by status
+- Match detail page navigation
+- Action capture form rendering
 - Form validation
-- Navigation between signup options
+- Recording game actions
+- Actions log display
+- Attendance management
+- Keyboard shortcuts
 
-### Dashboard (`dashboard.spec.ts`)
-- Main dashboard navigation
-- Access to categories, players, and matches sections
-- User menu functionality
-
-### Players (`players.spec.ts`)
-- Display players list
-- Create new player
-- Form validation
-- Filter players by category
-- Search players by name
-- Filter by status
-- Edit player details
-
-### Categories (`categories.spec.ts`)
-- Display categories list
-- Create new category
-- Category form validation
-- Assign coaches to categories
-- Search categories
-- Set age requirements
-
-### Matches (`matches.spec.ts`)
-- Display matches list
-- Create new match
-- Form validation
-- Filter matches by status
-- Search matches by opponent
-- Open match detail view
-- Match actions menu
+**Run:**
+```bash
+npm run test:e2e -- match-capture.e2e.test.ts
+```
 
 ## Running Tests
 
-### Run all tests
+### All E2E Tests
 ```bash
-pnpm test:e2e
+npm run test:e2e
 ```
 
-### Run tests in UI mode (interactive)
+### Specific Test File
 ```bash
-pnpm test:e2e:ui
+npm run test:e2e -- auth.e2e.test.ts
 ```
 
-### Run tests in debug mode
+### Specific Test
 ```bash
-pnpm test:e2e:debug
+npm run test:e2e -- --grep "should display login form"
 ```
 
-### Run specific test file
+### UI Mode (Interactive)
 ```bash
-npx playwright test tests/e2e/auth.spec.ts
+npm run test:e2e:ui
 ```
 
-### Run tests matching pattern
+### Debug Mode
 ```bash
-npx playwright test -g "should login"
+npm run test:e2e:debug
 ```
 
-### Generate HTML report
+### Headed Mode (See Browser)
 ```bash
-npx playwright test
+npm run test:e2e -- --headed
+```
+
+### Specific Browser
+```bash
+npm run test:e2e -- --project=chromium
+npm run test:e2e -- --project=firefox
+npm run test:e2e -- --project=webkit
+```
+
+### Generate Report
+```bash
+npm run test:e2e -- --reporter=html
 npx playwright show-report
 ```
 
 ## Configuration
 
-The Playwright configuration is defined in `playwright.config.ts`:
+### playwright.config.ts
+Key configurations:
+- **baseURL**: http://localhost:5173 (configurable via BASE_URL env var)
+- **testDir**: ./tests/e2e
+- **webServer**: Auto-starts dev server before tests
+- **Workers**: Parallel execution (1 in CI, multiple locally)
+- **Retries**: 0 locally, 2 in CI
+- **Reporters**: HTML, JSON, JUnit (for CI integration)
 
-- **Base URL**: `http://localhost:3000`
-- **Browsers**: Chromium, Firefox
-- **Parallel Execution**: Enabled (unless in CI)
-- **Retries**: 2 retries in CI, 0 in local development
-- **Screenshots**: Captured on failure
-- **Videos**: Recorded on failure
-- **Traces**: Enabled for debugging
+### Screenshots & Videos
+- Screenshots captured on test failure
+- Videos captured on test failure
+- Stored in `test-results/` directory
 
-### Environment Variables
+## Test Patterns
 
-- `CI`: Set by CI/CD pipeline to enable strict mode
-- `DEBUG`: Set to `pw:api` for detailed logging
+### Waiting for Elements
+```typescript
+// Wait for visibility
+await expect(page.locator('button')).toBeVisible();
 
-## Writing New Tests
+// Wait with timeout
+await expect(element).toBeVisible({ timeout: 5000 });
 
-### Test Structure
+// Custom wait
+await page.waitForLoadState('networkidle');
+```
+
+### Form Interactions
+```typescript
+// Fill input
+await page.fill('input[type="email"]', 'test@example.com');
+
+// Select dropdown
+await select.selectOption('OPTION_VALUE');
+
+// Click button
+await page.click('button[type="submit"]');
+```
+
+### Accessibility Testing
+```typescript
+// Check for aria attributes
+await expect(element).toHaveAttribute('aria-label', /.+/);
+
+// Check role
+await expect(element).toHaveAttribute('role', 'button');
+```
+
+### Network Mocking
+```typescript
+// Wait for API response
+const responsePromise = page.waitForResponse(
+  response => response.url().includes('/api/matches'),
+  { timeout: 5000 }
+);
+
+await button.click();
+const response = await responsePromise;
+expect(response.status()).toBe(200);
+```
+
+## Best Practices
+
+1. **Use Page Object Model** for complex tests
+2. **Avoid hardcoding waits** - use explicit waits
+3. **Test user interactions** not implementation details
+4. **Use descriptive test names** - describe what is tested
+5. **Use data-testid** attributes in components for reliable selectors
+6. **Mock authentication** with cookies in beforeEach
+7. **Test critical paths** first
+8. **Use .catch(() => false)** for optional elements
+
+## Example Test Structure
 
 ```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Feature Name', () => {
-  test.beforeEach(async ({ page }) => {
-    // Setup before each test
-    await page.goto('/path');
+test.describe('Feature E2E Tests', () => {
+  test.beforeEach(async ({ page, context }) => {
+    // Setup: Navigate, set cookies, etc
+    await context.addCookies([...]);
+    await page.goto('/');
   });
 
   test('should do something', async ({ page }) => {
-    // Arrange
-    const element = page.locator('selector');
+    // Arrange: Element is visible
+    await expect(page.locator('selector')).toBeVisible();
     
-    // Act
-    await element.click();
+    // Act: User interacts
+    await page.click('button');
     
-    // Assert
-    await expect(element).toBeVisible();
+    // Assert: Verify result
+    await expect(page).toHaveURL(/expected-url/);
+  });
+
+  test.afterEach(async ({ page }) => {
+    // Cleanup if needed
   });
 });
 ```
 
-### Best Practices
+## Debugging Tips
 
-1. **Use semantic locators**: Prefer `role` attributes and text over CSS selectors
-2. **Wait for page load**: Use `waitForLoadState('networkidle')`
-3. **Graceful failures**: Use `.catch(() => false)` for optional UI elements
-4. **Reusable helpers**: Use functions from `helpers.ts` for common actions
-5. **Timeout handling**: Most async operations have 10-second timeouts
-6. **Error resilience**: Tests should not fail if backend is not available
-
-### Helper Functions
-
-Import from `helpers.ts`:
-
-```typescript
-import { 
-  loginAs,
-  navigateTo,
-  fillFormField,
-  submitForm,
-  expectErrorMessage,
-  waitForTableData,
-  expectNavigationTo
-} from './helpers';
-```
+1. **Use test.only()** to run single test
+2. **Use test.skip()** to skip tests
+3. **Use page.pause()** to pause execution
+4. **Check screenshots** in test-results/
+5. **View videos** in test-results/ for failures
+6. **Use --debug flag** to step through test
+7. **Use page.screenshot()** to debug visuals
 
 ## CI/CD Integration
 
-In GitHub Actions:
-1. Install dependencies: `pnpm install`
-2. Build web app: `pnpm build`
-3. Run E2E tests: `pnpm test:e2e`
-4. Upload artifacts for failed tests
-
-Tests run:
-- On every PR to main/develop
-- After successful unit tests
-- With retries enabled
-- With screenshots and videos on failure
-
-## Debugging
-
-### Debug Mode
-```bash
-npx playwright test --debug
+### GitHub Actions
+```yaml
+- name: Run E2E tests
+  run: npm run test:e2e
+  
+- name: Upload test results
+  if: always()
+  uses: actions/upload-artifact@v3
+  with:
+    name: playwright-report
+    path: apps/web/test-results/
 ```
-
-Launches with step-by-step debugger and inspector.
-
-### Browser Context
-```typescript
-test.only('debug test', async ({ page, context }) => {
-  // Set breakpoint or add logging
-  console.log('Page URL:', page.url());
-  await page.pause(); // Pause execution
-});
-```
-
-### Taking Screenshots
-```typescript
-await page.screenshot({ path: 'screenshot.png' });
-```
-
-### Generating Traces
-```typescript
-const context = await browser.newContext({ recordTrace: 'trace.zip' });
-// ... run test ...
-await context.tracing.stop({ path: 'trace.zip' });
-```
-
-## Known Limitations
-
-1. **Backend Dependency**: Tests are resilient to backend unavailability but don't test API integration
-2. **Authentication**: Login tests may not succeed without real backend
-3. **Data Persistence**: Tests don't persist data between runs
-4. **Real-time Features**: WebSocket and real-time updates not fully tested
 
 ## Future Enhancements
 
-- [ ] API mocking with MSW (Mock Service Worker)
-- [ ] Database fixtures for pre-seeded test data
+- [ ] Page Object Model for reusable components
 - [ ] Visual regression testing
-- [ ] Performance testing
-- [ ] Accessibility testing (axe-core)
-- [ ] Mobile/responsive testing
+- [ ] Performance testing with Lighthouse
+- [ ] Mobile device testing
+- [ ] Accessibility audits (axe)
+- [ ] Test data fixtures
+- [ ] Mock API responses
+- [ ] Cross-browser compatibility testing
+- [ ] Load testing scripts
+
+## Troubleshooting
+
+### Tests timeout
+- Increase timeout in config
+- Check if dev server is running
+- Verify selectors are correct
+
+### Flaky tests
+- Add explicit waits
+- Use data-testid attributes
+- Avoid hardcoded delays
+- Check for race conditions
+
+### Selector issues
+- Use page.locator('text=') for text matching
+- Use data-testid for reliable selectors
+- Avoid overly complex CSS selectors
+- Use accessibility selectors (role, aria-label)
+
+## Resources
+
+- [Playwright Documentation](https://playwright.dev)
+- [Best Practices](https://playwright.dev/docs/best-practices)
+- [Debugging Tests](https://playwright.dev/docs/debug)
+- [CI/CD Integration](https://playwright.dev/docs/ci)
