@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { getValidated } from '../middlewares/validate.js';
 import { planService } from '../services/plan.service.js';
 import { platformService } from '../services/platform.service.js';
 import type { AuthUser } from '../types/index.js';
@@ -66,8 +67,7 @@ export class PlatformController {
   // --- Academies ---
   async listAcademies(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Query ya validada y convertida por listAcademiesQuerySchema.
-      const query = req.query as unknown as ListAcademiesQuery;
+      const query = getValidated<ListAcademiesQuery>(req, 'query');
       const filters = {
         search: query.search,
         status: query.status,

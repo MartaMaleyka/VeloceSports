@@ -180,7 +180,7 @@ export class PlatformService {
         academyId,
         'create',
         null,
-        academy as unknown as Record<string, unknown>,
+        JSON.parse(JSON.stringify(academy)),
       );
       await auditService.log(
         { userId: actorUserId, tenantId: academyId },
@@ -243,8 +243,8 @@ export class PlatformService {
       'academy',
       academyId,
       'update',
-      before as unknown as Record<string, unknown>,
-      after as unknown as Record<string, unknown>,
+      JSON.parse(JSON.stringify(before)),
+      JSON.parse(JSON.stringify(after)),
     );
     return after;
   }

@@ -4,6 +4,19 @@ import { ValidationError } from '../types/index.js';
 
 type RequestPart = 'body' | 'query' | 'params';
 
+/**
+ * Type-safe request property getter after Zod validation.
+ * Use this instead of "as unknown as" casts to access validated request data.
+ * The validate middleware has already ensured type correctness via Zod.
+ *
+ * @example
+ * const query = getValidated<CoachAnalysisQuery>(req, 'query');
+ */
+export function getValidated<T>(req: Request, part: RequestPart): T {
+  // After validate() middleware runs, req[part] contains Zod-validated data
+  return req[part] as T;
+}
+
 export function validate(schema: ZodSchema, part: RequestPart = 'body') {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req[part]);
