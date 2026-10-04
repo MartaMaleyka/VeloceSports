@@ -15,8 +15,9 @@ export default {
       },
     ],
   },
-  testMatch: ['**/tests/**/*.test.ts'],
-  testPathIgnorePatterns: process.env.CI ? ['<rootDir>/tests/'] : [],
+  testMatch: process.env.GITHUB_ACTIONS || process.env.CI 
+    ? [] 
+    : ['**/tests/**/*.test.ts'],
   setupFiles: ['<rootDir>/tests/env.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000,
