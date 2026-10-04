@@ -1610,6 +1610,10 @@ export const es = {
     capture: {
       offlineBanner:
         'Sin conexión. Las acciones se guardan en este dispositivo y se enviarán al recuperar la señal ({count} pendientes).',
+      offlineDataBanner:
+        'Mostrando datos guardados en este dispositivo. Al recuperar la conexión se actualizarán con el servidor.',
+      offlineMode: 'Sin conexión. Se cargó la última captura guardada en este dispositivo.',
+      syncedActions: '{count} acciones pendientes se enviaron al servidor.',
       coachOnly: 'solo coach',
       forbiddenTitle: 'Sin acceso al tablero',
       forbiddenBody: 'Solo el entrenador asignado a la categoría de este partido puede capturar acciones.',

@@ -66,7 +66,7 @@ export class PlayerPeriodInsightRepository extends TenantScopedRepository {
       `INSERT INTO player_period_insights
          (tenant_id, player_id, filters_hash, facts_json, insight_text, model_name,
           generation_source, status, requested_by_user_id)
-       VALUES (?, ?, ?, JSON_OBJECT(), '', '', 'ollama', 'generating', ?)
+       VALUES (?, ?, ?, JSON_OBJECT(), '', '', 'fallback', 'generating', ?)
        ON DUPLICATE KEY UPDATE
          status = IF(${GENERATING_LOCK_WINDOW_SQL}, 'generating', status),
          requested_by_user_id = IF(${GENERATING_LOCK_WINDOW_SQL}, VALUES(requested_by_user_id), requested_by_user_id)`,

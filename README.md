@@ -10,8 +10,7 @@ reportes por jugador y portal para padres y jugadores.
 Navegador ──► apps/web (Astro SSR + islands React)  ──►  apps/backend (Express + MySQL)
                  │  BFF: /api/*                              │
                  │  cookies httpOnly con los JWT             ├─► MySQL 8
-                 │  CSRF: security.checkOrigin               ├─► MinIO (fotos, URLs firmadas)
-                 │                                           └─► Ollama (insights IA, opcional)
+                 │  CSRF: security.checkOrigin               └─► MinIO (fotos, URLs firmadas)
 ```
 
 - **El navegador nunca llama al backend directamente.** Las rutas `apps/web/src/pages/api/*`
@@ -58,9 +57,6 @@ pnpm dev:web                                   # http://localhost:8065
   Consola en <http://localhost:9101>. El backend solo entrega URLs firmadas.
 - **Recuperar contraseña:** sin `SMTP_HOST`, el enlace del correo se imprime en el log del
   backend, así que el flujo `/forgot-password` → `/reset-password` se puede probar sin proveedor.
-- **Insights IA (opcional):** con `OLLAMA_ENABLED=true` y `ollama pull llama3.2:3b`. Sin
-  Ollama, el análisis usa un texto de respaldo determinístico.
-
 ## Tests
 
 ```bash
@@ -88,8 +84,6 @@ cp .env.production.example .env.production   # completar secretos y dominio
   `checkOrigin` (protección CSRF) compara el `Origin` del navegador. **No** desactivar `checkOrigin`.
 - Si el backend corre en Docker y MinIO en el host: `MINIO_ENDPOINT=host.docker.internal`
   (API interna) y `MINIO_PUBLIC_ENDPOINT`/`MINIO_PUBLIC_PORT` para las URLs que ve el navegador.
-- Ollama: tras el primer arranque, `docker exec velocesport-ollama ollama pull llama3.2:3b`.
-
 Variables principales (ver los `.env*.example` para la lista completa):
 
 | Variable | Dónde | Para qué |
@@ -100,7 +94,6 @@ Variables principales (ver los `.env*.example` para la lista completa):
 | `PUBLIC_SITE_URL`, `ASTRO_SITE`, `ASTRO_ALLOWED_ORIGINS` | web | Origen público y CSRF |
 | `INTERNAL_API_URL` | web | URL del backend dentro de la red |
 | `MINIO_*` | backend | Almacenamiento de fotos |
-| `OLLAMA_*` | backend | Agente de insights |
 | `SMTP_*`, `MAIL_FROM`, `APP_PUBLIC_URL` | backend | Correos de recuperación de contraseña (cualquier proveedor SMTP) |
 
 ## Backups y tareas programadas

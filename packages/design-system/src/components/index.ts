@@ -61,7 +61,7 @@ export { ColorPicker, type ColorPickerProps } from './ColorPicker.js';
 export { FileUpload, type FileUploadProps } from './FileUpload.js';
 export { MatchCard, type MatchCardProps, type MatchStatus } from './MatchCard.js';
 export { StatusFilterTabs, type StatusFilterTabsProps, type StatusTab } from './StatusFilterTabs.js';
-export { DateRangePicker, type DateRangePickerProps, type DateRange } from './DateRangePicker.js';
+export { DateRangePicker, type DateRangePickerProps, type DateRange as CalendarDateRange } from './DateRangePicker.js';
 export { FieldVisualization, type FieldVisualizationProps, type FieldAction } from './FieldVisualization.js';
 export { PlayerRoster, type PlayerRosterProps, type Player, type PlayerPresence } from './PlayerRoster.js';
 export { VoiceCaptureWidget, type VoiceCaptureWidgetProps } from './VoiceCaptureWidget.js';

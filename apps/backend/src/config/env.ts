@@ -100,14 +100,6 @@ const envSchema = z.object({
   PASSWORD_RECOVERY_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(3_600_000),
   PASSWORD_RECOVERY_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
 
-  /** Agente de interpretación de estadísticas — modelo local vía Ollama (sin datos a terceros). */
-  OLLAMA_ENABLED: z
-    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
-    .default(true)
-    .transform((v) => v === true || v === 'true' || v === '1'),
-  OLLAMA_BASE_URL: z.string().min(1).default('http://127.0.0.1:11434'),
-  OLLAMA_MODEL: z.string().min(1).default('llama3.2:3b'),
-  OLLAMA_TIMEOUT_MS: z.coerce.number().int().positive().default(45_000),
   /**
    * El endpoint de insight se consulta por polling (cada pocos segundos) mientras
    * se genera en segundo plano, no una sola vez por análisis — una sola generación

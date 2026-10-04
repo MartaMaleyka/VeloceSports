@@ -52,7 +52,6 @@ jobs:
           JWT_ACCESS_SECRET=ci-access-secret-not-used-anywhere-else-000000
           JWT_REFRESH_SECRET=ci-refresh-secret-not-used-anywhere-else-00000
           CORS_ORIGINS=http://localhost:4321
-          OLLAMA_ENABLED=false
           # Las suites hacen muchos logins/insights desde la misma IP en pocos segundos.
           AUTH_LOGIN_RATE_LIMIT_MAX=10000
           PLAYER_INSIGHT_RATE_LIMIT_MAX=10000
