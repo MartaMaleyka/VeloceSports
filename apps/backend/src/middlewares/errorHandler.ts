@@ -1,4 +1,5 @@
 import { AppError } from '../types/index.js';
+import { logger } from '../services/logger.service.js';
 
 export function errorHandler(
   err: unknown,
@@ -16,9 +17,7 @@ export function errorHandler(
     return;
   }
 
-  // En producción también: sin este log un 500 no deja rastro. El detalle
-  // queda en los logs del servidor, nunca en la respuesta al cliente.
-  console.error(`[errorHandler] ${req.method} ${req.originalUrl}`, err);
+  logger.error(`Unhandled error: ${req.method} ${req.originalUrl}`, err instanceof Error ? err : new Error(String(err)));
 
   res.status(500).json({
     success: false,
