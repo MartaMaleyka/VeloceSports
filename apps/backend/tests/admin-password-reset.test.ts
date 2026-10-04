@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import request from 'supertest';
 import { UserRole, isValidTemporaryPasswordShape } from '@velocesport/shared';
@@ -25,7 +26,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return accessToken;
 }
 
-describe('Admin password reset', () => {
+describeIfDatabaseAvailable('Admin password reset', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

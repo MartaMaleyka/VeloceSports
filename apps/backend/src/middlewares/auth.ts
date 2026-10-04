@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { UserStatus } from '@velocesport/shared';
 import { ForbiddenError, UnauthorizedError } from '../types/index.js';
 import { verifyAccessToken } from '../utils/jwt.js';
+import { tokenBlacklist } from '../utils/token-blacklist.js';
 import { userRepository } from '../repositories/user.repository.js';
 
 function isPasswordChangeAllowed(req: Request): boolean {
@@ -25,6 +26,11 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const token = authHeader.slice(7);
 
   try {
+    if (tokenBlacklist.isBlacklisted(token)) {
+      next(new UnauthorizedError('Token revocado. Inicia sesión de nuevo.'));
+      return;
+    }
+
     const payload = verifyAccessToken(token);
     const gate = await userRepository.findPasswordGateState(payload.userId);
 

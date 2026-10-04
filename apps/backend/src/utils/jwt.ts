@@ -34,9 +34,11 @@ function buildTokenPayload(payload: JwtPayload): Record<string, unknown> {
 }
 
 export function signAccessToken(payload: JwtPayload): string {
-  return jwt.sign(buildTokenPayload(payload), env.JWT_ACCESS_SECRET, {
-    expiresIn: accessExpiresIn,
-  });
+  return jwt.sign(
+    { ...buildTokenPayload(payload), jti: randomUUID() },
+    env.JWT_ACCESS_SECRET,
+    { expiresIn: accessExpiresIn },
+  );
 }
 
 export function signRefreshToken(payload: RefreshJwtPayload): string {

@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -24,7 +25,7 @@ async function createRestrictedPlan(): Promise<number> {
   return result.insertId;
 }
 
-describe('Tenant management API (academy_admin)', () => {
+describeIfDatabaseAvailable('Tenant management API (academy_admin)', () => {
   let adminAToken: string;
   let adminBToken: string;
   let seed: ReturnType<typeof getTestSeed>;

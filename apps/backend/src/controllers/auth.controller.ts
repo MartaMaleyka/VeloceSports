@@ -4,6 +4,7 @@ import { authService } from '../services/auth.service.js';
 import { independentSignupService } from '../services/independent-signup.service.js';
 import { academySignupService } from '../services/academy-signup.service.js';
 import { passwordRecoveryService } from '../services/password-recovery.service.js';
+import { tokenBlacklist } from '../utils/token-blacklist.js';
 import { UnauthorizedError } from '../types/index.js';
 
 function readClientContext(req: Request): {
@@ -62,6 +63,13 @@ export class AuthController {
     try {
       const { refreshToken } = req.body as { refreshToken?: string };
       await authService.logout(refreshToken);
+
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        const accessToken = authHeader.slice(7);
+        tokenBlacklist.add(accessToken, 'logout');
+      }
+
       res.status(200).json({ success: true, data: { loggedOut: true } });
     } catch (error) {
       next(error);
@@ -121,6 +129,13 @@ export class AuthController {
         throw new UnauthorizedError();
       }
       const result = await authService.changePassword(req.user.userId, req.body);
+
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        const accessToken = authHeader.slice(7);
+        tokenBlacklist.add(accessToken, 'password_change');
+      }
+
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);

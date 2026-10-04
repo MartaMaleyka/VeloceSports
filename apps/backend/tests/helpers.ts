@@ -151,3 +151,13 @@ export function getTestSeed(): TestSeed {
 export async function teardownDatabase(): Promise<void> {
   await closePool();
 }
+
+declare global {
+  var testDatabaseAvailable: boolean;
+}
+
+export function describeIfDatabaseAvailable(name: string, fn: jest.EmptyFunction) {
+  return typeof global !== 'undefined' && global.testDatabaseAvailable
+    ? describe(name, fn)
+    : describe.skip(name, fn);
+}

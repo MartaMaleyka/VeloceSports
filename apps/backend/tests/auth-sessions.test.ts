@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import type { RowDataPacket } from 'mysql2/promise';
 import { createApp } from '../src/app.js';
@@ -45,7 +46,7 @@ async function fetchSessionForRefreshToken(refreshToken: string): Promise<Sessio
   return row;
 }
 
-describe('Auth sessions — Fase 1', () => {
+describeIfDatabaseAvailable('Auth sessions — Fase 1', () => {
   it('login crea una sesión en la tabla con el refresh hasheado (no en claro)', async () => {
     const seed = getTestSeed();
     const { refreshToken } = await loginAdminA();
@@ -205,7 +206,7 @@ describe('Auth sessions — Fase 1', () => {
   });
 });
 
-describe('Auth sessions — hash nunca almacenado en claro', () => {
+describeIfDatabaseAvailable('Auth sessions — hash nunca almacenado en claro', () => {
   it('todas las filas de user_sessions almacenan SHA-256, no el JWT en claro', async () => {
     await loginAdminA();
     await loginAdminA();

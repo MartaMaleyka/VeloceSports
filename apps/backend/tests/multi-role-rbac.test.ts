@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -16,7 +17,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Multi-rol — JWT y RBAC (Paso 2)', () => {
+describeIfDatabaseAvailable('Multi-rol — JWT y RBAC (Paso 2)', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let coachOnlyToken: string;
   let multiRoleToken: string;

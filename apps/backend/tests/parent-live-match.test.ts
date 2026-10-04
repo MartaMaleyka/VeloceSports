@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -16,7 +17,7 @@ async function loginAs(email: string, pwd: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Partido en vivo para familias', () => {
+describeIfDatabaseAvailable('Partido en vivo para familias', () => {
   let adminToken: string;
   let coachToken: string;
   let parentToken: string;

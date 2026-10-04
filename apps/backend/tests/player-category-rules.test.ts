@@ -1,4 +1,5 @@
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { MatchType, PlayerStatus, UserRole } from '@velocesport/shared';
@@ -13,7 +14,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Reglas de jugadores y categorías', () => {
+describeIfDatabaseAvailable('Reglas de jugadores y categorías', () => {
   let adminToken: string;
   let tenantId: number;
   let activeCategoryId: number;

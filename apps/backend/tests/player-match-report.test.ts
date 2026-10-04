@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -24,7 +25,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Player match report card API', () => {
+describeIfDatabaseAvailable('Player match report card API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

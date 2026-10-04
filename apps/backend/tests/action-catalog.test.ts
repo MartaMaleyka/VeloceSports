@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -27,7 +28,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Action catalog API', () => {
+describeIfDatabaseAvailable('Action catalog API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let superToken: string;
   let adminAToken: string;

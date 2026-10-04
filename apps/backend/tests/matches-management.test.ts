@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -13,7 +14,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Match management API', () => {
+describeIfDatabaseAvailable('Match management API', () => {
   let adminAToken: string;
   let adminBToken: string;
   let coachAToken: string;

@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -14,7 +15,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('ciclo de vida del jugador (baja / reactivar / eliminar)', () => {
+describeIfDatabaseAvailable('ciclo de vida del jugador (baja / reactivar / eliminar)', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

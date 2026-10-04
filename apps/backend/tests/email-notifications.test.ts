@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -22,7 +23,7 @@ function mailsTo(email: string): OutgoingMail[] {
   return outbox.filter((m) => m.to === email);
 }
 
-describe('Avisos por correo', () => {
+describeIfDatabaseAvailable('Avisos por correo', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminToken: string;
   let coachToken: string;

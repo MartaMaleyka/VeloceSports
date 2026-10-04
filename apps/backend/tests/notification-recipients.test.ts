@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +19,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Destinatarios de notificaciones (player_viewers)', () => {
+describeIfDatabaseAvailable('Destinatarios de notificaciones (player_viewers)', () => {
   const password = 'Recipients123!';
   let tenantId: number;
   let adminToken: string;

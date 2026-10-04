@@ -1,4 +1,5 @@
 import type { ResultSetHeader } from 'mysql2/promise';
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -23,7 +24,7 @@ async function createRestrictedPlan(): Promise<number> {
   return result.insertId;
 }
 
-describe('Tenant admin links and editing', () => {
+describeIfDatabaseAvailable('Tenant admin links and editing', () => {
   let adminAToken: string;
   let adminBToken: string;
   let seed: ReturnType<typeof getTestSeed>;
