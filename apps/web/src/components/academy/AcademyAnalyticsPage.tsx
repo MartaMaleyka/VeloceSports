@@ -9,22 +9,17 @@ import {
   StatCard,
   StatCardGrid,
   cn,
-  BarChart,
-  BarChartConfig,
 } from '@velocesport/design-system';
 import { useTranslation } from '@velocesport/i18n';
 import {
   Users,
-  TrendingUp,
   Trophy,
   Calendar,
   Activity,
-  BarChart3,
-  Clock,
-  CheckCircle,
-  Zap,
 } from 'lucide-react';
 import { TenantApiError, tenantFetch } from '../../lib/tenant-api';
+import { PlayerDistributionChart } from './PlayerDistributionChart';
+import { MatchDistributionChart } from './MatchDistributionChart';
 
 interface PlayerPerformanceRow {
   id: number;
@@ -149,125 +144,8 @@ function AcademyAnalyticsContent() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-border bg-bg-surface p-6">
-          <h3 className="mb-4 font-semibold text-text-primary">Player Status Distribution</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary">Active</span>
-              <span className="font-semibold text-text-primary">{metrics.playerStats.active}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-success"
-                style={{
-                  width: `${
-                    ((metrics.playerStats.active) /
-                      (metrics.playerStats.active +
-                        metrics.playerStats.pending +
-                        metrics.playerStats.inactive)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm text-text-secondary">Pending</span>
-              <span className="font-semibold text-text-primary">{metrics.playerStats.pending}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-warning"
-                style={{
-                  width: `${
-                    ((metrics.playerStats.pending) /
-                      (metrics.playerStats.active +
-                        metrics.playerStats.pending +
-                        metrics.playerStats.inactive)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm text-text-secondary">Inactive</span>
-              <span className="font-semibold text-text-primary">{metrics.playerStats.inactive}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-error"
-                style={{
-                  width: `${
-                    ((metrics.playerStats.inactive) /
-                      (metrics.playerStats.active +
-                        metrics.playerStats.pending +
-                        metrics.playerStats.inactive)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-border bg-bg-surface p-6">
-          <h3 className="mb-4 font-semibold text-text-primary">Match Status Distribution</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary">Scheduled</span>
-              <span className="font-semibold text-text-primary">{metrics.matchStats.scheduled}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-info"
-                style={{
-                  width: `${
-                    ((metrics.matchStats.scheduled) /
-                      (metrics.matchStats.scheduled +
-                        metrics.matchStats.completed +
-                        metrics.matchStats.cancelled)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm text-text-secondary">Completed</span>
-              <span className="font-semibold text-text-primary">{metrics.matchStats.completed}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-success"
-                style={{
-                  width: `${
-                    ((metrics.matchStats.completed) /
-                      (metrics.matchStats.scheduled +
-                        metrics.matchStats.completed +
-                        metrics.matchStats.cancelled)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-sm text-text-secondary">Cancelled</span>
-              <span className="font-semibold text-text-primary">{metrics.matchStats.cancelled}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg-muted">
-              <div
-                className="h-full bg-feedback-error"
-                style={{
-                  width: `${
-                    ((metrics.matchStats.cancelled) /
-                      (metrics.matchStats.scheduled +
-                        metrics.matchStats.completed +
-                        metrics.matchStats.cancelled)) *
-                    100
-                  }%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
+        <PlayerDistributionChart stats={metrics.playerStats} />
+        <MatchDistributionChart stats={metrics.matchStats} />
       </div>
 
       <div className="rounded-lg border border-border bg-bg-surface p-6">
