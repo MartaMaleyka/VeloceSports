@@ -17,7 +17,7 @@ import { academyRepository } from '../repositories/academy.repository.js';
 import { emailRecipientRepository } from '../repositories/email-recipient.repository.js';
 import { emailNotificationService } from './email-notification.service.js';
 import { planLimitService } from './plan-limit.service.js';
-import { playerService } from './tenant.service.js';
+import { playerService } from './player.service.js';
 import { playerPhotoService } from './player-photo.service.js';
 import {
   ForbiddenError,

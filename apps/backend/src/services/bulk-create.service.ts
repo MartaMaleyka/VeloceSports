@@ -23,7 +23,9 @@ import {
 import { auditService } from './audit.service.js';
 import { matchService } from './match.service.js';
 import { planLimitService } from './plan-limit.service.js';
-import { categoryService, playerService, tenantUserService } from './tenant.service.js';
+import { tenantUserService } from './tenant-user.service.js';
+import { categoryService } from './category.service.js';
+import { playerService } from './player.service.js';
 
 interface ParsedRow<T> {
   index: number;
