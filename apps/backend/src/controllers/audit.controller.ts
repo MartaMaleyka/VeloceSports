@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { getValidated } from '../middlewares/validate.js';
 import { auditLogService } from '../services/audit-log.service.js';
 import type { AuditLogKpisQuery, ListAuditLogQuery } from '../validators/audit.validator.js';
 
@@ -10,7 +11,8 @@ export class AuditController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       getActor(req);
-      const result = await auditLogService.list(req.query as unknown as ListAuditLogQuery);
+      const query = getValidated<ListAuditLogQuery>(req, 'query');
+      const result = await auditLogService.list(query);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -20,7 +22,8 @@ export class AuditController {
   async getKpis(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       getActor(req);
-      const result = await auditLogService.getKpis(req.query as unknown as AuditLogKpisQuery);
+      const query = getValidated<AuditLogKpisQuery>(req, 'query');
+      const result = await auditLogService.getKpis(query);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);

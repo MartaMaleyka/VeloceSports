@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { getValidated } from '../middlewares/validate.js';
 import type { TenantReportType } from '@velocesport/shared';
 import { reportExportService } from '../services/report-export.service.js';
 
@@ -7,7 +8,7 @@ export class ReportExportController {
     try {
       const tenantId = req.tenantId as number;
       const reportType = req.params.reportType as TenantReportType;
-      const query = req.query as unknown as {
+      const query = getValidated<{
         format: 'csv' | 'pdf';
         locale?: string;
         categoryId?: number;
@@ -16,7 +17,7 @@ export class ReportExportController {
         matchType?: string;
         dateFrom?: string;
         dateTo?: string;
-      };
+      }>(req, 'query');
 
       const acceptLanguage = req.headers['accept-language'];
       const locale =

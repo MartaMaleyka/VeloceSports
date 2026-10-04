@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { getValidated } from '../middlewares/validate.js';
 import { coachAnalysisService } from '../services/coach-analysis.service.js';
 import type { CoachAnalysisQuery } from '../validators/coach-analysis.validator.js';
 
@@ -6,7 +7,7 @@ export class CoachAnalysisController {
   async listPlayers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const tenantId = req.tenantId as number;
-      const query = req.query as unknown as CoachAnalysisQuery;
+      const query = getValidated<CoachAnalysisQuery>(req, 'query');
       const data = await coachAnalysisService.listPlayers(
         { user: req.user!, tenantId },
         query,
@@ -21,7 +22,7 @@ export class CoachAnalysisController {
     try {
       const tenantId = req.tenantId as number;
       const playerId = Number(req.params.playerId);
-      const query = req.query as unknown as CoachAnalysisQuery;
+      const query = getValidated<CoachAnalysisQuery>(req, 'query');
       const data = await coachAnalysisService.getPlayerDetail(
         { user: req.user!, tenantId },
         playerId,
@@ -36,7 +37,7 @@ export class CoachAnalysisController {
   async exportCsv(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const tenantId = req.tenantId as number;
-      const query = req.query as unknown as CoachAnalysisQuery;
+      const query = getValidated<CoachAnalysisQuery>(req, 'query');
       const result = await coachAnalysisService.exportCsv(
         { user: req.user!, tenantId },
         query,
@@ -52,7 +53,7 @@ export class CoachAnalysisController {
   async exportPdf(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const tenantId = req.tenantId as number;
-      const query = req.query as unknown as CoachAnalysisQuery;
+      const query = getValidated<CoachAnalysisQuery>(req, 'query');
       const result = await coachAnalysisService.exportPdf(
         { user: req.user!, tenantId },
         query,

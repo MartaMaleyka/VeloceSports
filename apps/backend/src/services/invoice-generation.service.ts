@@ -208,7 +208,7 @@ export class InvoiceGenerationService {
         invoiceId,
         'create',
         null,
-        invoice as unknown as Record<string, unknown>,
+        JSON.parse(JSON.stringify(invoice)),
       );
     }
 

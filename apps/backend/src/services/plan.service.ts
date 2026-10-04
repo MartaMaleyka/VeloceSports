@@ -36,7 +36,14 @@ export class PlanService {
     });
 
     const plan = await this.getById(planId);
-    await auditService.log({ userId: actorUserId }, 'plan', planId, 'create', null, plan as unknown as Record<string, unknown>);
+    await auditService.log(
+      { userId: actorUserId },
+      'plan',
+      planId,
+      'create',
+      null,
+      JSON.parse(JSON.stringify(plan)),
+    );
     return plan;
   }
 
@@ -63,7 +70,14 @@ export class PlanService {
     });
 
     const after = await this.getById(planId);
-    await auditService.log({ userId: actorUserId }, 'plan', planId, 'update', before as unknown as Record<string, unknown>, after as unknown as Record<string, unknown>);
+    await auditService.log(
+      { userId: actorUserId },
+      'plan',
+      planId,
+      'update',
+      JSON.parse(JSON.stringify(before)),
+      JSON.parse(JSON.stringify(after)),
+    );
     return after;
   }
 
