@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { describeIfDatabaseAvailable } from './helpers.js';
 import { getPool } from '../src/config/db.js';
