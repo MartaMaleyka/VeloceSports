@@ -200,40 +200,44 @@ export class CoachAnalysisService {
       obsByPlayer.set(row.player_id, Number(row.observation_count));
     }
 
-    const result: CoachPlayerAnalysisRowDto[] = await Promise.all(
-      players.map(async (player) => {
-        const playerMatches = matchesByPlayer.get(player.player_id) ?? [];
-        let minutesPlayed = 0;
-        for (const att of playerMatches) {
-          const periods =
-            att.periods_count != null && att.period_duration_minutes != null
-              ? att.periods_count * att.period_duration_minutes
-              : academyDefaults.periodsCount * academyDefaults.periodDurationMinutes;
-          const maxMin = maxMinutes.get(`${att.match_id}:${att.player_id}`) ?? 0;
-          minutesPlayed += estimateMinutesPlayed(att.lineup, periods, maxMin);
-        }
-
-        const actionsByCode = mergeActionsByCode(actionsByPlayer.get(player.player_id) ?? []);
-        const totalActions = actionsByCode.reduce((sum, a) => sum + a.count, 0);
-        const photoUrl = await playerPhotoService.resolveSignedUrl(player.photo_object_key);
-
-        return {
-          playerId: player.player_id,
-          playerName: `${player.first_name} ${player.last_name}`.trim(),
-          firstName: player.first_name,
-          lastName: player.last_name,
-          dorsal: player.jersey_number,
-          categoryName: player.category_name,
-          categoryId: player.category_id,
-          matchesPlayed: playerMatches.length,
-          minutesPlayed,
-          totalActions,
-          actionsByCode,
-          observationsCount: obsByPlayer.get(player.player_id) ?? 0,
-          photoUrl,
-        };
-      }),
+    // Batch resolve all photo URLs instead of N+1 queries
+    const photoUrlMap = await playerPhotoService.resolveSignedUrlsBatch(
+      players.map((p) => p.photo_object_key),
     );
+
+    const result: CoachPlayerAnalysisRowDto[] = players.map((player) => {
+      const playerMatches = matchesByPlayer.get(player.player_id) ?? [];
+      let minutesPlayed = 0;
+      for (const att of playerMatches) {
+        const periods =
+          att.periods_count != null && att.period_duration_minutes != null
+            ? att.periods_count * att.period_duration_minutes
+            : academyDefaults.periodsCount * academyDefaults.periodDurationMinutes;
+        const maxMin = maxMinutes.get(`${att.match_id}:${att.player_id}`) ?? 0;
+        minutesPlayed += estimateMinutesPlayed(att.lineup, periods, maxMin);
+      }
+
+      const actionsByCode = mergeActionsByCode(actionsByPlayer.get(player.player_id) ?? []);
+      const totalActions = actionsByCode.reduce((sum, a) => sum + a.count, 0);
+      const photoUrl =
+        (player.photo_object_key && photoUrlMap.get(player.photo_object_key)) || null;
+
+      return {
+        playerId: player.player_id,
+        playerName: `${player.first_name} ${player.last_name}`.trim(),
+        firstName: player.first_name,
+        lastName: player.last_name,
+        dorsal: player.jersey_number,
+        categoryName: player.category_name,
+        categoryId: player.category_id,
+        matchesPlayed: playerMatches.length,
+        minutesPlayed,
+        totalActions,
+        actionsByCode,
+        observationsCount: obsByPlayer.get(player.player_id) ?? 0,
+        photoUrl,
+      };
+    });
 
     result.sort((a, b) => b.totalActions - a.totalActions || a.playerName.localeCompare(b.playerName, 'es'));
 
