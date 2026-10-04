@@ -1,6 +1,5 @@
 import { describeIfDatabaseAvailable } from './helpers.js';
 import {
-import { describeIfDatabaseAvailable } from './helpers.js';
   anchorDayInMonth,
   billingAnchorDateInMonth,
   computeAnchoredMonthlyBillingPeriod,
