@@ -4,7 +4,7 @@ import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { UserRole, PlayerStatus } from '@velocesport/shared';
 import { getPool } from '../src/config/db.js';
-import { playerService } from '../src/services/tenant.service.js';
+import { playerService } from '../src/services/player.service.js';
 import { getTestSeed } from './helpers.js';
 
 const app = createApp();
