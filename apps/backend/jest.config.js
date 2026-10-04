@@ -1,4 +1,6 @@
 /** @type {import('jest').Config} */
+const isCI = process.env.GITHUB_ACTIONS || process.env.CI;
+
 export default {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
@@ -15,10 +17,8 @@ export default {
       },
     ],
   },
-  testMatch: process.env.GITHUB_ACTIONS || process.env.CI 
-    ? [] 
-    : ['**/tests/**/*.test.ts'],
-  setupFiles: ['<rootDir>/tests/env.ts'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  testMatch: isCI ? [] : ['**/tests/**/*.test.ts'],
+  setupFiles: isCI ? [] : ['<rootDir>/tests/env.ts'],
+  setupFilesAfterEnv: isCI ? [] : ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000,
 };
