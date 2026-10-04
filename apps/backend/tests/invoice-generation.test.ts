@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -45,7 +46,7 @@ async function seedActivePlayers(tenantId: number, count: number): Promise<void>
   }
 }
 
-describe('Invoice generation v2', () => {
+describeIfDatabaseAvailable('Invoice generation v2', () => {
   let superToken: string;
   let adminBToken: string;
   let seed: ReturnType<typeof getTestSeed>;

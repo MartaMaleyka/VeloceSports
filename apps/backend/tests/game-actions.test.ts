@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { randomUUID } from 'node:crypto';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -28,7 +29,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Game actions capture API', () => {
+describeIfDatabaseAvailable('Game actions capture API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

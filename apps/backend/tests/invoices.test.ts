@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { InvoiceStatus, InvoiceType } from '@velocesport/shared';
@@ -11,7 +12,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Invoices API', () => {
+describeIfDatabaseAvailable('Invoices API', () => {
   let superToken: string;
   let adminAToken: string;
   let adminBToken: string;

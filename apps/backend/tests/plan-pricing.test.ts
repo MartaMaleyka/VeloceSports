@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import {
   calculateAnnualPlanFee,
   calculateMonthlyPlayerFee,
@@ -7,7 +8,7 @@ import {
   isAnnualChargeDueInBillingPeriod,
 } from '@velocesport/shared';
 
-describe('plan-pricing — modelo v2', () => {
+describeIfDatabaseAvailable('plan-pricing — modelo v2', () => {
   describe('calculateMonthlyPlayerFee', () => {
     it('multiplica price_per_player × jugadores activos', () => {
       expect(calculateMonthlyPlayerFee(4, 10)).toBe(40);

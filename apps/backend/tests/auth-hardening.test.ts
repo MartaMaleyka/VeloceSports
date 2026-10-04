@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { getPool } from '../src/config/db.js';
@@ -10,7 +11,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return response.body.data.accessToken as string;
 }
 
-describe('Endurecimiento de autenticación', () => {
+describeIfDatabaseAvailable('Endurecimiento de autenticación', () => {
   it('el registro abierto /auth/register ya no existe', async () => {
     await request(app)
       .post('/auth/register')

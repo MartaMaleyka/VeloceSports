@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -13,7 +14,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Parent enrollment and approval flow', () => {
+describeIfDatabaseAvailable('Parent enrollment and approval flow', () => {
   let adminAToken: string;
   let adminBToken: string;
   let parentAToken: string;

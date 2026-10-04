@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import request from 'supertest';
@@ -22,7 +23,7 @@ function buildLimitedApp(max: number): express.Application {
   return app;
 }
 
-describe('IP real del cliente — rate limiting', () => {
+describeIfDatabaseAvailable('IP real del cliente — rate limiting', () => {
   it('parseTrustProxy interpreta booleanos, saltos y listas de subredes', () => {
     expect(parseTrustProxy('true')).toBe(true);
     expect(parseTrustProxy('false')).toBe(false);

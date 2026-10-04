@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { RowDataPacket } from 'mysql2/promise';
@@ -39,7 +40,7 @@ async function sessionIdsForUser(userId: number): Promise<number[]> {
   return rows.filter((r) => r.revoked_at == null).map((r) => r.id);
 }
 
-describe('Auth profile & password', () => {
+describeIfDatabaseAvailable('Auth profile & password', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

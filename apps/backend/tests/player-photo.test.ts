@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -59,7 +60,7 @@ class MemoryPhotoStorage extends PhotoStorageService {
   }
 }
 
-describe('Player photo (MinIO)', () => {
+describeIfDatabaseAvailable('Player photo (MinIO)', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let storage: MemoryPhotoStorage;
   let adminAToken: string;

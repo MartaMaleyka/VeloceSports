@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import {
   BillingCycle,
   calculateDelinquencyRate,
@@ -6,7 +7,7 @@ import {
   normalizePlanPriceToMonthly,
 } from '@velocesport/shared';
 
-describe('metrics — MRR y morosidad', () => {
+describeIfDatabaseAvailable('metrics — MRR y morosidad', () => {
   it('normalizePlanPriceToMonthly: mensual sin cambio, anual / 12', () => {
     expect(normalizePlanPriceToMonthly(29, BillingCycle.MONTHLY)).toBe(29);
     expect(normalizePlanPriceToMonthly(120, BillingCycle.YEARLY)).toBe(10);

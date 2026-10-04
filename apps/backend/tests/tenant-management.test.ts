@@ -5,7 +5,7 @@ import { createApp } from '../src/app.js';
 import { UserRole, PlayerStatus } from '@velocesport/shared';
 import { getPool } from '../src/config/db.js';
 import { playerService } from '../src/services/player.service.js';
-import { getTestSeed } from './helpers.js';
+import { getTestSeed, describeIfDatabaseAvailable } from './helpers.js';
 
 const app = createApp();
 
@@ -24,7 +24,7 @@ async function createRestrictedPlan(): Promise<number> {
   return result.insertId;
 }
 
-describe('Tenant management API (academy_admin)', () => {
+describeIfDatabaseAvailable('Tenant management API (academy_admin)', () => {
   let adminAToken: string;
   let adminBToken: string;
   let seed: ReturnType<typeof getTestSeed>;

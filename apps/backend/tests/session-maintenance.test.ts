@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
 import type { RowDataPacket } from 'mysql2/promise';
@@ -9,7 +10,7 @@ import { getTestSeed } from './helpers.js';
 
 const app = createApp();
 
-describe('Hash de refresh tokens', () => {
+describeIfDatabaseAvailable('Hash de refresh tokens', () => {
   it('usa SHA-256 y verifica solo el token exacto', async () => {
     const token = 'header.payload.signature';
     const hash = await hashRefreshToken(token);
@@ -69,7 +70,7 @@ describe('Hash de refresh tokens', () => {
   });
 });
 
-describe('Limpieza de sesiones', () => {
+describeIfDatabaseAvailable('Limpieza de sesiones', () => {
   it('borra sesiones expiradas o revocadas fuera de la retención y conserva las activas', async () => {
     const seed = getTestSeed();
     const pool = getPool();
@@ -101,7 +102,7 @@ describe('Limpieza de sesiones', () => {
   });
 });
 
-describe('Healthcheck', () => {
+describeIfDatabaseAvailable('Healthcheck', () => {
   it('/health comprueba la base de datos', async () => {
     const response = await request(app).get('/health').expect(200);
     expect(response.body.success).toBe(true);

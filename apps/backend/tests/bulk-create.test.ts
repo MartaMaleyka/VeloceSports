@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -14,7 +15,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Altas masivas', () => {
+describeIfDatabaseAvailable('Altas masivas', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminToken: string;
   let categoryId: number;

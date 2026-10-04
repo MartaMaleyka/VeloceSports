@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
@@ -46,7 +47,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return accessToken;
 }
 
-describe('Auth sessions — Fase 2 (logout y revocación)', () => {
+describeIfDatabaseAvailable('Auth sessions — Fase 2 (logout y revocación)', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let superToken: string;
 

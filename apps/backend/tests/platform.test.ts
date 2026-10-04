@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { UserRole } from '@velocesport/shared';
@@ -10,7 +11,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Platform API (super_admin)', () => {
+describeIfDatabaseAvailable('Platform API (super_admin)', () => {
   let superToken: string;
   let adminToken: string;
 

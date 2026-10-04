@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { randomUUID } from 'node:crypto';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -62,7 +63,7 @@ async function setupMatchWithPresentPlayer(opts: {
   return matchId;
 }
 
-describe('Parent in-app notifications', () => {
+describeIfDatabaseAvailable('Parent in-app notifications', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

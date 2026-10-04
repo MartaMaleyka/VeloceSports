@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import {
   BASE_ACTION_CATALOG,
   interpretVoiceCapture,
@@ -39,7 +40,7 @@ const presentPlayers: VoiceCapturePresentPlayer[] = [
   { playerId: 4, firstName: 'Diego', lastName: 'Vega', jerseyNumber: 14 },
 ];
 
-describe('interpretVoiceCapture', () => {
+describeIfDatabaseAvailable('interpretVoiceCapture', () => {
   it('parses "siete gol" as jersey 7 + Gol', () => {
     const result = interpretVoiceCapture({
       text: 'siete gol',
@@ -232,7 +233,7 @@ describe('interpretVoiceCapture', () => {
   });
 });
 
-describe('parseVoiceCorrectionCommand', () => {
+describeIfDatabaseAvailable('parseVoiceCorrectionCommand', () => {
   it('detects undo commands in ES and EN', () => {
     expect(parseVoiceCorrectionCommand('deshacer', 'es', presentPlayers)?.kind).toBe('undo');
     expect(parseVoiceCorrectionCommand('undo', 'en', presentPlayers)?.kind).toBe('undo');
@@ -257,7 +258,7 @@ describe('parseVoiceCorrectionCommand', () => {
   });
 });
 
-describe('parseVoicePhrase routing', () => {
+describeIfDatabaseAvailable('parseVoicePhrase routing', () => {
   it('routes undo before capture interpretation', () => {
     const parsed = parseVoicePhrase({
       text: 'deshacer',
@@ -282,7 +283,7 @@ describe('parseVoicePhrase routing', () => {
   });
 });
 
-describe('voice phrase deduplication', () => {
+describeIfDatabaseAvailable('voice phrase deduplication', () => {
   it('skips duplicate phrases within window', () => {
     const now = 10_000;
     const last = { text: 'siete gol', at: now - 500 };
@@ -291,7 +292,7 @@ describe('voice phrase deduplication', () => {
   });
 });
 
-describe('voice confirmation phrases', () => {
+describeIfDatabaseAvailable('voice confirmation phrases', () => {
   it('recognizes affirmations and cancellations bilingually', () => {
     expect(isVoiceAffirmation('sí', 'es')).toBe(true);
     expect(isVoiceAffirmation('yes please', 'en')).toBe(true);

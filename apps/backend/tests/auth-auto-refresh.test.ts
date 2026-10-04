@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import type { RowDataPacket } from 'mysql2/promise';
@@ -26,7 +27,7 @@ async function loginAdminA(): Promise<{ accessToken: string; refreshToken: strin
   };
 }
 
-describe('Auth auto-refresh — Fase 3', () => {
+describeIfDatabaseAvailable('Auth auto-refresh — Fase 3', () => {
   it('refresh concurrente con el mismo token: todos obtienen los mismos tokens nuevos', async () => {
     const { refreshToken } = await loginAdminA();
     const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as jwt.JwtPayload;

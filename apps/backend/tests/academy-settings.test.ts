@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -13,7 +14,7 @@ async function loginAs(email: string, password: string): Promise<string> {
   return res.body.data.accessToken as string;
 }
 
-describe('Academy settings API (academy_admin)', () => {
+describeIfDatabaseAvailable('Academy settings API (academy_admin)', () => {
   let adminAToken: string;
   let adminBToken: string;
   let coachToken: string;

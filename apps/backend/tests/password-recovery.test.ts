@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import type { RowDataPacket } from 'mysql2/promise';
 import { createApp } from '../src/app.js';
@@ -31,7 +32,7 @@ async function requestRecovery(email: string, lang = 'es') {
     .expect(202);
 }
 
-describe('Recuperación de contraseña por email', () => {
+describeIfDatabaseAvailable('Recuperación de contraseña por email', () => {
   beforeAll(() => {
     setMailSenderForTests({ send: async (mail) => void outbox.push(mail) });
   });

@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -33,7 +34,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Match clock pure functions', () => {
+describeIfDatabaseAvailable('Match clock pure functions', () => {
   const t0 = Date.parse('2026-06-19T15:00:00.000Z');
 
   it('computes elapsed while running from timestamps', () => {
@@ -93,7 +94,7 @@ describe('Match clock pure functions', () => {
   });
 });
 
-describe('Match clock API', () => {
+describeIfDatabaseAvailable('Match clock API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

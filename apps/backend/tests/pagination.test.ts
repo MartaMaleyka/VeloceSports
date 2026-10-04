@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import type { ResultSetHeader } from 'mysql2/promise';
 import { createApp } from '../src/app.js';
@@ -53,7 +54,7 @@ async function legacyIds(token: string, path: string): Promise<number[]> {
   return (res.body.data as Array<{ id: number }>).map((item) => item.id);
 }
 
-describe('Paginación en servidor', () => {
+describeIfDatabaseAvailable('Paginación en servidor', () => {
   let adminToken: string;
   let superToken: string;
 

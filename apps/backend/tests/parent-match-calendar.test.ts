@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -60,7 +61,7 @@ async function createMatch(
   return matchId;
 }
 
-describe('Parent match calendar API', () => {
+describeIfDatabaseAvailable('Parent match calendar API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { randomUUID } from 'node:crypto';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -21,7 +22,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Integridad del flujo de partido', () => {
+describeIfDatabaseAvailable('Integridad del flujo de partido', () => {
   let adminToken: string;
   let coachToken: string;
   let parentToken: string;

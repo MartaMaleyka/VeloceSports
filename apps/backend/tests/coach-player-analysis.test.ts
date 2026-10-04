@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { randomUUID } from 'node:crypto';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -34,7 +35,7 @@ function pastDatetime(daysAgo: number): string {
   return d.toISOString();
 }
 
-describe('Coach player analysis API', () => {
+describeIfDatabaseAvailable('Coach player analysis API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

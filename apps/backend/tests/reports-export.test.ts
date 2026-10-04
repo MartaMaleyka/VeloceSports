@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -20,7 +21,7 @@ function responseBuffer(res: { body: unknown; text?: string }): Buffer {
   return Buffer.from(String(res.body));
 }
 
-describe('Tenant reports export API', () => {
+describeIfDatabaseAvailable('Tenant reports export API', () => {
   let adminAToken: string;
   let adminBToken: string;
   let coachToken: string;

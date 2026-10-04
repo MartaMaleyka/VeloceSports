@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import request from 'supertest';
@@ -20,7 +21,7 @@ function futureDatetime(): string {
   return d.toISOString();
 }
 
-describe('Player observations API', () => {
+describeIfDatabaseAvailable('Player observations API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

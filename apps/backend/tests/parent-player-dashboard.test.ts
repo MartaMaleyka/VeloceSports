@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import { randomUUID } from 'node:crypto';
 import type { ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -109,7 +110,7 @@ async function createFinishedMatchWithActions(opts: {
   return matchId;
 }
 
-describe('Parent player dashboard API', () => {
+describeIfDatabaseAvailable('Parent player dashboard API', () => {
   let seed: ReturnType<typeof getTestSeed>;
   let adminAToken: string;
   let adminBToken: string;

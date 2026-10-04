@@ -1,3 +1,4 @@
+import { describeIfDatabaseAvailable } from './helpers.js';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { createApp } from '../src/app.js';
@@ -6,7 +7,7 @@ import { getTestSeed } from './helpers.js';
 
 const app = createApp();
 
-describe('Auth — /auth/login', () => {
+describeIfDatabaseAvailable('Auth — /auth/login', () => {
   it('(a) login exitoso para academy_admin', async () => {
     const seed = getTestSeed();
 
@@ -66,7 +67,7 @@ describe('Auth — /auth/login', () => {
   });
 });
 
-describe('Multi-tenant — aislamiento', () => {
+describeIfDatabaseAvailable('Multi-tenant — aislamiento', () => {
   async function loginAsAdminA(): Promise<string> {
     const seed = getTestSeed();
     const response = await request(app)
@@ -120,7 +121,7 @@ describe('Multi-tenant — aislamiento', () => {
   });
 });
 
-describe('Seguridad — errorHandler', () => {
+describeIfDatabaseAvailable('Seguridad — errorHandler', () => {
   it('no filtra stack traces en errores 500', async () => {
     const response = await request(app)
       .post('/auth/login')
