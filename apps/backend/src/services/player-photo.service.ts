@@ -112,6 +112,36 @@ export class PlayerPhotoService {
     }
   }
 
+  async resolveSignedUrlsBatch(
+    objectKeys: (string | null | undefined)[],
+  ): Promise<Map<string, string | null>> {
+    const urlMap = new Map<string, string | null>();
+    const uniqueKeys = new Set(objectKeys.filter((k) => k != null));
+
+    if (uniqueKeys.size === 0) {
+      return urlMap;
+    }
+
+    const results = await Promise.allSettled(
+      Array.from(uniqueKeys).map(async (key) => {
+        try {
+          const url = await getPhotoStorage().getSignedUrl(key!);
+          return { key: key!, url };
+        } catch {
+          return { key: key!, url: null };
+        }
+      }),
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        urlMap.set(result.value.key, result.value.url);
+      }
+    }
+
+    return urlMap;
+  }
+
   private assertParentCanMutate(actor: AuthUser): void {
     const isParent = userHasRole(actor, UserRole.PARENT);
     const isPlayer = userHasRole(actor, UserRole.PLAYER);
