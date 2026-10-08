@@ -2,10 +2,10 @@
 
 ## Project Overview
 
-VeloceSports is a comprehensive sports academy management system built with Next.js (frontend), Express (backend), and MySQL. It provides real-time match tracking, player analysis, and performance monitoring.
+VeloceSports is a comprehensive sports academy management system built with Astro SSR (frontend, with a BFF layer), Express (backend), and MySQL. It provides real-time match tracking, player analysis, and performance monitoring.
 
 **Key Stats:**
-- **Frontend**: 500+ React components, Next.js 14, TypeScript
+- **Frontend**: Astro (SSR, `@astrojs/node`), React islands, TypeScript
 - **Backend**: 20+ Express services, 30+ API endpoints, MySQL database
 - **Testing**: Jest unit tests, Playwright E2E tests
 - **Performance**: Logging middleware, correlation ID tracing, performance budgets
@@ -35,13 +35,14 @@ velocesports/
 │   │   ├── PERFORMANCE_MONITORING.md
 │   │   └── ACCESSIBILITY_GUIDE.md
 │   │
-│   ├── web/                  # Next.js frontend
+│   ├── web/                  # Astro frontend (SSR + BFF)
 │   │   ├── src/
 │   │   │   ├── components/   # React components
 │   │   │   │   ├── accessible/  # WCAG 2.1 AA components
 │   │   │   │   ├── matches/     # Match-related components
 │   │   │   │   └── ...
-│   │   │   ├── pages/        # Next.js pages
+│   │   │   ├── pages/        # Astro pages (.astro) and BFF proxy (pages/api/)
+│   │   │   ├── middleware.ts # Session, role and password-change guards
 │   │   │   ├── hooks/        # Custom React hooks
 │   │   │   │   ├── useDebounce.ts        # Performance hooks
 │   │   │   │   ├── useRetry.ts
@@ -69,7 +70,7 @@ velocesports/
 ## Key Technologies
 
 **Frontend:**
-- Next.js 14 with App Router
+- Astro 7 (SSR) with role-based route guards in `middleware.ts`
 - TypeScript 5+
 - React 18+
 - Tailwind CSS
@@ -93,18 +94,18 @@ velocesports/
 
 ### High-Priority Endpoints
 
-1. **Coach Analysis** (`GET /api/coach-analysis/players`)
+1. **Coach Analysis** (`GET /api/coach/analysis/players`)
    - Budget: 500ms (p95)
    - Handles photo batching, aggregations
    - Correlation ID: `req.correlationId`
    - File: `apps/backend/src/services/coach-analysis.service.ts`
 
-2. **Match Operations** (`GET/POST /api/matches`)
+2. **Match Operations** (`GET/POST /api/tenant/matches`)
    - Budget: 150-200ms
    - High-frequency endpoint
    - File: `apps/backend/src/services/match.service.ts`
 
-3. **Dashboard** (`GET /api/dashboard`)
+3. **Dashboard** (`GET /api/tenant/dashboard`)
    - Budget: 300ms (p95)
    - Multiple aggregations
    - File: `apps/backend/src/services/dashboard.service.ts`
@@ -153,7 +154,7 @@ LOG_LEVEL=debug npm run dev | grep "duration.*[0-9][0-9][0-9]ms"
 
 Example:
 ```typescript
-router.post('/api/matches',
+router.post('/api/tenant/matches',
   authenticate,           // User is authenticated
   tenant,                 // Tenant context exists
   requireRole('COACH'),   // User is coach
@@ -250,8 +251,8 @@ See `LOGGING_GUIDE.md` for comprehensive documentation.
 
 Automatic via `requestLoggerMiddleware`:
 ```
-GET /api/matches → 200 {45ms}
-POST /api/coach-analysis/export → 200 {320ms}
+GET /api/tenant/matches → 200 {45ms}
+POST /api/coach/analysis/players/export.csv → 200 {320ms}
 GET /api/invalid → 404 {5ms}
 ```
 
@@ -259,10 +260,10 @@ GET /api/invalid → 404 {5ms}
 
 | Endpoint | Budget | Critical |
 |----------|--------|----------|
-| GET /api/matches | 150ms | 1000ms |
-| POST /api/matches | 200ms | 1000ms |
-| GET /api/coach-analysis/players | 500ms | 2000ms |
-| GET /api/dashboard | 300ms | 1500ms |
+| GET /api/tenant/matches | 150ms | 1000ms |
+| POST /api/tenant/matches | 200ms | 1000ms |
+| GET /api/coach/analysis/players | 500ms | 2000ms |
+| GET /api/tenant/dashboard | 300ms | 1500ms |
 
 ### Benchmark Tests
 
@@ -451,14 +452,12 @@ NEXT_PUBLIC_ENVIRONMENT=production
 
 ```bash
 # Build backend
-cd apps/backend
-npm run build
-npm run start  # Starts on :3001
+pnpm build:backend
+pnpm --filter @velocesport/backend start  # Starts on :3001
 
 # Build frontend
-cd apps/web
-npm run build
-npm run start  # Starts on :3000
+pnpm --filter @velocesport/web build
+pnpm --filter @velocesport/web preview
 ```
 
 ## Code Review Checklist
@@ -523,24 +522,24 @@ npm run test:e2e:headed
 
 ```bash
 # Development
-npm run dev              # Start dev server
-npm test                 # Run tests
-npm run lint             # Run linter
-npm run type-check       # TypeScript check
+pnpm dev:backend         # Backend dev server (tsx watch)
+pnpm dev:web             # Frontend dev server (Astro)
+pnpm test:backend        # Backend tests (Jest)
+pnpm --filter @velocesport/web test   # Frontend unit tests (Vitest)
 
 # Build & Deploy
-npm run build            # Build for production
-npm run start            # Start production server
-npm run db:migrate       # Run database migrations
-npm run db:seed          # Seed test data
+pnpm build               # Build all workspaces
+pnpm --filter @velocesport/backend start   # Start production backend
 
-# Performance
-npm run test -- performance-benchmarks  # Run perf tests
-LOG_LEVEL=debug npm run dev              # Debug logging
+# E2E (frontend)
+pnpm --filter @velocesport/web test:e2e
 
-# Database
-npm run db:repair        # Repair schema
-npm run db:backfill-*    # Various backfill scripts
+# Database (run from root with pnpm db:seed, or inside apps/backend)
+pnpm db:seed             # Seed test data
+pnpm --filter @velocesport/backend db:migrate
+pnpm --filter @velocesport/backend db:repair
+pnpm --filter @velocesport/backend db:backfill-action-catalog
+pnpm --filter @velocesport/backend db:backfill-player-viewers
 ```
 
 ## Documentation Files
