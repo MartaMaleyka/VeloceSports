@@ -1,12 +1,11 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import { ZodSchema } from 'zod';
-import { ValidationError } from '../types/index.js';
 
 export function validateEnhanced(
   schema: ZodSchema,
   source: 'body' | 'query' | 'params' = 'body',
 ): RequestHandler {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const data = source === 'body' ? req.body : source === 'query' ? req.query : req.params;
 
@@ -32,7 +31,7 @@ export function validateMulti(schemas: {
   query?: ZodSchema;
   params?: ZodSchema;
 }): RequestHandler {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (schemas.body) {
         req.body = await schemas.body.parseAsync(req.body);
