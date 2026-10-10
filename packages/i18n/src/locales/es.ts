@@ -641,6 +641,10 @@ export const es = {
     },
   },
   dashboard: {
+    analytics: {
+      title: 'Analítica de la academia',
+      subtitle: 'Métricas KPI detalladas e información de rendimiento',
+    },
     superAdmin: {
       greeting: 'Hola, {role}',
       greetingMulti: 'Panel unificado ({roles})',
@@ -705,6 +709,10 @@ export const es = {
       },
     },
     academyAdmin: {
+      analytics: {
+        title: 'Analítica',
+        description: 'Métricas KPI e información de rendimiento de tu academia.',
+      },
       greeting: 'Hola, {role}',
       greetingMulti: 'Panel unificado ({roles})',
       description: 'Panel de administración de tu academia.',
@@ -791,6 +799,10 @@ export const es = {
       },
     },
     coach: {
+      playerPerformance: {
+        title: 'Rendimiento de jugadores',
+        description: 'Análisis de rendimiento individual por jugador.',
+      },
       greeting: 'Hola, {role}',
       greetingMulti: 'Panel unificado ({roles})',
       description: 'Tu pulso en cancha.',

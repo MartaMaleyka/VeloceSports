@@ -17,7 +17,8 @@
     "db:seed:production": "tsx src/scripts/seed-production.ts",
     "db:backfill-action-catalog": "tsx src/scripts/backfill-action-catalog.ts",
     "db:backfill-player-viewers": "tsx src/scripts/backfill-player-viewers.ts",
-    "billing:process-overdue": "tsx src/scripts/process-overdue-invoices.ts"
+    "billing:process-overdue": "tsx src/scripts/process-overdue-invoices.ts",
+    "openapi:export": "tsx src/scripts/export-openapi.ts"
   },
   "dependencies": {
     "@velocesport/shared": "workspace:*",

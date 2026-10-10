@@ -1,0 +1,778 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "VeloceSports API",
+    "version": "1.0.0",
+    "description": "API documentation for VeloceSports - Sports Academy Management Platform",
+    "contact": {
+      "name": "VeloceSports Team",
+      "email": "support@velocesports.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.velocesports.com",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Authorization header using the Bearer scheme"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "VALIDATION_ERROR"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request validation failed"
+              },
+              "details": {
+                "type": "object"
+              },
+              "requestId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "jerseyNumber": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "position": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "parentEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Match": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "opponent": {
+            "type": "string"
+          },
+          "matchDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "IN_PROGRESS",
+              "FINISHED",
+              "CANCELLED"
+            ]
+          },
+          "periodsCount": {
+            "type": "number"
+          },
+          "periodDurationMinutes": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GameAction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "matchId": {
+            "type": "number"
+          },
+          "playerId": {
+            "type": "number"
+          },
+          "actionCode": {
+            "type": "number"
+          },
+          "minute": {
+            "type": "number"
+          },
+          "period": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Observation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "playerId": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/tenant/users/{userId}/reset-password": {
+      "post": {
+        "tags": [
+          "Tenant Users"
+        ],
+        "summary": "Resetear contraseña de un usuario de la academia",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPassword": {
+                    "type": "string"
+                  },
+                  "generateRandom": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contraseña reseteada"
+          },
+          "403": {
+            "description": "Sin permiso"
+          }
+        }
+      }
+    },
+    "/api/platform/users/{userId}/reset-password": {
+      "post": {
+        "tags": [
+          "Platform"
+        ],
+        "summary": "Resetear contraseña de cualquier usuario (super_admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coach/analysis/players": {
+      "get": {
+        "tags": [
+          "Coach Analysis"
+        ],
+        "summary": "Estadísticas agregadas de jugadores del coach",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "categoryId",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "matchId",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dateFrom",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dateTo",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actionCode",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "impact",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "positive",
+                "negative",
+                "neutral"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista comparativa de jugadores"
+          },
+          "401": {
+            "description": "No autenticado"
+          },
+          "403": {
+            "description": "Sin permiso"
+          }
+        }
+      }
+    },
+    "/api/coach/analysis/players/export.csv": {
+      "get": {
+        "tags": [
+          "Coach Analysis"
+        ],
+        "summary": "Exportar análisis de jugadores a CSV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV UTF-8 con BOM y delimitador ;",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/coach/analysis/players/export.pdf": {
+      "get": {
+        "tags": [
+          "Coach Analysis"
+        ],
+        "summary": "Exportar análisis de jugadores a PDF",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF con logo de academia y desglose por acción",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/coach/analysis/players/{playerId}": {
+      "get": {
+        "tags": [
+          "Coach Analysis"
+        ],
+        "summary": "Detalle profundo de un jugador",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "playerId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del jugador"
+          },
+          "404": {
+            "description": "Jugador no encontrado o fuera de scope"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Inicio de sesión único para todos los roles",
+        "description": "Un solo endpoint para super_admin, academy_admin, coach y parent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "accessToken": {
+                          "type": "string"
+                        },
+                        "refreshToken": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Usuario o academia inactiva/suspendida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos"
+          }
+        }
+      }
+    },
+    "/auth/signup-independent": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Alta pública de un padre sin academia (cuenta personal, un solo jugador)",
+        "description": "Crea una academia personal invisible, siembra su catálogo de acciones, y da al padre también el rol coach sobre ella para que pueda capturar en vivo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "parentFirstName",
+                  "parentLastName",
+                  "email",
+                  "password",
+                  "childFirstName",
+                  "childLastName"
+                ],
+                "properties": {
+                  "parentFirstName": {
+                    "type": "string"
+                  },
+                  "parentLastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "childFirstName": {
+                    "type": "string"
+                  },
+                  "childLastName": {
+                    "type": "string"
+                  },
+                  "childJerseyNumber": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cuenta creada, tokens de sesión listos para usar"
+          },
+          "409": {
+            "description": "El correo ya está registrado"
+          }
+        }
+      }
+    },
+    "/auth/signup-academy": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Alta pública de una academia real (con su primer academy_admin)",
+        "description": "Igual que signup-independent, la cuenta queda pendiente de aprobación de super_admin.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "academyName",
+                  "adminFirstName",
+                  "adminLastName",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "academyName": {
+                    "type": "string"
+                  },
+                  "adminFirstName": {
+                    "type": "string"
+                  },
+                  "adminLastName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cuenta creada, pendiente de aprobación"
+          },
+          "409": {
+            "description": "El correo ya está registrado"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Renueva access token usando refresh token (con rotación)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "refreshToken"
+                ],
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens renovados"
+          },
+          "401": {
+            "description": "Refresh inválido, expirado o revocado"
+          },
+          "403": {
+            "description": "Usuario o academia inactiva"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Cierra sesión revocando el refresh token server-side",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión cerrada (idempotente)"
+          }
+        }
+      }
+    },
+    "/auth/password-recovery/request": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Solicitar enlace de recuperación de contraseña por email",
+        "description": "Responde 202 siempre (no revela si el correo existe).",
+        "responses": {
+          "202": {
+            "description": "Solicitud aceptada"
+          },
+          "429": {
+            "description": "Demasiadas solicitudes"
+          }
+        }
+      }
+    },
+    "/auth/password-recovery/confirm": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Restablecer la contraseña con el token recibido por email",
+        "responses": {
+          "200": {
+            "description": "Contraseña actualizada y sesiones cerradas"
+          },
+          "400": {
+            "description": "Token inválido, usado o expirado (code PASSWORD_RECOVERY_INVALID)"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Perfil del usuario autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos del usuario"
+          },
+          "401": {
+            "description": "No autenticado"
+          }
+        }
+      }
+    },
+    "/api/academies/current": {
+      "get": {
+        "tags": [
+          "Academies"
+        ],
+        "summary": "Obtener la academia del tenant autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos de la academia"
+          },
+          "401": {
+            "description": "No autenticado"
+          },
+          "404": {
+            "description": "Academia no encontrada"
+          }
+        }
+      }
+    },
+    "/api/academies/{id}": {
+      "get": {
+        "tags": [
+          "Academies"
+        ],
+        "summary": "Obtener academia por ID (aislada por tenant)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos de la academia"
+          },
+          "404": {
+            "description": "Academia no encontrada (incluye acceso cruzado entre tenants)"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}
