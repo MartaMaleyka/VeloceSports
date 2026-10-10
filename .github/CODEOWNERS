@@ -1,0 +1,26 @@
+# Zonas sensibles: autenticación, roles, facturación y administración de plataforma.
+# Para que la revisión sea obligatoria, activa "Require review from Code Owners"
+# en la protección de la rama main.
+
+# Autenticación y sesiones
+/apps/backend/src/middlewares/auth.ts                @MartaMaleyka
+/apps/backend/src/middlewares/rbac.ts                @MartaMaleyka
+/apps/backend/src/utils/jwt.ts                       @MartaMaleyka
+/apps/backend/src/utils/token-blacklist.ts           @MartaMaleyka
+/apps/backend/src/services/auth.service.ts           @MartaMaleyka
+/apps/backend/src/services/user-session.service.ts   @MartaMaleyka
+/apps/backend/src/services/password-recovery.service.ts @MartaMaleyka
+/apps/backend/src/services/independent-signup.service.ts @MartaMaleyka
+/apps/backend/src/services/academy-signup.service.ts @MartaMaleyka
+/apps/web/src/middleware.ts                          @MartaMaleyka
+/apps/web/src/lib/auth-config.ts                     @MartaMaleyka
+/apps/web/src/lib/auth-cookies.ts                    @MartaMaleyka
+
+# Facturación
+/apps/backend/src/services/invoice*.ts               @MartaMaleyka
+/apps/backend/src/services/billing-*.ts              @MartaMaleyka
+/apps/backend/src/routes/billing.routes.ts           @MartaMaleyka
+
+# Administración de plataforma
+/apps/backend/src/routes/platform.routes.ts          @MartaMaleyka
+/apps/backend/src/services/platform*.ts              @MartaMaleyka

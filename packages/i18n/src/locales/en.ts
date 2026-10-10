@@ -640,6 +640,10 @@ export const en = {
     },
   },
   dashboard: {
+    analytics: {
+      title: 'Academy Analytics',
+      subtitle: 'Detailed KPI metrics and performance insights',
+    },
     superAdmin: {
       greeting: 'Hello, {role}',
       greetingMulti: 'Unified dashboard ({roles})',
@@ -704,6 +708,10 @@ export const en = {
       },
     },
     academyAdmin: {
+      analytics: {
+        title: 'Analytics',
+        description: 'KPI metrics and performance insights for your academy.',
+      },
       greeting: 'Hello, {role}',
       greetingMulti: 'Unified dashboard ({roles})',
       description: 'Your academy administration dashboard.',
@@ -790,6 +798,10 @@ export const en = {
       },
     },
     coach: {
+      playerPerformance: {
+        title: 'Player performance',
+        description: 'Individual performance analysis per player.',
+      },
       greeting: 'Hello, {role}',
       greetingMulti: 'Unified dashboard ({roles})',
       description: 'Your pulse on the pitch.',

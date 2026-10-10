@@ -2,12 +2,12 @@
 
 ## Project Overview
 
-VeloceSports is a comprehensive sports academy management system built with Next.js (frontend), Express (backend), and MySQL. It provides real-time match tracking, player analysis, and performance monitoring.
+VeloceSports is a comprehensive sports academy management system built with Astro SSR (frontend, with a BFF layer), Express (backend), and MySQL. It provides real-time match tracking, player analysis, and performance monitoring.
 
 **Key Stats:**
-- **Frontend**: 500+ React components, Next.js 14, TypeScript
+- **Frontend**: Astro (SSR, `@astrojs/node`), React islands, TypeScript
 - **Backend**: 20+ Express services, 30+ API endpoints, MySQL database
-- **Testing**: Jest unit tests, Playwright E2E tests
+- **Testing**: Jest (backend) and Vitest (web) unit tests, Playwright E2E tests (web)
 - **Performance**: Logging middleware, correlation ID tracing, performance budgets
 - **Accessibility**: WCAG 2.1 AA compliant components
 
@@ -35,13 +35,14 @@ velocesports/
 │   │   ├── PERFORMANCE_MONITORING.md
 │   │   └── ACCESSIBILITY_GUIDE.md
 │   │
-│   ├── web/                  # Next.js frontend
+│   ├── web/                  # Astro frontend (SSR + BFF)
 │   │   ├── src/
 │   │   │   ├── components/   # React components
 │   │   │   │   ├── accessible/  # WCAG 2.1 AA components
 │   │   │   │   ├── matches/     # Match-related components
 │   │   │   │   └── ...
-│   │   │   ├── pages/        # Next.js pages
+│   │   │   ├── pages/        # Astro pages (.astro) and BFF proxy (pages/api/)
+│   │   │   ├── middleware.ts # Session, role and password-change guards
 │   │   │   ├── hooks/        # Custom React hooks
 │   │   │   │   ├── useDebounce.ts        # Performance hooks
 │   │   │   │   ├── useRetry.ts
@@ -55,11 +56,10 @@ velocesports/
 │   │   │   └── utils/
 │   │   └── FRONTEND_IMPROVEMENTS.md
 │   │
-│   └── shared/               # Shared types & constants
-│       ├── src/
-│       │   ├── types/        # Shared TypeScript types
-│       │   ├── constants/    # Shared constants
-│       │   └── i18n/         # Translations
+├── packages/
+│   ├── shared/               # @velocesport/shared: tipos, roles y estados compartidos
+│   ├── i18n/                 # @velocesport/i18n: traducciones es/en (validadas en CI)
+│   └── design-system/        # @velocesport/design-system
 │
 ├── docs/                     # Documentation
 ├── ARCHITECTURE.md           # System design
@@ -69,7 +69,7 @@ velocesports/
 ## Key Technologies
 
 **Frontend:**
-- Next.js 14 with App Router
+- Astro 7 (SSR) with role-based route guards in `middleware.ts`
 - TypeScript 5+
 - React 18+
 - Tailwind CSS
@@ -93,18 +93,18 @@ velocesports/
 
 ### High-Priority Endpoints
 
-1. **Coach Analysis** (`GET /api/coach-analysis/players`)
+1. **Coach Analysis** (`GET /api/coach/analysis/players`)
    - Budget: 500ms (p95)
    - Handles photo batching, aggregations
    - Correlation ID: `req.correlationId`
    - File: `apps/backend/src/services/coach-analysis.service.ts`
 
-2. **Match Operations** (`GET/POST /api/matches`)
+2. **Match Operations** (`GET/POST /api/tenant/matches`)
    - Budget: 150-200ms
    - High-frequency endpoint
    - File: `apps/backend/src/services/match.service.ts`
 
-3. **Dashboard** (`GET /api/dashboard`)
+3. **Dashboard** (`GET /api/tenant/dashboard`)
    - Budget: 300ms (p95)
    - Multiple aggregations
    - File: `apps/backend/src/services/dashboard.service.ts`
@@ -119,11 +119,11 @@ velocesports/
 
 **Add Performance Tests:**
 ```bash
-# Run performance benchmarks
-npm run test -- performance-benchmarks
+# Run performance benchmarks (tests/unit/services/performance-benchmarks.test.ts)
+pnpm --filter @velocesport/backend test -- performance-benchmarks
 
-# Monitor slow queries
-LOG_LEVEL=debug npm run dev | grep "duration.*[0-9][0-9][0-9]ms"
+# Monitor slow queries (el logger usa nivel debug en desarrollo)
+pnpm dev:backend | grep "duration.*[0-9][0-9][0-9]ms"
 ```
 
 ## Authentication & Authorization
@@ -131,16 +131,16 @@ LOG_LEVEL=debug npm run dev | grep "duration.*[0-9][0-9][0-9]ms"
 ### JWT Tokens
 
 **Access Token:**
-- Duration: 15 minutes
+- Duration: 15 minutes by default (`JWT_ACCESS_EXPIRES_IN`)
 - Used in `Authorization: Bearer <token>` header
 - Payload: `{ userId, role, tenantId, permissions }`
 - Verified in `authenticate` middleware
 
 **Refresh Token:**
-- Duration: 30 days  
-- Stored in HTTP-only cookie (secure in production)
+- Duration: 7 days by default (`JWT_REFRESH_EXPIRES_IN`)
+- Stored in HTTP-only cookies set by the Astro BFF (`apps/web/src/lib/auth-cookies.ts`)
 - Rotates on each refresh
-- Revocation: Distributed blacklist (Redis/cache)
+- Revocation: server-side sessions (`user-session.service.ts`) plus an in-memory access-token blacklist (`utils/token-blacklist.ts`). There is no Redis; the blacklist resets on restart and is per instance.
 
 ### Middleware Stack
 
@@ -153,10 +153,10 @@ LOG_LEVEL=debug npm run dev | grep "duration.*[0-9][0-9][0-9]ms"
 
 Example:
 ```typescript
-router.post('/api/matches',
+router.post('/api/tenant/matches',
   authenticate,           // User is authenticated
   tenant,                 // Tenant context exists
-  requireRole('COACH'),   // User is coach
+  requireRole(UserRole.COACH), // User is coach (UserRole from @velocesport/shared)
   validate(createMatchSchema), // Input is valid
   matchController.create  // Handle request
 );
@@ -167,14 +167,16 @@ router.post('/api/matches',
 ### Unit Tests
 - Location: `apps/backend/tests/unit/`
 - Coverage: 70% target (utilities, validators, helpers)
-- Run: `npm test` (watch: `npm test:watch`)
+- Run: `pnpm test:backend` (watch: `pnpm --filter @velocesport/backend test:watch`)
+- Backend tests need MySQL (CI uses `mysql:8.0`, database `velocesport_test`)
 
-**Test Factories:**
+**Test Factories** (`apps/backend/tests/factories/`):
 ```typescript
-import { userFactory, playerFactory } from './factories';
+import { createAcademyAdmin } from '../factories/user.factory';
+import { createPlayers } from '../factories/player.factory';
 
-const admin = userFactory.create({ role: 'ADMIN' });
-const players = playerFactory.createBatch(10);
+const admin = createAcademyAdmin();
+const players = createPlayers(10);
 ```
 
 ### Integration Tests
@@ -185,10 +187,10 @@ const players = playerFactory.createBatch(10);
 ### E2E Tests
 - Playwright tests for critical user flows
 - Location: `apps/web/tests/e2e/`
-- Run: `npm run test:e2e` (headed: `npm run test:e2e:headed`)
+- Run: `pnpm --filter @velocesport/web test:e2e` (UI: `test:e2e:ui`, debug: `test:e2e:debug`)
 - Critical paths: Auth, match creation, player management
 
-**Example:**
+**Example** (illustrative; use the real routes, e.g. `/dashboard/coach/matches`):
 ```typescript
 test('coach should create and analyze match', async ({ page, login }) => {
   await login('coach@test.local');
@@ -227,7 +229,9 @@ logInfo('Player added to team', {
 - `error`: Failures, exceptions
 - `warn`: Potential issues, rate limit approaching
 - `info`: User actions, state changes (default)
-- `debug`: Detailed execution info (development)
+- `debug`: Detailed execution info (development only; `logger.service.ts` sets `debug` when not in production and `info` otherwise)
+
+Logs are written to `logs/combined.log` and `logs/error.log` (`apps/backend`). There is no `LOG_LEVEL` variable; the level is set in code.
 
 ### Querying Logs
 
@@ -250,8 +254,8 @@ See `LOGGING_GUIDE.md` for comprehensive documentation.
 
 Automatic via `requestLoggerMiddleware`:
 ```
-GET /api/matches → 200 {45ms}
-POST /api/coach-analysis/export → 200 {320ms}
+GET /api/tenant/matches → 200 {45ms}
+POST /api/coach/analysis/players/export.csv → 200 {320ms}
 GET /api/invalid → 404 {5ms}
 ```
 
@@ -259,10 +263,10 @@ GET /api/invalid → 404 {5ms}
 
 | Endpoint | Budget | Critical |
 |----------|--------|----------|
-| GET /api/matches | 150ms | 1000ms |
-| POST /api/matches | 200ms | 1000ms |
-| GET /api/coach-analysis/players | 500ms | 2000ms |
-| GET /api/dashboard | 300ms | 1500ms |
+| GET /api/tenant/matches | 150ms | 1000ms |
+| POST /api/tenant/matches | 200ms | 1000ms |
+| GET /api/coach/analysis/players | 500ms | 2000ms |
+| GET /api/tenant/dashboard | 300ms | 1500ms |
 
 ### Benchmark Tests
 
@@ -334,6 +338,7 @@ export class MyFeatureController {
 4. **Add route** (`apps/backend/src/routes/my-feature.routes.ts`):
 ```typescript
 import { Router } from 'express';
+import { UserRole } from '@velocesport/shared';
 import { authenticate, tenant, requireRole, validate } from '../middlewares';
 import { createFeatureSchema } from '../validators/my-feature.validator';
 import { myFeatureController } from '../controllers/my-feature.controller';
@@ -344,7 +349,7 @@ router.post(
   '/',
   authenticate,
   tenant,
-  requireRole('ADMIN'),
+  requireRole(UserRole.ACADEMY_ADMIN),
   validate(createFeatureSchema),
   (req, res, next) => myFeatureController.create(req, res, next)
 );
@@ -431,34 +436,36 @@ See `ACCESSIBILITY_GUIDE.md` for detailed patterns.
 
 ### Environment Variables
 
-**Backend (.env):**
+**Backend (`apps/backend/.env`)**, variables tomadas de `apps/backend/src/config/env.ts` y del job de CI:
 ```
 NODE_ENV=production
 PORT=3001
-DATABASE_URL=mysql://user:pass@localhost:3306/velocesports
-LOG_LEVEL=info
-JWT_SECRET=your-secret-key
-MINIO_URL=https://minio.example.com
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=user
+DB_PASSWORD=pass
+DB_NAME=velocesports
+JWT_ACCESS_SECRET=change-me
+JWT_REFRESH_SECRET=change-me
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+PASSWORD_RECOVERY_TOKEN_TTL_MINUTES=30
+ADMIN_NOTIFICATION_EMAIL=ops@example.com
 ```
+Correo saliente: `SMTP_*` (ver `.env.production.example` en la raíz).
 
-**Frontend (.env.local):**
-```
-NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_ENVIRONMENT=production
-```
+**Frontend:** el frontend es Astro y no usa variables `NEXT_PUBLIC_*`. Consulta `.env.production.example` en la raíz.
 
 ### Build & Deploy
 
 ```bash
 # Build backend
-cd apps/backend
-npm run build
-npm run start  # Starts on :3001
+pnpm build:backend
+pnpm --filter @velocesport/backend start  # Starts on :3001
 
 # Build frontend
-cd apps/web
-npm run build
-npm run start  # Starts on :3000
+pnpm --filter @velocesport/web build
+pnpm --filter @velocesport/web preview
 ```
 
 ## Code Review Checklist
@@ -479,8 +486,8 @@ When reviewing PRs, check:
 ### Slow Queries
 
 ```bash
-# Enable debug logging
-LOG_LEVEL=debug npm run dev
+# Debug logs are on by default in development
+pnpm dev:backend
 
 # Search for slow queries
 grep "duration.*[5-9][0-9][0-9]ms" logs/combined.log
@@ -493,7 +500,7 @@ grep "correlation-id-abc" logs/combined.log
 
 1. Run performance benchmarks:
 ```bash
-npm run test -- performance-benchmarks
+pnpm --filter @velocesport/backend test -- performance-benchmarks
 ```
 
 2. Check before/after metrics:
@@ -506,41 +513,43 @@ const improvement = (statsAfter.average / statsBefore.average - 1) * 100;
 ### Test Failures
 
 ```bash
-# Run tests with verbose output
-npm test -- --verbose
+# Backend tests (requires MySQL)
+pnpm --filter @velocesport/backend test -- --verbose
+pnpm --filter @velocesport/backend test -- auth.test.ts
+pnpm --filter @velocesport/backend test:watch
 
-# Run specific test file
-npm test -- auth.test.ts
+# Frontend unit tests
+pnpm --filter @velocesport/web test
 
-# Watch mode for development
-npm test:watch
-
-# E2E tests headed (see browser)
-npm run test:e2e:headed
+# E2E tests with UI (see browser)
+pnpm --filter @velocesport/web test:e2e:ui
 ```
 
 ## Useful Commands
 
 ```bash
 # Development
-npm run dev              # Start dev server
-npm test                 # Run tests
-npm run lint             # Run linter
-npm run type-check       # TypeScript check
+pnpm dev:backend         # Backend dev server (tsx watch)
+pnpm dev:web             # Frontend dev server (Astro)
+pnpm test:backend        # Backend tests (Jest)
+pnpm --filter @velocesport/web test   # Frontend unit tests (Vitest)
 
 # Build & Deploy
-npm run build            # Build for production
-npm run start            # Start production server
-npm run db:migrate       # Run database migrations
-npm run db:seed          # Seed test data
+pnpm build               # Build all workspaces
+pnpm --filter @velocesport/backend start   # Start production backend
 
-# Performance
-npm run test -- performance-benchmarks  # Run perf tests
-LOG_LEVEL=debug npm run dev              # Debug logging
+# E2E (frontend)
+pnpm --filter @velocesport/web test:e2e
 
-# Database
-npm run db:repair        # Repair schema
-npm run db:backfill-*    # Various backfill scripts
+# Database (run from root with pnpm db:seed, or inside apps/backend)
+pnpm db:seed             # Seed test data
+pnpm --filter @velocesport/backend db:migrate
+pnpm --filter @velocesport/backend db:repair
+pnpm --filter @velocesport/backend db:backfill-action-catalog
+pnpm --filter @velocesport/backend db:backfill-player-viewers
+
+# API spec (solo cubre endpoints con anotaciones @openapi)
+pnpm --filter @velocesport/backend openapi:export   # escribe docs/openapi.json
 ```
 
 ## Documentation Files
@@ -561,7 +570,7 @@ npm run db:backfill-*    # Various backfill scripts
 
 ## Contributing Guidelines
 
-1. **Branch naming**: `feature/name` or `fix/bug-name` or `chore/task-name`
+1. **Branch naming**: `feature/name`, `fix/bug-name` or `chore/task-name`. Branches created by Claude Code sessions use the `claude/<slug>` prefix.
 2. **Commit messages**: Clear, descriptive (see git log for style)
 3. **PRs**: Include test coverage, performance budget verification
 4. **Reviews**: Approve once tests pass and code meets standards
@@ -576,5 +585,5 @@ npm run db:backfill-*    # Various backfill scripts
 
 ---
 
-**Last Updated**: 2026-10-04  
-**Status**: Documentation ready for development
+**Last Updated**: 2026-10-10  
+**Status**: Documentation ready for development. Verified against `package.json`, `ci.yml`, and `apps/backend/src/config/env.ts`.
