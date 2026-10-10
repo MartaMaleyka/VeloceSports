@@ -1,5 +1,5 @@
-import es from '../locales/es.json' assert { type: 'json' };
-import en from '../locales/en.json' assert { type: 'json' };
+import es from '../locales/es.json' with { type: 'json' };
+import en from '../locales/en.json' with { type: 'json' };
 
 export type SupportedLanguage = 'es' | 'en';
 

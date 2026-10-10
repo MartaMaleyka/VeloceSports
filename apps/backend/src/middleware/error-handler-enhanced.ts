@@ -25,7 +25,7 @@ export function errorHandlerEnhanced(
   err: unknown,
   req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ): void {
   const correlationId = (req as any).correlationId;
 
@@ -180,7 +180,7 @@ export function errorHandlerEnhanced(
 
   // Handle generic AppError with custom status codes
   if ((err as any).status && (err as AppError).code) {
-    const appErr = err as AppError;
+    const appErr = err as AppError & { status?: number };
     const statusCode = appErr.status || 500;
 
     logger.warn('Application error', {
@@ -192,7 +192,7 @@ export function errorHandlerEnhanced(
     const response: ErrorResponse = {
       success: false,
       error: {
-        code: appErr.code,
+        code: appErr.code ?? 'INTERNAL_ERROR',
         message: appErr.message,
         requestId: correlationId,
       },

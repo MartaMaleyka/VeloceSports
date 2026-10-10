@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { IdSchema, DateSchema } from './common.validator.js';
-import { MatchStatus, MatchType } from '@velocesport/shared';
+import { IdSchema } from './common.validator.js';
+import { MatchStatus } from '@velocesport/shared';
 
 export const CreateGameActionBodySchema = z.object({
   playerId: IdSchema,
