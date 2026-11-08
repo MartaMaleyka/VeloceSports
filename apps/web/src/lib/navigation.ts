@@ -208,7 +208,9 @@ export function getNavLayoutForRoles(
   locale: Locale,
   primaryRole: LoginRole,
 ): NavLayout {
-  const orderedRoles = ROLE_NAV_ORDER.filter((role) => roles.includes(role));
+  // El rol principal va primero: un padre con rol coach (alta independiente) debe ver sus secciones de padre antes que las de coach.
+  const roleOrder = [primaryRole, ...ROLE_NAV_ORDER.filter((role) => role !== primaryRole)];
+  const orderedRoles = roleOrder.filter((role) => roles.includes(role));
   const effectiveRoles = orderedRoles.length > 0 ? orderedRoles : roles;
 
   if (effectiveRoles.length <= 1) {
